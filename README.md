@@ -31,6 +31,10 @@ $ go get -u github.com/goccy/go-graphviz
 package main
 
 import (
+  "bytes"
+  "fmt"
+  "log"
+
   "github.com/goccy/go-graphviz"
 )
 
@@ -41,14 +45,14 @@ func main() {
     graph.Close()
     g.Close()
   }()
-  n1 := graph.Node("n1")
-  n2 := graph.Node("n2")
-  n3 := graph.Node("n3")
-  n1.SetShape("diamond")
-  e1 := graph.Edge("e1", n1, n2)
-  e1.SetLabel("e1")
-  graph.Edge("e2", n1, n3)
-  g.RenderFilename(graph, "png", "sample.png")
+  n := graph.CreateNode("n")
+  m := graph.CreateNode("m")
+  graph.CreateEdge("e", n, m).SetLabel("e")
+  var buf bytes.Buffer
+  if err := g.Render(graph, "dot", &buf); err != nil {
+    log.Fatalf("%+v", err)
+  }
+  fmt.Println(buf.String())
 }
 ```
 
@@ -63,6 +67,18 @@ $ go get -u github.com/goccy/go-graphviz/cmd/dot
 ```
 
 ### Usage
+
+```
+Usage:
+  dot [OPTIONS]
+
+Application Options:
+  -T=         specify output format ( currently supported: dot svg png ) (default: dot)
+  -o=         specify output file name
+
+Help Options:
+  -h, --help  Show this help message
+```
 
 # License
 
