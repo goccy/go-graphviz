@@ -1,0 +1,6 @@
+gvplugin_dot_layout.lo: gvplugin_dot_layout.c ../../lib/gvc/gvplugin.h \
+  ../../lib/gvc/gvcext.h
+
+../../lib/gvc/gvplugin.h:
+
+../../lib/gvc/gvcext.h:

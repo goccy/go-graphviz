@@ -1,0 +1,6 @@
+gvplugin_core.lo: gvplugin_core.c ../../lib/gvc/gvplugin.h \
+  ../../lib/gvc/gvcext.h
+
+../../lib/gvc/gvplugin.h:
+
+../../lib/gvc/gvcext.h:

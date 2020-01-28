@@ -1,0 +1,16 @@
+voronoi.lo: voronoi.c mem.h geometry.h edges.h site.h hedges.h heap.h \
+  voronoi.h
+
+mem.h:
+
+geometry.h:
+
+edges.h:
+
+site.h:
+
+hedges.h:
+
+heap.h:
+
+voronoi.h:

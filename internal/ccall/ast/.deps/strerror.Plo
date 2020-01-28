@@ -1,0 +1,3 @@
+strerror.lo: strerror.c ../../config.h
+
+../../config.h:

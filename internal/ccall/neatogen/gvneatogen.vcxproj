@@ -1,0 +1,160 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>neatogen</ProjectName>
+    <ProjectGuid>{C5CEB09E-79AF-4091-ACCF-D28EC3D7D90F}</ProjectGuid>
+    <RootNamespace>gvneatogen</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>14.0.25123.0</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\Graphviz\bin\</OutDir>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\Graphviz\bin\</OutDir>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)windows\include;$(SolutionDir)lib\cdt;$(SolutionDir)lib\cgraph;$(SolutionDir)lib\common;$(SolutionDir)lib\gvc;$(SolutionDir)lib\pack;$(SolutionDir)lib\pathplan;$(SolutionDir)lib\ortho;$(SolutionDir)lib\rbtree;$(SolutionDir)lib\sfdpgen;$(SolutionDir)lib\sparse;$(SolutionDir)lib\vpsc</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;WIN32_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader />
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <EnablePREfast>true</EnablePREfast>
+      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+    </ClCompile>
+    <Lib />
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)windows\include;$(SolutionDir)lib\cdt;$(SolutionDir)lib\cgraph;$(SolutionDir)lib\common;$(SolutionDir)lib\gvc;$(SolutionDir)lib\pack;$(SolutionDir)lib\pathplan;$(SolutionDir)lib\ortho;$(SolutionDir)lib\rbtree;$(SolutionDir)lib\sfdpgen;$(SolutionDir)lib\sparse;$(SolutionDir)lib\vpsc</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;WIN32_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PrecompiledHeader />
+      <WarningLevel>Level4</WarningLevel>
+      <EnablePREfast>true</EnablePREfast>
+      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+    </ClCompile>
+    <Lib />
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="adjust.h" />
+    <ClInclude Include="bfs.h" />
+    <ClInclude Include="call_tri.h" />
+    <ClInclude Include="closest.h" />
+    <ClInclude Include="conjgrad.h" />
+    <ClInclude Include="defs.h" />
+    <ClInclude Include="delaunay.h" />
+    <ClInclude Include="digcola.h" />
+    <ClInclude Include="dijkstra.h" />
+    <ClInclude Include="edges.h" />
+    <ClInclude Include="embed_graph.h" />
+    <ClInclude Include="fPQ.h" />
+    <ClInclude Include="geometry.h" />
+    <ClInclude Include="heap.h" />
+    <ClInclude Include="hedges.h" />
+    <ClInclude Include="info.h" />
+    <ClInclude Include="kkutils.h" />
+    <ClInclude Include="matrix_ops.h" />
+    <ClInclude Include="mem.h" />
+    <ClInclude Include="mosek_quad_solve.h" />
+    <ClInclude Include="multispline.h" />
+    <ClInclude Include="neato.h" />
+    <ClInclude Include="neatoprocs.h" />
+    <ClInclude Include="overlap.h" />
+    <ClInclude Include="pca.h" />
+    <ClInclude Include="poly.h" />
+    <ClInclude Include="quad_prog_solver.h" />
+    <ClInclude Include="quad_prog_vpsc.h" />
+    <ClInclude Include="site.h" />
+    <ClInclude Include="sparsegraph.h" />
+    <ClInclude Include="stress.h" />
+    <ClInclude Include="voronoi.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="adjust.c" />
+    <ClCompile Include="bfs.c" />
+    <ClCompile Include="call_tri.c" />
+    <ClCompile Include="circuit.c" />
+    <ClCompile Include="closest.c" />
+    <ClCompile Include="compute_hierarchy.c" />
+    <ClCompile Include="conjgrad.c" />
+    <ClCompile Include="constrained_majorization.c" />
+    <ClCompile Include="constrained_majorization_ipsep.c" />
+    <ClCompile Include="constraint.c" />
+    <ClCompile Include="delaunay.c" />
+    <ClCompile Include="dijkstra.c" />
+    <ClCompile Include="edges.c" />
+    <ClCompile Include="embed_graph.c" />
+    <ClCompile Include="geometry.c" />
+    <ClCompile Include="heap.c" />
+    <ClCompile Include="hedges.c" />
+    <ClCompile Include="info.c" />
+    <ClCompile Include="kkutils.c" />
+    <ClCompile Include="legal.c" />
+    <ClCompile Include="lu.c" />
+    <ClCompile Include="matinv.c" />
+    <ClCompile Include="matrix_ops.c" />
+    <ClCompile Include="memory.c" />
+    <ClCompile Include="mosek_quad_solve.c" />
+    <ClCompile Include="multispline.c" />
+    <ClCompile Include="neatoinit.c" />
+    <ClCompile Include="neatosplines.c" />
+    <ClCompile Include="opt_arrangement.c" />
+    <ClCompile Include="overlap.c" />
+    <ClCompile Include="pca.c" />
+    <ClCompile Include="poly.c" />
+    <ClCompile Include="printvis.c" />
+    <ClCompile Include="quad_prog_solve.c" />
+    <ClCompile Include="quad_prog_vpsc.c" />
+    <ClCompile Include="site.c" />
+    <ClCompile Include="smart_ini_x.c" />
+    <ClCompile Include="solve.c" />
+    <ClCompile Include="stress.c" />
+    <ClCompile Include="stuff.c" />
+    <ClCompile Include="voronoi.c" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

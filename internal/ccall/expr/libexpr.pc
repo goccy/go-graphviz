@@ -1,0 +1,10 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include/graphviz
+
+Name: libexpr
+Description: C-like expression evaluation library
+Version: 2.40.1
+Libs: -L${libdir} -lexpr
+Cflags: -I${includedir}

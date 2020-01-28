@@ -1,0 +1,3 @@
+lab_gamut.lo: lab_gamut.c lab_gamut.h
+
+lab_gamut.h:
