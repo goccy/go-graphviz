@@ -2,6 +2,7 @@ package gvc
 
 import (
 	"bytes"
+	"image"
 
 	"github.com/fogleman/gg"
 	"github.com/goccy/go-graphviz/internal/ccall"
@@ -32,6 +33,10 @@ func (r *pngRenderer) EndPage(job *Job) error {
 			return xerrors.Errorf("failed to encode png: %w", err)
 		}
 		job.SetOutputData(buf.Bytes())
+	}
+	if job.ExternalContext() {
+		img := (*image.Image)(job.Context())
+		*img = r.ctx.Image()
 	}
 	filename := job.OutputFilename()
 	if filename != "" {
