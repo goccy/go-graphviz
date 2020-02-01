@@ -1,7 +1,9 @@
 package gvc
 
 import (
+	"image"
 	"io"
+	"unsafe"
 
 	"github.com/goccy/go-graphviz/cgraph"
 	"github.com/goccy/go-graphviz/internal/ccall"
@@ -33,6 +35,12 @@ func (c *Context) RenderData(g *cgraph.Graph, format string, w io.Writer) error 
 		return xerrors.Errorf("failed to GvRenderData: %w", err)
 	}
 	return nil
+}
+
+func (c *Context) RenderImage(g *cgraph.Graph, format string) image.Image {
+	var img image.Image
+	ccall.GvRenderContext(c.GVC, g.Agraph, format, unsafe.Pointer(&img))
+	return img
 }
 
 func (c *Context) RenderFilename(g *cgraph.Graph, format, filename string) int {

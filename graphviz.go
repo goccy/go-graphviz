@@ -1,6 +1,7 @@
 package graphviz
 
 import (
+	"image"
 	"io"
 
 	"github.com/goccy/go-graphviz/cgraph"
@@ -81,6 +82,13 @@ func (g *Graphviz) Render(graph *Graph, format string, w io.Writer) error {
 		return xerrors.Errorf("failed to render: %w", err)
 	}
 	return nil
+}
+
+func (g *Graphviz) RenderImage(graph *Graph, format string) image.Image {
+	g.ctx.Layout(graph.graph, string(g.layout))
+	defer g.ctx.FreeLayout(graph.graph)
+
+	return g.ctx.RenderImage(graph.graph, format)
 }
 
 func (g *Graphviz) RenderFilename(graph *Graph, format, path string) error {
