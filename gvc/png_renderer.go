@@ -1,6 +1,8 @@
 package gvc
 
 import (
+	"bytes"
+
 	"github.com/fogleman/gg"
 	"github.com/goccy/go-graphviz/internal/ccall"
 	"github.com/golang/freetype/truetype"
@@ -24,8 +26,18 @@ func (r *pngRenderer) BeginPage(job *Job) error {
 }
 
 func (r *pngRenderer) EndPage(job *Job) error {
-	if err := r.ctx.SavePNG(job.OutputFilename()); err != nil {
-		return xerrors.Errorf("failed to save png: %w", err)
+	if job.OutputData() != nil {
+		var buf bytes.Buffer
+		if err := r.ctx.EncodePNG(&buf); err != nil {
+			return xerrors.Errorf("failed to encode png: %w", err)
+		}
+		job.SetOutputData(buf.Bytes())
+	}
+	filename := job.OutputFilename()
+	if filename != "" {
+		if err := r.ctx.SavePNG(job.OutputFilename()); err != nil {
+			return xerrors.Errorf("failed to save png: %w", err)
+		}
 	}
 	return nil
 }

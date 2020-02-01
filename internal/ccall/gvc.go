@@ -26,6 +26,7 @@ package ccall
 #include "gvc.h"
 #include "gvcjob.h"
 #include "cgraph.h"
+#include <stdlib.h>
 */
 import "C"
 import (
@@ -476,7 +477,18 @@ func (g *GVJ) OutputFile() *os.File {
 }
 
 func (g *GVJ) OutputData() []byte {
+	if g.c.output_data == nil {
+		return nil
+	}
 	return []byte(C.GoString(g.c.output_data))
+}
+
+func (g *GVJ) SetOutputData(v []byte) {
+	length := len(v)
+	g.c.output_data = (*C.char)(C.realloc(unsafe.Pointer(g.c.output_data), C.ulong(length)))
+	header := (*reflect.SliceHeader)(unsafe.Pointer(&v))
+	C.memcpy(unsafe.Pointer(g.c.output_data), unsafe.Pointer(header.Data), C.ulong(length))
+	g.c.output_data_position = C.uint(length)
 }
 
 func (g *GVJ) OutputDataAllocated() uint {
