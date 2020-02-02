@@ -10,14 +10,27 @@ import (
 
 func TestGraphviz_PNG(t *testing.T) {
 	g := graphviz.New()
-	graph := g.Graph()
+	graph, err := g.Graph()
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
 	defer func() {
 		graph.Close()
 		g.Close()
 	}()
-	n := graph.CreateNode("n")
-	m := graph.CreateNode("m")
-	graph.CreateEdge("e", n, m).SetLabel("e")
+	n, err := graph.CreateNode("n")
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	m, err := graph.CreateNode("m")
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	e, err := graph.CreateEdge("e", n, m)
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	e.SetLabel("e")
 
 	t.Run("Render", func(t *testing.T) {
 		var buf bytes.Buffer

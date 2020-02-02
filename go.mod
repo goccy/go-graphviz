@@ -8,5 +8,4 @@ require (
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/pkg/errors v0.9.1
 	golang.org/x/image v0.0.0-20200119044424-58c23975cae1
-	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
 )

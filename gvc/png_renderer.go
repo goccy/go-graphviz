@@ -8,7 +8,6 @@ import (
 	"github.com/goccy/go-graphviz/internal/ccall"
 	"github.com/golang/freetype/truetype"
 	"golang.org/x/image/font/gofont/gobold"
-	"golang.org/x/xerrors"
 )
 
 type pngRenderer struct {
@@ -30,7 +29,7 @@ func (r *pngRenderer) EndPage(job *Job) error {
 	if job.OutputData() != nil {
 		var buf bytes.Buffer
 		if err := r.ctx.EncodePNG(&buf); err != nil {
-			return xerrors.Errorf("failed to encode png: %w", err)
+			return err
 		}
 		job.SetOutputData(buf.Bytes())
 	}
@@ -41,7 +40,7 @@ func (r *pngRenderer) EndPage(job *Job) error {
 	filename := job.OutputFilename()
 	if filename != "" {
 		if err := r.ctx.SavePNG(job.OutputFilename()); err != nil {
-			return xerrors.Errorf("failed to save png: %w", err)
+			return err
 		}
 	}
 	return nil
@@ -55,7 +54,7 @@ func (r *pngRenderer) TextSpan(job *Job, p Pointf, span *TextSpan) error {
 
 	ft, err := truetype.Parse(gobold.TTF)
 	if err != nil {
-		return xerrors.Errorf("failed to parse truetype gobold.TTF: %w", err)
+		return err
 	}
 	opt := &truetype.Options{
 		Size:              span.Font().Size(),

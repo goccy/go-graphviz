@@ -7,7 +7,6 @@ import (
 
 	"github.com/goccy/go-graphviz/cgraph"
 	"github.com/goccy/go-graphviz/internal/ccall"
-	"golang.org/x/xerrors"
 )
 
 type Context struct {
@@ -32,7 +31,7 @@ func (c *Context) Layout(g *cgraph.Graph, engine string) int {
 
 func (c *Context) RenderData(g *cgraph.Graph, format string, w io.Writer) error {
 	if err := ccall.GvRenderData(c.GVC, g.Agraph, format, w); err != nil {
-		return xerrors.Errorf("failed to GvRenderData: %w", err)
+		return err
 	}
 	return nil
 }

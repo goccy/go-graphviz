@@ -79,12 +79,33 @@ var (
 	StrictUnDirected = &Desc{Agdesc: ccall.Agstrictundirected}
 )
 
-func ParseBytes(bytes []byte) *Graph {
-	graph := ccall.Agmemread(string(bytes))
-	if graph == nil {
+func toGraph(g *ccall.Agraph) *Graph {
+	if g == nil {
 		return nil
 	}
-	return &Graph{Agraph: graph}
+	return &Graph{Agraph: g}
+}
+
+func toNode(n *ccall.Agnode) *Node {
+	if n == nil {
+		return nil
+	}
+	return &Node{Agnode: n}
+}
+
+func toEdge(e *ccall.Agedge) *Edge {
+	if e == nil {
+		return nil
+	}
+	return &Edge{Agedge: e}
+}
+
+func ParseBytes(bytes []byte) (*Graph, error) {
+	graph, err := ccall.Agmemread(string(bytes))
+	if err != nil {
+		return nil, err
+	}
+	return toGraph(graph), nil
 }
 
 func ParseFile(path string) (*Graph, error) {
@@ -92,12 +113,14 @@ func ParseFile(path string) (*Graph, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Graph{
-		Agraph: ccall.Agmemread(string(file)),
-	}, nil
+	graph, err := ccall.Agmemread(string(file))
+	if err != nil {
+		return nil, err
+	}
+	return toGraph(graph), nil
 }
 
-func Open(name string, desc *Desc, disc *Disc) *Graph {
+func Open(name string, desc *Desc, disc *Disc) (*Graph, error) {
 	var (
 		agdesc *ccall.Agdesc
 		agdisc *ccall.Agdisc
@@ -108,9 +131,11 @@ func Open(name string, desc *Desc, disc *Disc) *Graph {
 	if disc != nil {
 		agdisc = disc.Agdisc
 	}
-	return &Graph{
-		Agraph: ccall.Agopen(name, agdesc, agdisc),
+	graph, err := ccall.Agopen(name, agdesc, agdisc)
+	if err != nil {
+		return nil, err
 	}
+	return toGraph(graph), nil
 }
 
 type OBJECTKIND int
@@ -870,54 +895,52 @@ func (g *Graph) SafeSet(name, value, def string) int {
 	return ccall.Agsafeset(unsafe.Pointer(g.Agraph.C()), name, value, def)
 }
 
-func (g *Graph) Close() int {
+func (g *Graph) Close() error {
 	return ccall.Agclose(g.Agraph)
 }
 
 func (g *Graph) IsSimple() bool {
-	return ccall.Agissimple(g.Agraph) == 1
+	return ccall.Agissimple(g.Agraph)
 }
 
-func (g *Graph) Node(name string, createFlag int) *Node {
-	return &Node{
-		Agnode: ccall.Agnodef(g.Agraph, name, createFlag),
+func (g *Graph) Node(name string, createFlag int) (*Node, error) {
+	node, err := ccall.Agnodef(g.Agraph, name, createFlag)
+	if err != nil {
+		return nil, err
 	}
+	return toNode(node), nil
 }
 
-func (g *Graph) IDNode(id IDTYPE, createFlag int) *Node {
-	return &Node{
-		Agnode: ccall.Agidnode(g.Agraph, uint64(id), createFlag),
+func (g *Graph) IDNode(id IDTYPE, createFlag int) (*Node, error) {
+	node, err := ccall.Agidnode(g.Agraph, uint64(id), createFlag)
+	if err != nil {
+		return nil, err
 	}
+	return toNode(node), nil
 }
 
-func (g *Graph) SubNode(n *Node, createFlag int) *Node {
-	return &Node{
-		Agnode: ccall.Agsubnodef(g.Agraph, n.Agnode, createFlag),
+func (g *Graph) SubNode(n *Node, createFlag int) (*Node, error) {
+	node, err := ccall.Agsubnodef(g.Agraph, n.Agnode, createFlag)
+	if err != nil {
+		return nil, err
 	}
+	return toNode(node), nil
 }
 
 func (g *Graph) FirstNode() *Node {
-	return &Node{
-		Agnode: ccall.Agfstnode(g.Agraph),
-	}
+	return toNode(ccall.Agfstnode(g.Agraph))
 }
 
 func (g *Graph) NextNode(n *Node) *Node {
-	return &Node{
-		Agnode: ccall.Agnxtnode(g.Agraph, n.Agnode),
-	}
+	return toNode(ccall.Agnxtnode(g.Agraph, n.Agnode))
 }
 
 func (g *Graph) LastNode() *Node {
-	return &Node{
-		Agnode: ccall.Aglstnode(g.Agraph),
-	}
+	return toNode(ccall.Aglstnode(g.Agraph))
 }
 
 func (g *Graph) PreviousNode(n *Node) *Node {
-	return &Node{
-		Agnode: ccall.Agprvnode(g.Agraph, n.Agnode),
-	}
+	return toNode(ccall.Agprvnode(g.Agraph, n.Agnode))
 }
 
 func (g *Graph) SubRep(n *Node) *SubNode {
@@ -926,68 +949,62 @@ func (g *Graph) SubRep(n *Node) *SubNode {
 	}
 }
 
-func (g *Graph) Edge(start *Node, end *Node, name string, createFlag int) *Edge {
-	return &Edge{
-		Agedge: ccall.Agedgef(g.Agraph, start.Agnode, end.Agnode, name, createFlag),
+func (g *Graph) Edge(start *Node, end *Node, name string, createFlag int) (*Edge, error) {
+	edge, err := ccall.Agedgef(g.Agraph, start.Agnode, end.Agnode, name, createFlag)
+	if err != nil {
+		return nil, err
 	}
+	return toEdge(edge), nil
 }
 
-func (g *Graph) IDEdge(t *Node, h *Node, id IDTYPE, createFlag int) *Edge {
-	return &Edge{
-		Agedge: ccall.Agidedge(g.Agraph, t.Agnode, h.Agnode, uint64(id), createFlag),
+func (g *Graph) IDEdge(t *Node, h *Node, id IDTYPE, createFlag int) (*Edge, error) {
+	edge, err := ccall.Agidedge(g.Agraph, t.Agnode, h.Agnode, uint64(id), createFlag)
+	if err != nil {
+		return nil, err
 	}
+	return toEdge(edge), nil
 }
 
-func (g *Graph) SubEdge(e *Edge, createFlag int) *Edge {
-	return &Edge{
-		Agedge: ccall.Agsubedge(g.Agraph, e.Agedge, createFlag),
+func (g *Graph) SubEdge(e *Edge, createFlag int) (*Edge, error) {
+	edge, err := ccall.Agsubedge(g.Agraph, e.Agedge, createFlag)
+	if err != nil {
+		return nil, err
 	}
+	return toEdge(edge), nil
 }
 
 func (g *Graph) FirstIn(n *Node) *Edge {
-	return &Edge{
-		Agedge: ccall.Agfstin(g.Agraph, n.Agnode),
-	}
+	return toEdge(ccall.Agfstin(g.Agraph, n.Agnode))
 }
 
 func (g *Graph) NextIn(n *Edge) *Edge {
-	return &Edge{
-		Agedge: ccall.Agnxtin(g.Agraph, n.Agedge),
-	}
+	return toEdge(ccall.Agnxtin(g.Agraph, n.Agedge))
 }
 
 func (g *Graph) FirstOut(n *Node) *Edge {
-	return &Edge{
-		Agedge: ccall.Agfstout(g.Agraph, n.Agnode),
-	}
+	return toEdge(ccall.Agfstout(g.Agraph, n.Agnode))
 }
 
 func (g *Graph) NextOut(e *Edge) *Edge {
-	return &Edge{
-		Agedge: ccall.Agnxtout(g.Agraph, e.Agedge),
-	}
+	return toEdge(ccall.Agnxtout(g.Agraph, e.Agedge))
 }
 
 func (g *Graph) FirstEdge(n *Node) *Edge {
-	return &Edge{
-		Agedge: ccall.Agfstedge(g.Agraph, n.Agnode),
-	}
+	return toEdge(ccall.Agfstedge(g.Agraph, n.Agnode))
 }
 
 func (g *Graph) NextEdge(e *Edge, n *Node) *Edge {
-	return &Edge{
-		Agedge: ccall.Agnxtedge(g.Agraph, e.Agedge, n.Agnode),
-	}
+	return toEdge(ccall.Agnxtedge(g.Agraph, e.Agedge, n.Agnode))
 }
 
 func (g *Graph) Contains(o interface{}) bool {
 	switch t := o.(type) {
 	case *Graph:
-		return ccall.Agcontains(g.Agraph, unsafe.Pointer(t.Agraph.C())) == 1
+		return ccall.Agcontains(g.Agraph, unsafe.Pointer(t.Agraph.C()))
 	case *Node:
-		return ccall.Agcontains(g.Agraph, unsafe.Pointer(t.Agnode.C())) == 1
+		return ccall.Agcontains(g.Agraph, unsafe.Pointer(t.Agnode.C()))
 	case *Edge:
-		return ccall.Agcontains(g.Agraph, unsafe.Pointer(t.Agedge.C())) == 1
+		return ccall.Agcontains(g.Agraph, unsafe.Pointer(t.Agedge.C()))
 	}
 	return false
 }
@@ -996,8 +1013,8 @@ func (g *Graph) Name() string {
 	return ccall.Agnameof(unsafe.Pointer(g.Agraph.C()))
 }
 
-func (g *Graph) Delete(obj unsafe.Pointer) bool {
-	return ccall.Agdelete(g.Agraph, obj) == 1
+func (g *Graph) Delete(obj unsafe.Pointer) error {
+	return ccall.Agdelete(g.Agraph, obj)
 }
 
 func (g *Graph) DeleteSubGraph(sub *Graph) int32 {
@@ -1150,12 +1167,12 @@ func (n *Node) SafeSet(name, value, def string) int {
 	return ccall.Agsafeset(unsafe.Pointer(n.Agnode.C()), name, value, def)
 }
 
-func (n *Node) ReLabel(newname string) bool {
-	return ccall.AgrelabelNode(n.Agnode, newname) == 1
+func (n *Node) ReLabel(newname string) error {
+	return ccall.AgrelabelNode(n.Agnode, newname)
 }
 
-func (n *Node) Before(v *Node) bool {
-	return ccall.Agnodebefore(n.Agnode, v.Agnode) == 1
+func (n *Node) Before(v *Node) error {
+	return ccall.Agnodebefore(n.Agnode, v.Agnode)
 }
 
 func (e *Edge) Name() string {
