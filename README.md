@@ -22,7 +22,7 @@ Go bindings for Graphviz ( port of version `2.40.1` )
 # Installation
 
 ```bash
-$ go get -u github.com/goccy/go-graphviz
+$ go get github.com/goccy/go-graphviz
 ```
 
 # Synopsis
@@ -40,17 +40,32 @@ import (
 
 func main() {
   g := graphviz.New()
-  graph := g.Graph()
+  graph, err := g.Graph()
+  if err != nil {
+    return err
+  }
   defer func() {
-    graph.Close()
+    if err := graph.Close(); err != nil {
+      log.Fatal(err)
+    }
     g.Close()
   }()
-  n := graph.CreateNode("n")
-  m := graph.CreateNode("m")
-  graph.CreateEdge("e", n, m).SetLabel("e")
+  n, err := graph.CreateNode("n")
+  if err != nil {
+    log.Fatal(err)
+  }
+  m, err := graph.CreateNode("m")
+  if err != nil {
+    log.Fatal(err)
+  }
+  e, err := graph.CreateEdge("e", n, m)
+  if err != nil {
+    log.Fatal(err)
+  }
+  e.SetLabel("e")
   var buf bytes.Buffer
   if err := g.Render(graph, "dot", &buf); err != nil {
-    log.Fatalf("%+v", err)
+    log.Fatal(err)
   }
   fmt.Println(buf.String())
 }
@@ -63,7 +78,7 @@ func main() {
 ### Installation
 
 ```bash
-$ go get -u github.com/goccy/go-graphviz/cmd/dot
+$ go get github.com/goccy/go-graphviz/cmd/dot
 ```
 
 ### Usage
