@@ -24,9 +24,11 @@ package ccall
 #cgo CFLAGS: -I../libltdl
 #cgo LDFLAGS: -lexpat -lz
 #include "cgraph.h"
+#include <stdlib.h>
 */
 import "C"
 import (
+	"errors"
 	"unsafe"
 )
 
@@ -856,56 +858,64 @@ func Agcallbacks(g *Agraph, flag int) int {
 	return int(C.agcallbacks(g.c, C.int(flag)))
 }
 
-func Agopen(name string, desc *Agdesc, disc *Agdisc) *Agraph {
-	return ToAgraph(C.agopen(C.CString(name), *desc.C(), disc.C()))
+func Agopen(name string, desc *Agdesc, disc *Agdisc) (*Agraph, error) {
+	graph := ToAgraph(C.agopen(C.CString(name), *desc.C(), disc.C()))
+	return graph, Aglasterr()
 }
 
-func Agclose(g *Agraph) int {
-	return int(C.agclose(g.c))
+func Agclose(g *Agraph) error {
+	C.agclose(g.c)
+	return Aglasterr()
 }
 
-func Agread(ch unsafe.Pointer, disc *Agdisc) *Agraph {
-	return ToAgraph(C.agread(ch, disc.c))
+func Agread(ch unsafe.Pointer, disc *Agdisc) (*Agraph, error) {
+	graph := ToAgraph(C.agread(ch, disc.c))
+	return graph, Aglasterr()
 }
 
-func Agmemread(cp string) *Agraph {
-	return ToAgraph(C.agmemread(C.CString(cp)))
+func Agmemread(cp string) (*Agraph, error) {
+	graph := ToAgraph(C.agmemread(C.CString(cp)))
+	return graph, Aglasterr()
 }
 
 func Agsetfile(file string) {
 	C.agsetfile(C.CString(file))
 }
 
-func Agwrite(g *Agraph, ch unsafe.Pointer) int {
-	return int(C.agwrite(g.c, ch))
+func Agwrite(g *Agraph, ch unsafe.Pointer) error {
+	C.agwrite(g.c, ch)
+	return Aglasterr()
 }
 
-func Agisdirected(g *Agraph) int {
-	return int(C.agisdirected(g.c))
+func Agisdirected(g *Agraph) bool {
+	return C.agisdirected(g.c) == 1
 }
 
-func Agisundirected(g *Agraph) int {
-	return int(C.agisundirected(g.c))
+func Agisundirected(g *Agraph) bool {
+	return C.agisundirected(g.c) == 1
 }
 
-func Agisstrict(g *Agraph) int {
-	return int(C.agisstrict(g.c))
+func Agisstrict(g *Agraph) bool {
+	return C.agisstrict(g.c) == 1
 }
 
-func Agissimple(g *Agraph) int {
-	return int(C.agissimple(g.c))
+func Agissimple(g *Agraph) bool {
+	return C.agissimple(g.c) == 1
 }
 
-func Agnodef(g *Agraph, name string, createFlag int) *Agnode {
-	return ToAgnode(C.agnode(g.c, C.CString(name), C.int(createFlag)))
+func Agnodef(g *Agraph, name string, createFlag int) (*Agnode, error) {
+	node := ToAgnode(C.agnode(g.c, C.CString(name), C.int(createFlag)))
+	return node, Aglasterr()
 }
 
-func Agidnode(g *Agraph, id uint64, createFlag int) *Agnode {
-	return ToAgnode(C.agidnode(g.c, C.ulonglong(id), C.int(createFlag)))
+func Agidnode(g *Agraph, id uint64, createFlag int) (*Agnode, error) {
+	node := ToAgnode(C.agidnode(g.c, C.ulonglong(id), C.int(createFlag)))
+	return node, Aglasterr()
 }
 
-func Agsubnodef(g *Agraph, n *Agnode, createFlag int) *Agnode {
-	return ToAgnode(C.agsubnode(g.c, n.c, C.int(createFlag)))
+func Agsubnodef(g *Agraph, n *Agnode, createFlag int) (*Agnode, error) {
+	node := ToAgnode(C.agsubnode(g.c, n.c, C.int(createFlag)))
+	return node, Aglasterr()
 }
 
 func Agfstnode(g *Agraph) *Agnode {
@@ -928,20 +938,24 @@ func Agsubrep(g *Agraph, n *Agnode) *Agsubnode {
 	return ToAgsubnode(C.agsubrep(g.c, n.c))
 }
 
-func Agnodebefore(u *Agnode, v *Agnode) int {
-	return int(C.agnodebefore(u.c, v.c))
+func Agnodebefore(u *Agnode, v *Agnode) error {
+	C.agnodebefore(u.c, v.c)
+	return Aglasterr()
 }
 
-func Agedgef(g *Agraph, t *Agnode, h *Agnode, name string, createFlag int) *Agedge {
-	return ToAgedge(C.agedge(g.c, t.c, h.c, C.CString(name), C.int(createFlag)))
+func Agedgef(g *Agraph, t *Agnode, h *Agnode, name string, createFlag int) (*Agedge, error) {
+	edge := ToAgedge(C.agedge(g.c, t.c, h.c, C.CString(name), C.int(createFlag)))
+	return edge, Aglasterr()
 }
 
-func Agidedge(g *Agraph, t *Agnode, h *Agnode, id uint64, createFlag int) *Agedge {
-	return ToAgedge(C.agidedge(g.c, t.c, h.c, C.ulonglong(id), C.int(createFlag)))
+func Agidedge(g *Agraph, t *Agnode, h *Agnode, id uint64, createFlag int) (*Agedge, error) {
+	edge := ToAgedge(C.agidedge(g.c, t.c, h.c, C.ulonglong(id), C.int(createFlag)))
+	return edge, Aglasterr()
 }
 
-func Agsubedge(g *Agraph, e *Agedge, createFlag int) *Agedge {
-	return ToAgedge(C.agsubedge(g.c, e.c, C.int(createFlag)))
+func Agsubedge(g *Agraph, e *Agedge, createFlag int) (*Agedge, error) {
+	edge := ToAgedge(C.agsubedge(g.c, e.c, C.int(createFlag)))
+	return edge, Aglasterr()
 }
 
 func Agfstin(g *Agraph, n *Agnode) *Agedge {
@@ -968,20 +982,22 @@ func Agnxtedge(g *Agraph, e *Agedge, n *Agnode) *Agedge {
 	return ToAgedge(C.agnxtedge(g.c, e.c, n.c))
 }
 
-func Agcontains(g *Agraph, p unsafe.Pointer) int {
-	return int(C.agcontains(g.c, p))
+func Agcontains(g *Agraph, p unsafe.Pointer) bool {
+	return C.agcontains(g.c, p) == 1
 }
 
 func Agnameof(p unsafe.Pointer) string {
 	return C.GoString(C.agnameof(p))
 }
 
-func AgrelabelNode(n *Agnode, newname string) int {
-	return int(C.agrelabel_node(n.c, C.CString(newname)))
+func AgrelabelNode(n *Agnode, newname string) error {
+	C.agrelabel_node(n.c, C.CString(newname))
+	return Aglasterr()
 }
 
-func Agdelete(g *Agraph, obj unsafe.Pointer) int {
-	return int(C.agdelete(g.c, obj))
+func Agdelete(g *Agraph, obj unsafe.Pointer) error {
+	C.agdelete(g.c, obj)
+	return Aglasterr()
 }
 
 func Agdelsubg(g *Agraph, sub *Agraph) int32 {
@@ -1142,4 +1158,18 @@ func Agflatten(g *Agraph, flag int) {
 
 func Aginternalmapclearlocalnames(g *Agraph) {
 	C.aginternalmapclearlocalnames(g.c)
+}
+
+func Aglasterr() error {
+	s := C.aglasterr()
+	if s == nil {
+		return nil
+	}
+	v := C.GoString(s)
+	C.free(unsafe.Pointer(s))
+	return errors.New(v)
+}
+
+func init() {
+	C.agseterr(C.AGMAX)
 }

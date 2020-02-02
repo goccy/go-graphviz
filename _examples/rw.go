@@ -9,14 +9,28 @@ import (
 
 func renderDOTGraph() ([]byte, error) {
 	g := graphviz.New()
-	graph := g.Graph()
+	graph, err := g.Graph()
+	if err != nil {
+		return nil, err
+	}
 	defer func() {
-		graph.Close()
+		if err := graph.Close(); err != nil {
+			log.Fatal(err)
+		}
 		g.Close()
 	}()
-	n := graph.CreateNode("n")
-	m := graph.CreateNode("m")
-	e := graph.CreateEdge("e", n, m)
+	n, err := graph.CreateNode("n")
+	if err != nil {
+		return nil, err
+	}
+	m, err := graph.CreateNode("m")
+	if err != nil {
+		return nil, err
+	}
+	e, err := graph.CreateEdge("e", n, m)
+	if err != nil {
+		return nil, err
+	}
 	e.SetLabel("e")
 	var buf bytes.Buffer
 	if err := g.Render(graph, "dot", &buf); err != nil {
@@ -25,20 +39,41 @@ func renderDOTGraph() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func main() {
+func _main() error {
 	graphBytes, err := renderDOTGraph()
 	if err != nil {
-		log.Fatalf("%+v", err)
+		return err
 	}
-	graph := graphviz.ParseBytes(graphBytes)
-	n := graph.Node("n")
-	l := graph.CreateNode("l")
-	e2 := graph.CreateEdge("e2", n, l)
+	graph, err := graphviz.ParseBytes(graphBytes)
+	if err != nil {
+		return err
+	}
+	n, err := graph.Node("n")
+	if err != nil {
+		return err
+	}
+	l, err := graph.CreateNode("l")
+	if err != nil {
+		return err
+	}
+	e2, err := graph.CreateEdge("e2", n, l)
+	if err != nil {
+		return err
+	}
 	e2.SetLabel("e2")
 	g := graphviz.New()
 	defer func() {
-		graph.Close()
+		if err := graph.Close(); err != nil {
+			log.Fatal(err)
+		}
 		g.Close()
 	}()
 	g.RenderFilename(graph, "png", "rw.png")
+	return nil
+}
+
+func main() {
+	if err := _main(); err != nil {
+		log.Fatalf("%+v", err)
+	}
 }
