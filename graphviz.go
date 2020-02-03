@@ -40,6 +40,15 @@ const (
 	TWOPI     Layout = "twopi"
 )
 
+type Format string
+
+const (
+	XDOT Format = "dot"
+	SVG  Format = "svg"
+	PNG  Format = "png"
+	JPG  Format = "jpg"
+)
+
 func ParseFile(path string) (*Graph, error) {
 	graph, err := cgraph.ParseFile(path)
 	if err != nil {
@@ -94,7 +103,7 @@ func (g *Graphviz) SetLayout(layout Layout) *Graphviz {
 	return g
 }
 
-func (g *Graphviz) Render(graph *Graph, format string, w io.Writer) (e error) {
+func (g *Graphviz) Render(graph *Graph, format Format, w io.Writer) (e error) {
 	if err := g.ctx.Layout(graph.graph, string(g.layout)); err != nil {
 		return err
 	}
@@ -104,13 +113,13 @@ func (g *Graphviz) Render(graph *Graph, format string, w io.Writer) (e error) {
 		}
 	}()
 
-	if err := g.ctx.RenderData(graph.graph, format, w); err != nil {
+	if err := g.ctx.RenderData(graph.graph, string(format), w); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (g *Graphviz) RenderImage(graph *Graph, format string) (img image.Image, e error) {
+func (g *Graphviz) RenderImage(graph *Graph, format Format) (img image.Image, e error) {
 	if err := g.ctx.Layout(graph.graph, string(g.layout)); err != nil {
 		return nil, err
 	}
@@ -119,14 +128,14 @@ func (g *Graphviz) RenderImage(graph *Graph, format string) (img image.Image, e 
 			e = err
 		}
 	}()
-	image, err := g.ctx.RenderImage(graph.graph, format)
+	image, err := g.ctx.RenderImage(graph.graph, string(format))
 	if err != nil {
 		return nil, err
 	}
 	return image, nil
 }
 
-func (g *Graphviz) RenderFilename(graph *Graph, format, path string) (e error) {
+func (g *Graphviz) RenderFilename(graph *Graph, format Format, path string) (e error) {
 	if err := g.ctx.Layout(graph.graph, string(g.layout)); err != nil {
 		return err
 	}
@@ -136,7 +145,7 @@ func (g *Graphviz) RenderFilename(graph *Graph, format, path string) (e error) {
 		}
 	}()
 
-	if err := g.ctx.RenderFilename(graph.graph, format, path); err != nil {
+	if err := g.ctx.RenderFilename(graph.graph, string(format), path); err != nil {
 		return err
 	}
 	return nil

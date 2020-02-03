@@ -27,7 +27,7 @@ static gvplugin_api_t go_apis[] = {
 
 gvplugin_library_t gvplugin_go_library = { "go", go_apis };
 
-typedef enum { FORMAT_PNG } go_format_type;
+typedef enum { FORMAT_PNG, FORMAT_JPG } go_format_type;
 
 #include "_cgo_export.h"
 
@@ -258,7 +258,7 @@ static gvrender_features_t render_features_go = {
     RGBA_BYTE, /* color_type */
 };
 
-static gvdevice_features_t go_device_features_png = {
+static gvdevice_features_t go_device_features = {
     GVDEVICE_BINARY_FORMAT | GVDEVICE_DOES_TRUECOLOR, /* flags */
     {0.,0.},   /* default margin - points */
     {0.,0.},   /* default page width, height - points */
@@ -267,10 +267,12 @@ static gvdevice_features_t go_device_features_png = {
 
 gvplugin_installed_t gvrender_go_types[] = {
     {FORMAT_PNG, "png", 1, &go_engine, &render_features_go},
+    {FORMAT_JPG, "jpg", 1, &go_engine, &render_features_go},
     {0, NULL, 0, NULL, NULL}
 };
 
 gvplugin_installed_t gvdevice_go_types[] = {
-    {FORMAT_PNG, "png:png", 1, NULL, &go_device_features_png},
+    {FORMAT_PNG, "png:png", 1, NULL, &go_device_features},
+    {FORMAT_JPG, "jpg:jpg", 1, NULL, &go_device_features},
     {0, NULL, 0, NULL, NULL}
 };
