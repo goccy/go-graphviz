@@ -22,6 +22,7 @@ package ccall
 #cgo CFLAGS: -Itwopigen
 #cgo CFLAGS: -I../
 #cgo CFLAGS: -I../libltdl
+#cgo CFLAGS: -Wno-unused-result -Wno-format
 #include "cdt.h"
 
 extern void *call_searchf(Dtsearch_f searchf, Dt_t *a0, void *a1, int a2);
