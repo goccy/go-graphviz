@@ -22,7 +22,6 @@ package ccall
 #cgo CFLAGS: -Itwopigen
 #cgo CFLAGS: -I../
 #cgo CFLAGS: -I../libltdl
-#cgo LDFLAGS: -lexpat -lz
 #include "cgraph.h"
 #include <stdlib.h>
 
@@ -101,7 +100,7 @@ func (g *Agtag) ID() uint64 {
 }
 
 func (g *Agtag) SetID(v uint64) {
-	g.c.id = C.ulonglong(v)
+	g.c.id = C.IDTYPE(v)
 }
 
 type Agobj struct {
@@ -511,9 +510,9 @@ func (g *Agclos) Seq() [3]uint64 {
 }
 
 func (g *Agclos) SetSeq(v []uint64) {
-	g.c.seq[0] = C.ulonglong(v[0])
-	g.c.seq[1] = C.ulonglong(v[1])
-	g.c.seq[2] = C.ulonglong(v[2])
+	g.c.seq[0] = C.uint64_t(v[0])
+	g.c.seq[1] = C.uint64_t(v[1])
+	g.c.seq[2] = C.uint64_t(v[2])
 }
 
 func (g *Agclos) Cb() *Agcbstack {
@@ -914,7 +913,7 @@ func Agnodef(g *Agraph, name string, createFlag int) (*Agnode, error) {
 }
 
 func Agidnode(g *Agraph, id uint64, createFlag int) (*Agnode, error) {
-	node := ToAgnode(C.agidnode(g.c, C.ulonglong(id), C.int(createFlag)))
+	node := ToAgnode(C.agidnode(g.c, C.IDTYPE(id), C.int(createFlag)))
 	return node, Aglasterr()
 }
 
@@ -954,7 +953,7 @@ func Agedgef(g *Agraph, t *Agnode, h *Agnode, name string, createFlag int) (*Age
 }
 
 func Agidedge(g *Agraph, t *Agnode, h *Agnode, id uint64, createFlag int) (*Agedge, error) {
-	edge := ToAgedge(C.agidedge(g.c, t.c, h.c, C.ulonglong(id), C.int(createFlag)))
+	edge := ToAgedge(C.agidedge(g.c, t.c, h.c, C.IDTYPE(id), C.int(createFlag)))
 	return edge, Aglasterr()
 }
 
@@ -1114,7 +1113,7 @@ func Agsubg(g *Agraph, name string, cflag int) *Agraph {
 }
 
 func Agidsubg(g *Agraph, id uint64, cflag int) *Agraph {
-	return ToAgraph(C.agidsubg(g.c, C.ulonglong(id), C.int(cflag)))
+	return ToAgraph(C.agidsubg(g.c, C.IDTYPE(id), C.int(cflag)))
 }
 
 func Agfstsubg(g *Agraph) *Agraph {

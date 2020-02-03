@@ -9,8 +9,8 @@ import (
 )
 
 type Option struct {
-	Format     string `description:"specify output format ( currently supported: dot svg png )" short:"T" default:"dot"`
-	OutputFile string `description:"specify output file name" short:"o" required:"true"`
+	Format     graphviz.Format `description:"specify output format ( currently supported: dot svg png )" short:"T" default:"dot"`
+	OutputFile string          `description:"specify output file name" short:"o" required:"true"`
 }
 
 func _main(args []string, opt *Option) error {
