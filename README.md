@@ -42,7 +42,7 @@ func main() {
   g := graphviz.New()
   graph, err := g.Graph()
   if err != nil {
-    return err
+    log.Fatal(err)
   }
   defer func() {
     if err := graph.Close(); err != nil {
