@@ -25,6 +25,11 @@ package ccall
 #cgo LDFLAGS: -lexpat -lz
 #include "cgraph.h"
 #include <stdlib.h>
+
+void seterr(char *msg)
+{
+  agerr(AGERR, msg);
+}
 */
 import "C"
 import (
@@ -1168,6 +1173,12 @@ func Aglasterr() error {
 	v := C.GoString(s)
 	C.free(unsafe.Pointer(s))
 	return errors.New(v)
+}
+
+func Agerr(msg string) {
+	s := C.CString(msg)
+	C.seterr(s)
+	C.free(unsafe.Pointer(s))
 }
 
 func init() {

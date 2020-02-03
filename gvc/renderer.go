@@ -1,7 +1,6 @@
 package gvc
 
 import (
-	"log"
 	"sync"
 
 	"github.com/goccy/go-graphviz/internal/ccall"
@@ -80,15 +79,25 @@ func (*DefaultRenderer) LibraryShape(job *Job, name string, a []Pointf, filled i
 	return nil
 }
 
+type rendererWithError struct {
+	renderer Renderer
+	err      error
+}
+
+func (r *rendererWithError) setError(err error) {
+	r.err = err
+	ccall.Agerr(err.Error())
+}
+
 var (
-	renderers = map[string]Renderer{}
+	renderers = map[string]*rendererWithError{}
 	mu        sync.Mutex
 )
 
 func RegisterRenderer(name string, renderer Renderer) {
 	mu.Lock()
 	defer mu.Unlock()
-	renderers[name] = renderer
+	renderers[name] = &rendererWithError{renderer: renderer}
 }
 
 type Point struct {
@@ -122,358 +131,331 @@ type TextSpan struct {
 	*ccall.TextSpan
 }
 
-func dispatchRenderer(job *ccall.GVJ) (Renderer, error) {
+func dispatchRenderer(job *ccall.GVJ) *rendererWithError {
 	name := job.OutputLangname()
-	renderer, exists := renderers[name]
+	r, exists := renderers[name]
 	if !exists {
-		return nil, errors.Errorf("could not find renderer for %s", name)
+		r := &rendererWithError{}
+		r.setError(errors.Errorf("could not find renderer for %s", name))
+		renderers[name] = r
+		return r
 	}
-	return renderer, nil
+	return r
 }
 
-//TODO: return error instance to callee
-
 func beginJob(job *ccall.GVJ) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	r := dispatchRenderer(job)
+	if r.err != nil {
 		return
 	}
-	if err := renderer.BeginJob(&Job{GVJ: job}); err != nil {
-		log.Print(err)
+	if err := r.renderer.BeginJob(&Job{GVJ: job}); err != nil {
+		r.setError(err)
 	}
 }
 
 func endJob(job *ccall.GVJ) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	r := dispatchRenderer(job)
+	if r.err != nil {
 		return
 	}
-	if err := renderer.EndJob(&Job{GVJ: job}); err != nil {
-		log.Print(err)
+	if err := r.renderer.EndJob(&Job{GVJ: job}); err != nil {
+		r.setError(err)
 	}
 }
 
 func beginGraph(job *ccall.GVJ) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	r := dispatchRenderer(job)
+	if r.err != nil {
 		return
 	}
-	if err := renderer.BeginGraph(&Job{GVJ: job}); err != nil {
-		log.Print(err)
+	if err := r.renderer.BeginGraph(&Job{GVJ: job}); err != nil {
+		r.setError(err)
 	}
 }
 
 func endGraph(job *ccall.GVJ) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	r := dispatchRenderer(job)
+	if r.err != nil {
 		return
 	}
-	renderer.EndGraph(&Job{GVJ: job})
+	if err := r.renderer.EndGraph(&Job{GVJ: job}); err != nil {
+		r.setError(err)
+	}
 }
 
 func beginLayer(job *ccall.GVJ, layerName string, layerNum int, numLayers int) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	r := dispatchRenderer(job)
+	if r.err != nil {
 		return
 	}
-	if err := renderer.BeginLayer(&Job{GVJ: job}, layerName, layerNum, numLayers); err != nil {
-		log.Print(err)
+	if err := r.renderer.BeginLayer(&Job{GVJ: job}, layerName, layerNum, numLayers); err != nil {
+		r.setError(err)
 	}
 }
 
 func endLayer(job *ccall.GVJ) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	r := dispatchRenderer(job)
+	if r.err != nil {
 		return
 	}
-	if err := renderer.EndLayer(&Job{GVJ: job}); err != nil {
-		log.Print(err)
+	if err := r.renderer.EndLayer(&Job{GVJ: job}); err != nil {
+		r.setError(err)
 	}
 }
 
 func beginPage(job *ccall.GVJ) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	r := dispatchRenderer(job)
+	if r.err != nil {
 		return
 	}
-	if err := renderer.BeginPage(&Job{GVJ: job}); err != nil {
-		log.Print(err)
+	if err := r.renderer.BeginPage(&Job{GVJ: job}); err != nil {
+		r.setError(err)
 	}
 }
 
 func endPage(job *ccall.GVJ) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	r := dispatchRenderer(job)
+	if r.err != nil {
 		return
 	}
-	if err := renderer.EndPage(&Job{GVJ: job}); err != nil {
-		log.Print(err)
+	if err := r.renderer.EndPage(&Job{GVJ: job}); err != nil {
+		r.setError(err)
 	}
 }
 
 func beginCluster(job *ccall.GVJ) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	r := dispatchRenderer(job)
+	if r.err != nil {
 		return
 	}
-	if err := renderer.BeginCluster(&Job{GVJ: job}); err != nil {
-		log.Print(err)
+	if err := r.renderer.BeginCluster(&Job{GVJ: job}); err != nil {
+		r.setError(err)
 	}
 }
 
 func endCluster(job *ccall.GVJ) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	r := dispatchRenderer(job)
+	if r.err != nil {
 		return
 	}
-	if err := renderer.EndCluster(&Job{GVJ: job}); err != nil {
-		log.Print(err)
+	if err := r.renderer.EndCluster(&Job{GVJ: job}); err != nil {
+		r.setError(err)
 	}
 }
 
 func beginNodes(job *ccall.GVJ) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	r := dispatchRenderer(job)
+	if r.err != nil {
 		return
 	}
-	if err := renderer.BeginNodes(&Job{GVJ: job}); err != nil {
-		log.Print(err)
+	if err := r.renderer.BeginNodes(&Job{GVJ: job}); err != nil {
+		r.setError(err)
 	}
 }
 
 func endNodes(job *ccall.GVJ) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	r := dispatchRenderer(job)
+	if r.err != nil {
 		return
 	}
-	if err := renderer.EndNodes(&Job{GVJ: job}); err != nil {
-		log.Print(err)
+	if err := r.renderer.EndNodes(&Job{GVJ: job}); err != nil {
+		r.setError(err)
 	}
 }
 
 func beginEdges(job *ccall.GVJ) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	r := dispatchRenderer(job)
+	if r.err != nil {
 		return
 	}
-	if err := renderer.BeginEdges(&Job{GVJ: job}); err != nil {
-		log.Print(err)
+	if err := r.renderer.BeginEdges(&Job{GVJ: job}); err != nil {
+		r.setError(err)
 	}
 }
 
 func endEdges(job *ccall.GVJ) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	r := dispatchRenderer(job)
+	if r.err != nil {
 		return
 	}
-	if err := renderer.EndEdges(&Job{GVJ: job}); err != nil {
-		log.Print(err)
+	if err := r.renderer.EndEdges(&Job{GVJ: job}); err != nil {
+		r.setError(err)
 	}
 }
 
 func beginNode(job *ccall.GVJ) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	r := dispatchRenderer(job)
+	if r.err != nil {
 		return
 	}
-	if err := renderer.BeginNode(&Job{GVJ: job}); err != nil {
-		log.Print(err)
+	if err := r.renderer.BeginNode(&Job{GVJ: job}); err != nil {
+		r.setError(err)
 	}
 }
 
 func endNode(job *ccall.GVJ) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	r := dispatchRenderer(job)
+	if r.err != nil {
 		return
 	}
-	if err := renderer.EndNode(&Job{GVJ: job}); err != nil {
-		log.Print(err)
+	if err := r.renderer.EndNode(&Job{GVJ: job}); err != nil {
+		r.setError(err)
 	}
 }
 
 func beginEdge(job *ccall.GVJ) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	r := dispatchRenderer(job)
+	if r.err != nil {
 		return
 	}
-	if err := renderer.BeginEdge(&Job{GVJ: job}); err != nil {
-		log.Print(err)
+	if err := r.renderer.BeginEdge(&Job{GVJ: job}); err != nil {
+		r.setError(err)
 	}
 }
 
 func endEdge(job *ccall.GVJ) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	r := dispatchRenderer(job)
+	if r.err != nil {
 		return
 	}
-	if err := renderer.EndEdge(&Job{GVJ: job}); err != nil {
-		log.Print(err)
+	if err := r.renderer.EndEdge(&Job{GVJ: job}); err != nil {
+		r.setError(err)
 	}
 }
 
 func beginAnchor(job *ccall.GVJ, href, tooltip, target, id string) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	r := dispatchRenderer(job)
+	if r.err != nil {
 		return
 	}
-	if err := renderer.BeginAnchor(&Job{GVJ: job}, href, tooltip, target, id); err != nil {
-		log.Print(err)
+	if err := r.renderer.BeginAnchor(&Job{GVJ: job}, href, tooltip, target, id); err != nil {
+		r.setError(err)
 	}
 }
 
 func endAnchor(job *ccall.GVJ) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	r := dispatchRenderer(job)
+	if r.err != nil {
 		return
 	}
-	if err := renderer.EndAnchor(&Job{GVJ: job}); err != nil {
-		log.Print(err)
+	if err := r.renderer.EndAnchor(&Job{GVJ: job}); err != nil {
+		r.setError(err)
 	}
 }
 
 func beginLabel(job *ccall.GVJ, typ int) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	r := dispatchRenderer(job)
+	if r.err != nil {
 		return
 	}
-	if err := renderer.BeginLabel(&Job{GVJ: job}, typ); err != nil {
-		log.Print(err)
+	if err := r.renderer.BeginLabel(&Job{GVJ: job}, typ); err != nil {
+		r.setError(err)
 	}
 }
 
 func endLabel(job *ccall.GVJ) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	r := dispatchRenderer(job)
+	if r.err != nil {
 		return
 	}
-	if err := renderer.EndLabel(&Job{GVJ: job}); err != nil {
-		log.Print(err)
+	if err := r.renderer.EndLabel(&Job{GVJ: job}); err != nil {
+		r.setError(err)
 	}
 }
 
 func textspan(job *ccall.GVJ, p ccall.Pointf, span *ccall.TextSpan) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	r := dispatchRenderer(job)
+	if r.err != nil {
 		return
 	}
-	if err := renderer.TextSpan(&Job{GVJ: job}, Pointf{X: p.X, Y: p.Y}, &TextSpan{TextSpan: span}); err != nil {
-		log.Print(err)
+	if err := r.renderer.TextSpan(&Job{GVJ: job}, Pointf{X: p.X, Y: p.Y}, &TextSpan{TextSpan: span}); err != nil {
+		r.setError(err)
 	}
 }
 
 func resolveColor(job *ccall.GVJ, r, g, b, a uint) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	renderer := dispatchRenderer(job)
+	if renderer.err != nil {
 		return
 	}
-	if err := renderer.ResolveColor(&Job{GVJ: job}, Color{R: r, G: g, B: b, A: a}); err != nil {
-		log.Print(err)
+	if err := renderer.renderer.ResolveColor(&Job{GVJ: job}, Color{R: r, G: g, B: b, A: a}); err != nil {
+		renderer.setError(err)
 	}
 }
 
 func ellipse(job *ccall.GVJ, a0, a1 ccall.Pointf, filled int) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	r := dispatchRenderer(job)
+	if r.err != nil {
 		return
 	}
-	if err := renderer.Ellipse(&Job{GVJ: job}, Pointf{X: a0.X, Y: a0.Y}, Pointf{X: a1.X, Y: a1.Y}, filled); err != nil {
-		log.Print(err)
+	if err := r.renderer.Ellipse(&Job{GVJ: job}, Pointf{X: a0.X, Y: a0.Y}, Pointf{X: a1.X, Y: a1.Y}, filled); err != nil {
+		r.setError(err)
 	}
 }
 
 func polygon(job *ccall.GVJ, a []ccall.Pointf, filled int) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	r := dispatchRenderer(job)
+	if r.err != nil {
 		return
 	}
 	v := make([]Pointf, len(a))
 	for idx, aa := range a {
 		v[idx] = Pointf{X: aa.X, Y: aa.Y}
 	}
-	if err := renderer.Polygon(&Job{GVJ: job}, v, filled); err != nil {
-		log.Print(err)
+	if err := r.renderer.Polygon(&Job{GVJ: job}, v, filled); err != nil {
+		r.setError(err)
 	}
 }
 
 func beziercurve(job *ccall.GVJ, a []ccall.Pointf, arrowAtStart, arrowAtEnd, ext int) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	r := dispatchRenderer(job)
+	if r.err != nil {
 		return
 	}
 	v := make([]Pointf, len(a))
 	for idx, aa := range a {
 		v[idx] = Pointf{X: aa.X, Y: aa.Y}
 	}
-	if err := renderer.BezierCurve(&Job{GVJ: job}, v, arrowAtStart, arrowAtEnd); err != nil {
-		log.Print(err)
+	if err := r.renderer.BezierCurve(&Job{GVJ: job}, v, arrowAtStart, arrowAtEnd); err != nil {
+		r.setError(err)
 	}
 }
 
 func polyline(job *ccall.GVJ, a []ccall.Pointf) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	r := dispatchRenderer(job)
+	if r.err != nil {
 		return
 	}
 	v := make([]Pointf, len(a))
 	for idx, aa := range a {
 		v[idx] = Pointf{X: aa.X, Y: aa.Y}
 	}
-	if err := renderer.Polyline(&Job{GVJ: job}, v); err != nil {
-		log.Print(err)
+	if err := r.renderer.Polyline(&Job{GVJ: job}, v); err != nil {
+		r.setError(err)
 	}
 }
 
 func comment(job *ccall.GVJ, comment string) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	r := dispatchRenderer(job)
+	if r.err != nil {
 		return
 	}
-	if err := renderer.Comment(&Job{GVJ: job}, comment); err != nil {
-		log.Print(err)
+	if err := r.renderer.Comment(&Job{GVJ: job}, comment); err != nil {
+		r.setError(err)
 	}
 }
 
 func libraryShape(job *ccall.GVJ, name string, a []ccall.Pointf, filled int) {
-	renderer, err := dispatchRenderer(job)
-	if err != nil {
-		log.Print(err)
+	r := dispatchRenderer(job)
+	if r.err != nil {
 		return
 	}
 	v := make([]Pointf, len(a))
 	for idx, aa := range a {
 		v[idx] = Pointf{X: aa.X, Y: aa.Y}
 	}
-	if err := renderer.LibraryShape(&Job{GVJ: job}, name, v, filled); err != nil {
-		log.Print(err)
+	if err := r.renderer.LibraryShape(&Job{GVJ: job}, name, v, filled); err != nil {
+		r.setError(err)
 	}
 }
 

@@ -731,12 +731,14 @@ func GvPluginsGraph(gvc *GVC) *Agraph {
 	return ToAgraph(C.gvPluginsGraph(gvc.C()))
 }
 
-func GvLayout(gvc *GVC, g *Agraph, engine string) int {
-	return int(C.gvLayout(gvc.C(), g.C(), C.CString(engine)))
+func GvLayout(gvc *GVC, g *Agraph, engine string) error {
+	C.gvLayout(gvc.C(), g.C(), C.CString(engine))
+	return Aglasterr()
 }
 
-func GvLayoutJobs(gvc *GVC, g *Agraph) int {
-	return int(C.gvLayoutJobs(gvc.C(), g.C()))
+func GvLayoutJobs(gvc *GVC, g *Agraph) error {
+	C.gvLayoutJobs(gvc.C(), g.C())
+	return Aglasterr()
 }
 
 func AttachAttrs(g *Agraph) {
@@ -749,6 +751,10 @@ func GvRenderData(gvc *GVC, g *Agraph, format string, w io.Writer) error {
 		length C.uint
 	)
 	C.gvRenderData(gvc.C(), g.C(), C.CString(format), &buf, &length)
+	if err := Aglasterr(); err != nil {
+		return err
+	}
+	defer C.gvFreeRenderData(buf)
 	var gobuf []byte
 	header := (*reflect.SliceHeader)(unsafe.Pointer(&gobuf))
 	header.Cap = int(length)
@@ -757,32 +763,36 @@ func GvRenderData(gvc *GVC, g *Agraph, format string, w io.Writer) error {
 	if _, err := w.Write(gobuf); err != nil {
 		return err
 	}
-	C.gvFreeRenderData(buf)
 	return nil
 }
 
-func GvRenderFilename(gvc *GVC, g *Agraph, format, filename string) int {
-	return int(C.gvRenderFilename(gvc.C(), g.C(), C.CString(format), C.CString(filename)))
+func GvRenderFilename(gvc *GVC, g *Agraph, format, filename string) error {
+	C.gvRenderFilename(gvc.C(), g.C(), C.CString(format), C.CString(filename))
+	return Aglasterr()
 }
 
-func GvRenderContext(gvc *GVC, g *Agraph, format string, context unsafe.Pointer) int {
-	return int(C.gvRenderContext(gvc.C(), g.C(), C.CString(format), context))
+func GvRenderContext(gvc *GVC, g *Agraph, format string, context unsafe.Pointer) error {
+	C.gvRenderContext(gvc.C(), g.C(), C.CString(format), context)
+	return Aglasterr()
 }
 
-func GvRenderJobs(gvc *GVC, g *Agraph) int {
-	return int(C.gvRenderJobs(gvc.C(), g.C()))
+func GvRenderJobs(gvc *GVC, g *Agraph) error {
+	C.gvRenderJobs(gvc.C(), g.C())
+	return Aglasterr()
 }
 
-func GvFreeLayout(gvc *GVC, g *Agraph) int {
-	return int(C.gvFreeLayout(gvc.C(), g.C()))
+func GvFreeLayout(gvc *GVC, g *Agraph) error {
+	C.gvFreeLayout(gvc.C(), g.C())
+	return Aglasterr()
 }
 
 func GvFinalize(gvc *GVC) {
 	C.gvFinalize(gvc.C())
 }
 
-func GvFreeContext(gvc *GVC) int {
-	return int(C.gvFreeContext(gvc.C()))
+func GvFreeContext(gvc *GVC) error {
+	C.gvFreeContext(gvc.C())
+	return Aglasterr()
 }
 
 func GvToolTred(g *Agraph) int {
