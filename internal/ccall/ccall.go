@@ -22,7 +22,7 @@ package ccall
 #cgo CFLAGS: -Itwopigen
 #cgo CFLAGS: -I../
 #cgo CFLAGS: -I../libltdl
-#cgo LDFLAGS: -lexpat -lz
+#cgo LDFLAGS: -lm
 #include "gvc.h"
 #include "color.h"
 #include "gvcjob.h"

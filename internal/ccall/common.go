@@ -22,7 +22,6 @@ package ccall
 #cgo CFLAGS: -Itwopigen
 #cgo CFLAGS: -I../
 #cgo CFLAGS: -I../libltdl
-#cgo LDFLAGS: -lexpat -lz
 #include "gvc.h"
 #include "gvcjob.h"
 #include "textspan.h"
