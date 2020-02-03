@@ -1,4 +1,4 @@
-package graphviz
+package cgraph
 
 import "fmt"
 
@@ -193,7 +193,7 @@ func toBoolString(v bool) string {
 // By being less than 1.0, the system tends to ``cool'', thereby preventing cycling.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:Damping
 func (g *Graph) SetDamping(v float64) *Graph {
-	g.graph.SafeSet(string(dampingAttr), fmt.Sprint(v), "0.99")
+	g.SafeSet(string(dampingAttr), fmt.Sprint(v), "0.99")
 	return g
 }
 
@@ -203,7 +203,7 @@ func (g *Graph) SetDamping(v float64) *Graph {
 // Note that the edge attribute len can be used to override this value for adjacent nodes.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:K
 func (g *Graph) SetK(v float64) *Graph {
-	g.graph.SafeSet(string(kAttr), fmt.Sprint(v), "0.3")
+	g.SafeSet(string(kAttr), fmt.Sprint(v), "0.3")
 	return g
 }
 
@@ -227,7 +227,7 @@ func (g *Graph) SetK(v float64) *Graph {
 // Also note that, if active areas of two edges overlap, it is unspecified which area dominates.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:URL
 func (g *Graph) SetURL(v string) *Graph {
-	g.graph.SafeSet(string(urlAttr), v, "")
+	g.SafeSet(string(urlAttr), v, "")
 	return g
 }
 
@@ -251,7 +251,7 @@ func (g *Graph) SetURL(v string) *Graph {
 // Also note that, if active areas of two edges overlap, it is unspecified which area dominates.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:URL
 func (n *Node) SetURL(v string) *Node {
-	n.node.SafeSet(string(urlAttr), v, "")
+	n.SafeSet(string(urlAttr), v, "")
 	return n
 }
 
@@ -275,7 +275,7 @@ func (n *Node) SetURL(v string) *Node {
 // Also note that, if active areas of two edges overlap, it is unspecified which area dominates.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:URL
 func (e *Edge) SetURL(v string) *Edge {
-	e.edge.SafeSet(string(urlAttr), v, "")
+	e.SafeSet(string(urlAttr), v, "")
 	return e
 }
 
@@ -285,7 +285,7 @@ func (e *Edge) SetURL(v string) *Edge {
 // Then, if _background is defined, the graphics operations described in the string are performed on the canvas.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:_background
 func (g *Graph) SetBackground(v string) *Graph {
-	g.graph.SafeSet(string(backgroundAttr), v, "")
+	g.SafeSet(string(backgroundAttr), v, "")
 	return g
 }
 
@@ -293,7 +293,7 @@ func (g *Graph) SetBackground(v string) *Graph {
 // Indicates the preferred area for a node or empty cluster when laid out by patchwork.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:area
 func (n *Node) SetArea(v float64) *Node {
-	n.node.SafeSet(string(areaAttr), fmt.Sprint(v), "1.0")
+	n.SafeSet(string(areaAttr), fmt.Sprint(v), "1.0")
 	return n
 }
 
@@ -326,7 +326,7 @@ const (
 // This will only appear if the dir attribute is "forward" or "both".
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:arrowhead
 func (e *Edge) SetArrowHead(v ArrowType) *Edge {
-	e.edge.SafeSet(string(arrowHeadAttr), string(v), string(NormalArrow))
+	e.SafeSet(string(arrowHeadAttr), string(v), string(NormalArrow))
 	return e
 }
 
@@ -334,7 +334,7 @@ func (e *Edge) SetArrowHead(v ArrowType) *Edge {
 // Multiplicative scale factor for arrowheads.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:arrowsize
 func (e *Edge) SetArrowSize(v float64) *Edge {
-	e.edge.SafeSet(string(arrowSizeAttr), fmt.Sprint(v), "1.0")
+	e.SafeSet(string(arrowSizeAttr), fmt.Sprint(v), "1.0")
 	return e
 }
 
@@ -343,7 +343,7 @@ func (e *Edge) SetArrowSize(v float64) *Edge {
 // This will only appear if the dir attribute is "back" or "both".
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:arrowtail
 func (e *Edge) SetArrowTail(v ArrowType) *Edge {
-	e.edge.SafeSet(string(arrowTailAttr), string(v), string(NormalArrow))
+	e.SafeSet(string(arrowTailAttr), string(v), string(NormalArrow))
 	return e
 }
 
@@ -351,7 +351,7 @@ func (e *Edge) SetArrowTail(v ArrowType) *Edge {
 // Bounding box of drawing in points.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:bb
 func (g *Graph) SetBB(llx, lly, urx, ury float64) *Graph {
-	g.graph.SafeSet(string(bbAttr), fmt.Sprintf("%f,%f,%f,%f", llx, lly, urx, ury), "")
+	g.SafeSet(string(bbAttr), fmt.Sprintf("%f,%f,%f,%f", llx, lly, urx, ury), "")
 	return g
 }
 
@@ -372,7 +372,7 @@ func (g *Graph) SetBB(llx, lly, urx, ury float64) *Graph {
 // If this effect is not desired, and you only want to set bits explicitly assigned in drawing the graph, set bgcolor="transparent".
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:bgcolor
 func (g *Graph) SetBackgroundColor(v string) *Graph {
-	g.graph.SafeSet(string(bgcolorAttr), v, "")
+	g.SafeSet(string(bgcolorAttr), v, "")
 	return g
 }
 
@@ -380,7 +380,7 @@ func (g *Graph) SetBackgroundColor(v string) *Graph {
 // If true, the drawing is centered in the output canvas.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:center
 func (g *Graph) SetCenter(v bool) *Graph {
-	g.graph.SafeSet(string(centerAttr), toBoolString(v), falseStr)
+	g.SafeSet(string(centerAttr), toBoolString(v), falseStr)
 	return g
 }
 
@@ -392,7 +392,7 @@ func (g *Graph) SetCenter(v bool) *Graph {
 // Note that if the character encoding used in the input does not match the charset value, the resulting output may be very strange.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:charset
 func (g *Graph) SetCharset(v string) *Graph {
-	g.graph.SafeSet(string(charsetAttr), v, "UTF-8")
+	g.SafeSet(string(charsetAttr), v, "UTF-8")
 	return g
 }
 
@@ -413,7 +413,7 @@ const (
 // At present, the modes "global" and "none" appear to be identical, both turning off the special cluster processing.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:clusterrank
 func (g *Graph) SetClusterRank(v ClusterMode) *Graph {
-	g.graph.SafeSet(string(clusterRankAttr), string(v), string(LocalCluster))
+	g.SafeSet(string(clusterRankAttr), string(v), string(LocalCluster))
 	return g
 }
 
@@ -428,7 +428,7 @@ func (g *Graph) SetClusterRank(v ClusterMode) *Graph {
 // If any fraction is used, the colors are drawn in series, with each color being given roughly its specified fraction of the edge.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:color
 func (n *Node) SetColor(v string) *Node {
-	n.node.SafeSet(string(colorAttr), v, "black")
+	n.SafeSet(string(colorAttr), v, "black")
 	return n
 }
 
@@ -443,7 +443,7 @@ func (n *Node) SetColor(v string) *Node {
 // If any fraction is used, the colors are drawn in series, with each color being given roughly its specified fraction of the edge.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:color
 func (e *Edge) SetColor(v string) *Edge {
-	e.edge.SafeSet(string(colorAttr), v, "black")
+	e.SafeSet(string(colorAttr), v, "black")
 	return e
 }
 
@@ -455,7 +455,7 @@ func (e *Edge) SetColor(v string) *Edge {
 // For example, if colorscheme=bugn9, then color=7 is interpreted as "/bugn9/7".
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:colorscheme
 func (g *Graph) SetColorScheme(v string) *Graph {
-	g.graph.SafeSet(string(colorSchemeAttr), v, "")
+	g.SafeSet(string(colorSchemeAttr), v, "")
 	return g
 }
 
@@ -467,7 +467,7 @@ func (g *Graph) SetColorScheme(v string) *Graph {
 // For example, if colorscheme=bugn9, then color=7 is interpreted as "/bugn9/7".
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:colorscheme
 func (n *Node) SetColorScheme(v string) *Node {
-	n.node.SafeSet(string(colorSchemeAttr), v, "")
+	n.SafeSet(string(colorSchemeAttr), v, "")
 	return n
 }
 
@@ -479,7 +479,7 @@ func (n *Node) SetColorScheme(v string) *Node {
 // For example, if colorscheme=bugn9, then color=7 is interpreted as "/bugn9/7".
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:colorscheme
 func (e *Edge) SetColorScheme(v string) *Edge {
-	e.edge.SafeSet(string(colorSchemeAttr), v, "")
+	e.SafeSet(string(colorSchemeAttr), v, "")
 	return e
 }
 
@@ -487,7 +487,7 @@ func (e *Edge) SetColorScheme(v string) *Edge {
 // Comments are inserted into output. Device-dependent
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:comment
 func (g *Graph) SetComment(v string) *Graph {
-	g.graph.SafeSet(string(commentAttr), v, "")
+	g.SafeSet(string(commentAttr), v, "")
 	return g
 }
 
@@ -495,7 +495,7 @@ func (g *Graph) SetComment(v string) *Graph {
 // Comments are inserted into output. Device-dependent
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:comment
 func (n *Node) SetComment(v string) *Node {
-	n.node.SafeSet(string(commentAttr), v, "")
+	n.SafeSet(string(commentAttr), v, "")
 	return n
 }
 
@@ -503,7 +503,7 @@ func (n *Node) SetComment(v string) *Node {
 // Comments are inserted into output. Device-dependent
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:comment
 func (e *Edge) SetComment(v string) *Edge {
-	e.edge.SafeSet(string(commentAttr), v, "")
+	e.SafeSet(string(commentAttr), v, "")
 	return e
 }
 
@@ -511,7 +511,7 @@ func (e *Edge) SetComment(v string) *Edge {
 // If true, allow edges between clusters. (See lhead and ltail below.)
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:compound
 func (g *Graph) SetCompound(v bool) *Graph {
-	g.graph.SafeSet(string(compoundAttr), toBoolString(v), falseStr)
+	g.SafeSet(string(compoundAttr), toBoolString(v), falseStr)
 	return g
 }
 
@@ -521,7 +521,7 @@ func (g *Graph) SetCompound(v bool) *Graph {
 // The latter feature is not yet available outside of dot.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:concentrate
 func (g *Graph) SetConcentrate(v bool) *Graph {
-	g.graph.SafeSet(string(concentrateAttr), toBoolString(v), falseStr)
+	g.SafeSet(string(concentrateAttr), toBoolString(v), falseStr)
 	return g
 }
 
@@ -529,7 +529,7 @@ func (g *Graph) SetConcentrate(v bool) *Graph {
 // If false, the edge is not used in ranking the nodes.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:constraint
 func (e *Edge) SetConstraint(v bool) *Edge {
-	e.edge.SafeSet(string(constraintAttr), toBoolString(v), trueStr)
+	e.SafeSet(string(constraintAttr), toBoolString(v), trueStr)
 	return e
 }
 
@@ -537,7 +537,7 @@ func (e *Edge) SetConstraint(v bool) *Edge {
 // If true, attach edge label to edge by a 2-segment polyline, underlining the label, then going to the closest point of spline.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:decorate
 func (e *Edge) SetDecorate(v bool) *Edge {
-	e.edge.SafeSet(string(decorateAttr), toBoolString(v), falseStr)
+	e.SafeSet(string(decorateAttr), toBoolString(v), falseStr)
 	return e
 }
 
@@ -547,7 +547,7 @@ func (e *Edge) SetDecorate(v bool) *Edge {
 // Only applicable if pack=false.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:defaultdist
 func (g *Graph) SetDefaultDist(v float64) *Graph {
-	g.graph.SafeSet(string(defaultDistAttr), fmt.Sprint(v), "1.0")
+	g.SafeSet(string(defaultDistAttr), fmt.Sprint(v), "1.0")
 	return g
 }
 
@@ -556,7 +556,7 @@ func (g *Graph) SetDefaultDist(v float64) *Graph {
 // The maximum value allowed is 10.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:dim
 func (g *Graph) SetDim(v int) *Graph {
-	g.graph.SafeSet(string(dimAttr), fmt.Sprint(v), "2")
+	g.SafeSet(string(dimAttr), fmt.Sprint(v), "2")
 	return g
 }
 
@@ -571,7 +571,7 @@ func (g *Graph) SetDim(v int) *Graph {
 // All other coordinates will be 2D and, at best, will reflect a projection of a higher-dimensional point onto the plane.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:dimen
 func (g *Graph) SetDimen(v int) *Graph {
-	g.graph.SafeSet(string(dimAttr), fmt.Sprint(v), "2")
+	g.SafeSet(string(dimAttr), fmt.Sprint(v), "2")
 	return g
 }
 
@@ -590,7 +590,7 @@ const (
 // The actual style of the arrowhead can be specified using the arrowhead and arrowtail attributes.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:dir
 func (e *Edge) SetDir(v DirType) *Edge {
-	e.edge.SafeSet(string(dirAttr), string(v), string(ForwardDir))
+	e.SafeSet(string(dirAttr), string(v), string(ForwardDir))
 	return e
 }
 
@@ -601,7 +601,7 @@ func (e *Edge) SetDir(v DirType) *Edge {
 // The main difference is that, in the latter case, only these constraints are involved, so a faster solver can be used.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:diredgeconstraints
 func (g *Graph) SetDirEdgeConstraints(v string) *Graph {
-	g.graph.SafeSet(string(dirEdgeConstraintsAttr), v, falseStr)
+	g.SafeSet(string(dirEdgeConstraintsAttr), v, falseStr)
 	return g
 }
 
@@ -610,7 +610,7 @@ func (g *Graph) SetDirEdgeConstraints(v string) *Graph {
 // Positive values cause top part to be larger than bottom; negative values do the opposite.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:distortion
 func (n *Node) SetDistortion(v float64) *Node {
-	n.node.SafeSet(string(distortionAttr), fmt.Sprint(v), "0.0")
+	n.SafeSet(string(distortionAttr), fmt.Sprint(v), "0.0")
 	return n
 }
 
@@ -620,7 +620,7 @@ func (n *Node) SetDistortion(v float64) *Node {
 // For SVG output, it is used to guarantee that the dimensions in the output correspond to the correct number of points or inches.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:dpi
 func (g *Graph) SetDPI(v float64) *Graph {
-	g.graph.SafeSet(string(dpiAttr), fmt.Sprint(v), "96.0")
+	g.SafeSet(string(dpiAttr), fmt.Sprint(v), "96.0")
 	return g
 }
 
@@ -630,7 +630,7 @@ func (g *Graph) SetDPI(v float64) *Graph {
 // Also, this value is used near the head or tail node unless overridden by a headURL or tailURL value, respectively.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:edgeURL
 func (e *Edge) SetEdgeURL(v string) *Edge {
-	e.edge.SafeSet(string(edgeURLAttr), v, "")
+	e.SafeSet(string(edgeURLAttr), v, "")
 	return e
 }
 
@@ -638,7 +638,7 @@ func (e *Edge) SetEdgeURL(v string) *Edge {
 // Synonym for edgeURL.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:edgehref
 func (e *Edge) SetEdgeHref(v string) *Edge {
-	e.edge.SafeSet(string(edgeHrefAttr), v, "")
+	e.SafeSet(string(edgeHrefAttr), v, "")
 	return e
 }
 
@@ -649,7 +649,7 @@ func (e *Edge) SetEdgeHref(v string) *Edge {
 // If undefined, the value of the target is used.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:edgetarget
 func (e *Edge) SetEdgeTarget(v string) *Edge {
-	e.edge.SafeSet(string(edgeTargetAttr), v, "")
+	e.SafeSet(string(edgeTargetAttr), v, "")
 	return e
 }
 
@@ -658,7 +658,7 @@ func (e *Edge) SetEdgeTarget(v string) *Edge {
 // This is used only if the edge has a URL or edgeURL attribute.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:edgetooltip
 func (e *Edge) SetEdgeTooltip(v string) *Edge {
-	e.edge.SafeSet(string(edgeTooltipAttr), v, "")
+	e.SafeSet(string(edgeTooltipAttr), v, "")
 	return e
 }
 
@@ -667,7 +667,7 @@ func (e *Edge) SetEdgeTooltip(v string) *Edge {
 // If the length squared of all energy gradients are < epsilon, the algorithm stops.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:epsilon
 func (g *Graph) SetEpsilon(v float64) *Graph {
-	g.graph.SafeSet(string(epsilonAttr), fmt.Sprint(v), ".0001")
+	g.SafeSet(string(epsilonAttr), fmt.Sprint(v), ".0001")
 	return g
 }
 
@@ -677,7 +677,7 @@ func (g *Graph) SetEpsilon(v float64) *Graph {
 // This should normally be strictly less than sep.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:esep
 func (g *Graph) SetESep(v float64) *Graph {
-	g.graph.SafeSet(string(esepAttr), fmt.Sprintf("+%f", v), "+3")
+	g.SafeSet(string(esepAttr), fmt.Sprintf("+%f", v), "+3")
 	return g
 }
 
@@ -694,7 +694,7 @@ func (g *Graph) SetESep(v float64) *Graph {
 // Thus, if the root graph has defined a fillcolor, this will override a color or bgcolor attribute set for the cluster.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:fillcolor
 func (n *Node) SetFillColor(v string) *Node {
-	n.node.SafeSet(string(fillColorAttr), v, "lightgrey")
+	n.SafeSet(string(fillColorAttr), v, "lightgrey")
 	return n
 }
 
@@ -712,7 +712,7 @@ func (n *Node) SetFillColor(v string) *Node {
 // No warning is given if the label is too large.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:fixedsize
 func (n *Node) SetFixedSize(v bool) *Node {
-	n.node.SafeSet(string(fixedSizeAttr), toBoolString(v), falseStr)
+	n.SafeSet(string(fixedSizeAttr), toBoolString(v), falseStr)
 	return n
 }
 
@@ -720,7 +720,7 @@ func (n *Node) SetFixedSize(v bool) *Node {
 // Color used for text.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:fontcolor
 func (g *Graph) SetFontColor(v string) *Graph {
-	g.graph.SafeSet(string(fontColorAttr), v, "black")
+	g.SafeSet(string(fontColorAttr), v, "black")
 	return g
 }
 
@@ -728,7 +728,7 @@ func (g *Graph) SetFontColor(v string) *Graph {
 // Color used for text.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:fontcolor
 func (n *Node) SetFontColor(v string) *Node {
-	n.node.SafeSet(string(fontColorAttr), v, "black")
+	n.SafeSet(string(fontColorAttr), v, "black")
 	return n
 }
 
@@ -736,7 +736,7 @@ func (n *Node) SetFontColor(v string) *Node {
 // Color used for text.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:fontcolor
 func (e *Edge) SetFontColor(v string) *Edge {
-	e.edge.SafeSet(string(fontColorAttr), v, "black")
+	e.SafeSet(string(fontColorAttr), v, "black")
 	return e
 }
 
@@ -744,7 +744,7 @@ func (e *Edge) SetFontColor(v string) *Edge {
 // Font size, in points, used for text.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:fontsize
 func (g *Graph) SetFontSize(v float64) *Graph {
-	g.graph.SafeSet(string(fontSizeAttr), fmt.Sprint(v), "14.0")
+	g.SafeSet(string(fontSizeAttr), fmt.Sprint(v), "14.0")
 	return g
 }
 
@@ -752,7 +752,7 @@ func (g *Graph) SetFontSize(v float64) *Graph {
 // Font size, in points, used for text.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:fontsize
 func (n *Node) SetFontSize(v float64) *Node {
-	n.node.SafeSet(string(fontSizeAttr), fmt.Sprint(v), "14.0")
+	n.SafeSet(string(fontSizeAttr), fmt.Sprint(v), "14.0")
 	return n
 }
 
@@ -760,7 +760,7 @@ func (n *Node) SetFontSize(v float64) *Node {
 // Font size, in points, used for text.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:fontsize
 func (e *Edge) SetFontSize(v float64) *Edge {
-	e.edge.SafeSet(string(fontSizeAttr), fmt.Sprint(v), "14.0")
+	e.SafeSet(string(fontSizeAttr), fmt.Sprint(v), "14.0")
 	return e
 }
 
@@ -768,7 +768,7 @@ func (e *Edge) SetFontSize(v float64) *Edge {
 // If true, all xlabel attributes are placed, even if there is some overlap with nodes or other labels.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:forcelabels
 func (g *Graph) SetForceLabels(v bool) *Graph {
-	g.graph.SafeSet(string(forceLabelsAttr), toBoolString(v), trueStr)
+	g.SafeSet(string(forceLabelsAttr), toBoolString(v), trueStr)
 	return g
 }
 
@@ -780,7 +780,7 @@ func (g *Graph) SetForceLabels(v bool) *Graph {
 // If unset, the default angle is 0.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:gradientangle
 func (g *Graph) SetGradientAngle(v int) *Graph {
-	g.graph.SafeSet(string(gradientAngleAttr), fmt.Sprint(v), "")
+	g.SafeSet(string(gradientAngleAttr), fmt.Sprint(v), "")
 	return g
 }
 
@@ -792,7 +792,7 @@ func (g *Graph) SetGradientAngle(v int) *Graph {
 // If unset, the default angle is 0.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:gradientangle
 func (n *Node) SetGradientAngle(v int) *Node {
-	n.node.SafeSet(string(gradientAngleAttr), fmt.Sprint(v), "")
+	n.SafeSet(string(gradientAngleAttr), fmt.Sprint(v), "")
 	return n
 }
 
@@ -801,7 +801,7 @@ func (n *Node) SetGradientAngle(v int) *Node {
 // i.e., have the same group attribute, parameters are set to avoid crossings and keep the edges straight.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:group
 func (n *Node) SetGroup(v string) *Node {
-	n.node.SafeSet(string(groupAttr), v, "")
+	n.SafeSet(string(groupAttr), v, "")
 	return n
 }
 
@@ -810,7 +810,7 @@ func (n *Node) SetGroup(v string) *Node {
 // Also, this value is used near the head node, overriding any URL value.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:headURL
 func (e *Edge) SetHeadURL(v string) *Edge {
-	e.edge.SafeSet(string(headURLAttr), v, "")
+	e.SafeSet(string(headURLAttr), v, "")
 	return e
 }
 
@@ -819,7 +819,7 @@ func (e *Edge) SetHeadURL(v string) *Edge {
 // The position indicates the center of the label.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:head_lp
 func (e *Edge) SetHeadLabelPoint(x, y float64) *Edge {
-	e.edge.SafeSet(string(headLpAttr), fmt.Sprintf("%f,%f", x, y), "")
+	e.SafeSet(string(headLpAttr), fmt.Sprintf("%f,%f", x, y), "")
 	return e
 }
 
@@ -828,7 +828,7 @@ func (e *Edge) SetHeadLabelPoint(x, y float64) *Edge {
 // otherwise, the end of the edge goes to the center of the node, or the center of a port, if applicable.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:headclip
 func (e *Edge) SetHeadClip(v bool) *Edge {
-	e.edge.SafeSet(string(headClipAttr), toBoolString(v), trueStr)
+	e.SafeSet(string(headClipAttr), toBoolString(v), trueStr)
 	return e
 }
 
@@ -836,7 +836,7 @@ func (e *Edge) SetHeadClip(v bool) *Edge {
 // Synonym for headURL.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:headhref
 func (e *Edge) SetHeadHref(v string) *Edge {
-	e.edge.SafeSet(string(headHrefAttr), v, "")
+	e.SafeSet(string(headHrefAttr), v, "")
 	return e
 }
 
@@ -844,7 +844,7 @@ func (e *Edge) SetHeadHref(v string) *Edge {
 // Text label to be placed near head of edge
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:headlabel
 func (e *Edge) SetHeadLabel(v string) *Edge {
-	e.edge.SafeSet(string(headLabelAttr), v, "")
+	e.SafeSet(string(headLabelAttr), v, "")
 	return e
 }
 
@@ -853,7 +853,7 @@ func (e *Edge) SetHeadLabel(v string) *Edge {
 // In the default case, the edge is aimed towards the center of the node, and then clipped at the node boundary.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:headport
 func (e *Edge) SetHeadPort(v string) *Edge {
-	e.edge.SafeSet(string(headPortAttr), v, "")
+	e.SafeSet(string(headPortAttr), v, "")
 	return e
 }
 
@@ -863,7 +863,7 @@ func (e *Edge) SetHeadPort(v string) *Edge {
 // or reuse it if it does. If undefined, the value of the target is used.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:headtarget
 func (e *Edge) SetHeadTarget(v string) *Edge {
-	e.edge.SafeSet(string(headTargetAttr), v, "")
+	e.SafeSet(string(headTargetAttr), v, "")
 	return e
 }
 
@@ -872,7 +872,7 @@ func (e *Edge) SetHeadTarget(v string) *Edge {
 // This is used only if the edge has a headURL attribute.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:headtooltip
 func (e *Edge) SetHeadTooltip(v string) *Edge {
-	e.edge.SafeSet(string(headTooltipAttr), v, "")
+	e.SafeSet(string(headTooltipAttr), v, "")
 	return e
 }
 
@@ -888,7 +888,7 @@ func (e *Edge) SetHeadTooltip(v string) *Edge {
 // If neither is set explicitly, the minimum of the two default values is used.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:height
 func (n *Node) SetHeight(v float64) *Node {
-	n.node.SafeSet(string(heightAttr), fmt.Sprint(v), "0.5")
+	n.SafeSet(string(heightAttr), fmt.Sprint(v), "0.5")
 	return n
 }
 
@@ -896,7 +896,7 @@ func (n *Node) SetHeight(v float64) *Node {
 // Synonym for URL.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:href
 func (g *Graph) SetHref(v string) *Graph {
-	g.graph.SafeSet(string(hrefAttr), v, "")
+	g.SafeSet(string(hrefAttr), v, "")
 	return g
 }
 
@@ -904,7 +904,7 @@ func (g *Graph) SetHref(v string) *Graph {
 // Synonym for URL.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:href
 func (n *Node) SetHref(v string) *Node {
-	n.node.SafeSet(string(hrefAttr), v, "")
+	n.SafeSet(string(hrefAttr), v, "")
 	return n
 }
 
@@ -912,7 +912,7 @@ func (n *Node) SetHref(v string) *Node {
 // Synonym for URL.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:href
 func (e *Edge) SetHref(v string) *Edge {
-	e.edge.SafeSet(string(hrefAttr), v, "")
+	e.SafeSet(string(hrefAttr), v, "")
 	return e
 }
 
@@ -928,7 +928,7 @@ func (e *Edge) SetHref(v string) *Edge {
 // By making these distinct, the user can include multiple image maps in the same document.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:id
 func (g *Graph) SetID(v string) *Graph {
-	g.graph.SafeSet(string(idAttr), v, "")
+	g.SafeSet(string(idAttr), v, "")
 	return g
 }
 
@@ -944,7 +944,7 @@ func (g *Graph) SetID(v string) *Graph {
 // By making these distinct, the user can include multiple image maps in the same document.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:id
 func (n *Node) SetID(v string) *Node {
-	n.node.SafeSet(string(idAttr), v, "")
+	n.SafeSet(string(idAttr), v, "")
 	return n
 }
 
@@ -960,7 +960,7 @@ func (n *Node) SetID(v string) *Node {
 // By making these distinct, the user can include multiple image maps in the same document.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:id
 func (e *Edge) SetID(v string) *Edge {
-	e.edge.SafeSet(string(idAttr), v, "")
+	e.SafeSet(string(idAttr), v, "")
 	return e
 }
 
@@ -983,7 +983,7 @@ func (e *Edge) SetID(v string) *Edge {
 // In particular, an image can be contained in a node of any shape, not just a rectangle.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:image
 func (n *Node) SetImage(v string) *Node {
-	n.node.SafeSet(string(imageAttr), v, "")
+	n.SafeSet(string(imageAttr), v, "")
 	return n
 }
 
@@ -994,7 +994,7 @@ func (n *Node) SetImage(v string) *Node {
 // If imagepath is not set, relative pathnames for the image file will be interpreted with respect to the current working directory.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:imagepath
 func (g *Graph) SetImagePath(v string) *Graph {
-	g.graph.SafeSet(string(imagePathAttr), v, "")
+	g.SafeSet(string(imagePathAttr), v, "")
 	return g
 }
 
@@ -1017,7 +1017,7 @@ const (
 // The default is to be centered both horizontally and vertically.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:imagepos
 func (n *Node) SetImagePos(v ImagePos) *Node {
-	n.node.SafeSet(string(imagePosAttr), string(v), string(MiddleCenteredPos))
+	n.SafeSet(string(imagePosAttr), string(v), string(MiddleCenteredPos))
 	return n
 }
 
@@ -1028,7 +1028,7 @@ func (n *Node) SetImagePos(v ImagePos) *Node {
 // In all cases, if a dimension of the image is larger than the corresponding dimension of the node, that dimension of the image is scaled down to fit the node. As with the case of expansion, if imagescale=true, width and height are scaled uniformly.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:imagescale
 func (n *Node) SetImageScale(v bool) *Node {
-	n.node.SafeSet(string(imageScaleAttr), toBoolString(v), falseStr)
+	n.SafeSet(string(imageScaleAttr), toBoolString(v), falseStr)
 	return n
 }
 
@@ -1043,7 +1043,7 @@ func (n *Node) SetImageScale(v bool) *Node {
 // A value of 0 is equivalent to inputscale=72.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:inputscale
 func (g *Graph) SetInputScale(v float64) *Graph {
-	g.graph.SafeSet(string(inputScaleAttr), fmt.Sprint(v), "")
+	g.SafeSet(string(inputScaleAttr), fmt.Sprint(v), "")
 	return g
 }
 
@@ -1056,7 +1056,7 @@ func (g *Graph) SetInputScale(v float64) *Graph {
 // To get an HTML-like label, the label attribute value itself must be an HTML string.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:label
 func (g *Graph) SetLabel(v string) *Graph {
-	g.graph.SafeSet(string(labelAttr), v, "")
+	g.SafeSet(string(labelAttr), v, "")
 	return g
 }
 
@@ -1069,7 +1069,7 @@ func (g *Graph) SetLabel(v string) *Graph {
 // To get an HTML-like label, the label attribute value itself must be an HTML string.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:label
 func (n *Node) SetLabel(v string) *Node {
-	n.node.SafeSet(string(labelAttr), v, "\\N")
+	n.SafeSet(string(labelAttr), v, "\\N")
 	return n
 }
 
@@ -1082,7 +1082,7 @@ func (n *Node) SetLabel(v string) *Node {
 // To get an HTML-like label, the label attribute value itself must be an HTML string.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:label
 func (e *Edge) SetLabel(v string) *Edge {
-	e.edge.SafeSet(string(labelAttr), v, "")
+	e.SafeSet(string(labelAttr), v, "")
 	return e
 }
 
@@ -1091,7 +1091,7 @@ func (e *Edge) SetLabel(v string) *Edge {
 // This value overrides any URL defined for the edge.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:labelURL
 func (e *Edge) SetLabelURL(v string) *Edge {
-	e.edge.SafeSet(string(labelURLAttr), v, "")
+	e.SafeSet(string(labelURLAttr), v, "")
 	return e
 }
 
@@ -1103,7 +1103,7 @@ func (e *Edge) SetLabelURL(v string) *Edge {
 // Finally, a value of 3 invokes a two-step process of overlap removal and straightening.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:label_scheme
 func (g *Graph) SetLabelScheme(v int) *Graph {
-	g.graph.SafeSet(string(labelSchemeAttr), fmt.Sprint(v), "0")
+	g.SafeSet(string(labelSchemeAttr), fmt.Sprint(v), "0")
 	return g
 }
 
@@ -1115,7 +1115,7 @@ func (g *Graph) SetLabelScheme(v int) *Graph {
 // with positive angles moving counterclockwise and negative angles moving clockwise.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:labelangle
 func (e *Edge) SetLabelAngle(v float64) *Edge {
-	e.edge.SafeSet(string(labelAngleAttr), fmt.Sprint(v), "-25.0")
+	e.SafeSet(string(labelAngleAttr), fmt.Sprint(v), "-25.0")
 	return e
 }
 
@@ -1124,7 +1124,7 @@ func (e *Edge) SetLabelAngle(v float64) *Edge {
 // The default distance is 10 points. See labelangle for more details.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:labeldistance
 func (e *Edge) SetLabelDistance(v float64) *Edge {
-	e.edge.SafeSet(string(labelDistanceAttr), fmt.Sprint(v), "1.0")
+	e.SafeSet(string(labelDistanceAttr), fmt.Sprint(v), "1.0")
 	return e
 }
 
@@ -1133,7 +1133,7 @@ func (e *Edge) SetLabelDistance(v float64) *Edge {
 // In particular, it may appear on top of other edges.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:labelfloat
 func (e *Edge) SetLabelFloat(v bool) *Edge {
-	e.edge.SafeSet(string(labelFloatAttr), toBoolString(v), falseStr)
+	e.SafeSet(string(labelFloatAttr), toBoolString(v), falseStr)
 	return e
 }
 
@@ -1142,7 +1142,7 @@ func (e *Edge) SetLabelFloat(v bool) *Edge {
 // If not set, defaults to edge's fontcolor.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:labelfontcolor
 func (e *Edge) SetLabelFontColor(v string) *Edge {
-	e.edge.SafeSet(string(labelFontColorAttr), v, "black")
+	e.SafeSet(string(labelFontColorAttr), v, "black")
 	return e
 }
 
@@ -1151,7 +1151,7 @@ func (e *Edge) SetLabelFontColor(v string) *Edge {
 // If not set, defaults to edge's fontsize.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:labelfontsize
 func (e *Edge) SetLabelFontSize(v float64) *Edge {
-	e.edge.SafeSet(string(labelFontSizeAttr), fmt.Sprint(v), "14.0")
+	e.SafeSet(string(labelFontSizeAttr), fmt.Sprint(v), "14.0")
 	return e
 }
 
@@ -1159,7 +1159,7 @@ func (e *Edge) SetLabelFontSize(v float64) *Edge {
 // Synonym for labelURL.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:labelhref
 func (e *Edge) SetLabelHref(v string) *Edge {
-	e.edge.SafeSet(string(labelHrefAttr), v, "")
+	e.SafeSet(string(labelHrefAttr), v, "")
 	return e
 }
 
@@ -1179,7 +1179,7 @@ const (
 // Thus, if the root graph sets labeljust to "l", the subgraph inherits this value.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:labeljust
 func (g *Graph) SetLabelJust(v JustType) *Graph {
-	g.graph.SafeSet(string(labelJustAttr), string(v), string(CenteredJust))
+	g.SafeSet(string(labelJustAttr), string(v), string(CenteredJust))
 	return g
 }
 
@@ -1203,7 +1203,7 @@ const (
 // In the default case, the label is vertically centered.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:labelloc
 func (g *Graph) SetLabelLocation(v LabelLocation) *Graph {
-	g.graph.SafeSet(string(labelLocAttr), string(v), string(BottomLocation))
+	g.SafeSet(string(labelLocAttr), string(v), string(BottomLocation))
 	return g
 }
 
@@ -1219,7 +1219,7 @@ func (g *Graph) SetLabelLocation(v LabelLocation) *Graph {
 // In the default case, the label is vertically centered.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:labelloc
 func (n *Node) SetLabelLocation(v LabelLocation) *Node {
-	n.node.SafeSet(string(labelLocAttr), string(v), string(CenteredLocation))
+	n.SafeSet(string(labelLocAttr), string(v), string(CenteredLocation))
 	return n
 }
 
@@ -1230,7 +1230,7 @@ func (n *Node) SetLabelLocation(v LabelLocation) *Node {
 // If undefined, the value of the target is used.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:labeltarget
 func (e *Edge) SetLabelTarget(v string) *Edge {
-	e.edge.SafeSet(string(labelTargetAttr), v, "")
+	e.SafeSet(string(labelTargetAttr), v, "")
 	return e
 }
 
@@ -1239,7 +1239,7 @@ func (e *Edge) SetLabelTarget(v string) *Edge {
 // This is used only if the edge has a URL or labelURL attribute.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:labeltooltip
 func (e *Edge) SetLabelTooltip(v string) *Edge {
-	e.edge.SafeSet(string(labelTooltipAttr), v, "")
+	e.SafeSet(string(labelTooltipAttr), v, "")
 	return e
 }
 
@@ -1248,7 +1248,7 @@ func (e *Edge) SetLabelTooltip(v string) *Edge {
 // Synonymous with rotate=90 or orientation=landscape.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:landscape
 func (g *Graph) SetLandscape(v bool) *Graph {
-	g.graph.SafeSet(string(landscapeAttr), toBoolString(v), falseStr)
+	g.SafeSet(string(landscapeAttr), toBoolString(v), falseStr)
 	return g
 }
 
@@ -1256,7 +1256,7 @@ func (g *Graph) SetLandscape(v bool) *Graph {
 // Specifies layers in which the node, edge or cluster is present.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:layer
 func (n *Node) SetLayer(v string) *Node {
-	n.node.SafeSet(string(layerAttr), v, "")
+	n.SafeSet(string(layerAttr), v, "")
 	return n
 }
 
@@ -1264,7 +1264,7 @@ func (n *Node) SetLayer(v string) *Node {
 // Specifies layers in which the node, edge or cluster is present.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:layer
 func (e *Edge) SetLayer(v string) *Edge {
-	e.edge.SafeSet(string(layerAttr), v, "")
+	e.SafeSet(string(layerAttr), v, "")
 	return e
 }
 
@@ -1272,7 +1272,7 @@ func (e *Edge) SetLayer(v string) *Edge {
 // Specifies the separator characters used to split an attribute of type layerRange into a list of ranges.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:layerlistsep
 func (g *Graph) SetLayerListSeparator(v string) *Graph {
-	g.graph.SafeSet(string(layerListSepAttr), v, ",")
+	g.SafeSet(string(layerListSepAttr), v, ",")
 	return g
 }
 
@@ -1282,7 +1282,7 @@ func (g *Graph) SetLayerListSeparator(v string) *Graph {
 // For more information, see the page How to use drawing layers (overlays).
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:layers
 func (g *Graph) SetLayers(v string) *Graph {
-	g.graph.SafeSet(string(layersAttr), v, "")
+	g.SafeSet(string(layersAttr), v, "")
 	return g
 }
 
@@ -1290,7 +1290,7 @@ func (g *Graph) SetLayers(v string) *Graph {
 // Selects a list of layers to be emitted.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:layerselect
 func (g *Graph) SetLayerSelect(v string) *Graph {
-	g.graph.SafeSet(string(layerSelectAttr), v, "")
+	g.SafeSet(string(layerSelectAttr), v, "")
 	return g
 }
 
@@ -1298,7 +1298,7 @@ func (g *Graph) SetLayerSelect(v string) *Graph {
 // Specifies the separator characters used to split the layers attribute into a list of layer names.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:layersep
 func (g *Graph) SetLayerSeparator(v string) *Graph {
-	g.graph.SafeSet(string(layerSepAttr), v, ":\\t")
+	g.SafeSet(string(layerSepAttr), v, ":\\t")
 	return g
 }
 
@@ -1309,7 +1309,7 @@ func (g *Graph) SetLayerSeparator(v string) *Graph {
 // For example, a graph containing position information from a layout might want to record what the associated layout algorithm was.
 // This attribute takes precedence over the -K flag or the actual command name used.
 func (g *Graph) SetLayout(v string) *Graph {
-	g.graph.SafeSet(string(layoutAttr), v, "")
+	g.SafeSet(string(layoutAttr), v, "")
 	return g
 }
 
@@ -1317,7 +1317,7 @@ func (g *Graph) SetLayout(v string) *Graph {
 // Preferred edge length, in inches.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:len
 func (e *Edge) SetLen(v float64) *Edge {
-	e.edge.SafeSet(string(lenAttr), fmt.Sprint(v), "1.0")
+	e.SafeSet(string(lenAttr), fmt.Sprint(v), "1.0")
 	return e
 }
 
@@ -1330,7 +1330,7 @@ const (
 // Number of levels allowed in the multilevel scheme.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:levels
 func (g *Graph) SetLevels(v int) *Graph {
-	g.graph.SafeSet(string(levelsAttr), fmt.Sprint(v), fmt.Sprint(maxInt))
+	g.SafeSet(string(levelsAttr), fmt.Sprint(v), fmt.Sprint(maxInt))
 	return g
 }
 
@@ -1340,7 +1340,7 @@ func (g *Graph) SetLevels(v int) *Graph {
 // On the other hand, negative values will relax the constraints by allowing some overlap between the levels.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:levelsgap
 func (g *Graph) SetLevelsGap(v float64) *Graph {
-	g.graph.SafeSet(string(levelsGapAttr), fmt.Sprint(v), "0.0")
+	g.SafeSet(string(levelsGapAttr), fmt.Sprint(v), "0.0")
 	return g
 }
 
@@ -1350,7 +1350,7 @@ func (g *Graph) SetLevelsGap(v float64) *Graph {
 // the edge is clipped to the boundary of the cluster.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:lhead
 func (e *Edge) SetLogicalHead(v string) *Edge {
-	e.edge.SafeSet(string(lHeadAttr), v, "")
+	e.SafeSet(string(lHeadAttr), v, "")
 	return e
 }
 
@@ -1358,7 +1358,7 @@ func (e *Edge) SetLogicalHead(v string) *Edge {
 // Height of graph or cluster label, in inches.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:lheight
 func (e *Edge) SetLabelHeight(v float64) *Edge {
-	e.edge.SafeSet(string(lHeightAttr), fmt.Sprint(v), "")
+	e.SafeSet(string(lHeightAttr), fmt.Sprint(v), "")
 	return e
 }
 
@@ -1366,7 +1366,7 @@ func (e *Edge) SetLabelHeight(v float64) *Edge {
 // Label position, in points. The position indicates the center of the label.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:lp
 func (g *Graph) SetLabelPosition(x, y float64) *Graph {
-	g.graph.SafeSet(string(lpAttr), fmt.Sprintf("%f,%f", x, y), "")
+	g.SafeSet(string(lpAttr), fmt.Sprintf("%f,%f", x, y), "")
 	return g
 }
 
@@ -1374,7 +1374,7 @@ func (g *Graph) SetLabelPosition(x, y float64) *Graph {
 // Label position, in points. The position indicates the center of the label.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:lp
 func (e *Edge) SetLabelPosition(x, y float64) *Edge {
-	e.edge.SafeSet(string(lpAttr), fmt.Sprintf("%f,%f", x, y), "")
+	e.SafeSet(string(lpAttr), fmt.Sprintf("%f,%f", x, y), "")
 	return e
 }
 
@@ -1384,7 +1384,7 @@ func (e *Edge) SetLabelPosition(x, y float64) *Edge {
 // the edge is clipped to the boundary of the cluster
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:ltail
 func (e *Edge) SetLogicalTail(v string) *Edge {
-	e.edge.SafeSet(string(lTailAttr), v, "")
+	e.SafeSet(string(lTailAttr), v, "")
 	return e
 }
 
@@ -1392,7 +1392,7 @@ func (e *Edge) SetLogicalTail(v string) *Edge {
 // Width of graph or cluster label, in inches.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:lwidth
 func (g *Graph) SetLabelWidth(v float64) *Graph {
-	g.graph.SafeSet(string(lWidthAttr), fmt.Sprint(v), "")
+	g.SafeSet(string(lWidthAttr), fmt.Sprint(v), "")
 	return g
 }
 
@@ -1411,7 +1411,7 @@ func (g *Graph) SetLabelWidth(v float64) *Graph {
 // By default, the value is 0.11,0.055.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:margin
 func (g *Graph) SetMargin(v float64) *Graph {
-	g.graph.SafeSet(string(marginAttr), fmt.Sprint(v), "")
+	g.SafeSet(string(marginAttr), fmt.Sprint(v), "")
 	return g
 }
 
@@ -1430,7 +1430,7 @@ func (g *Graph) SetMargin(v float64) *Graph {
 // By default, the value is 0.11,0.055.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:margin
 func (n *Node) SetMargin(v float64) *Node {
-	n.node.SafeSet(string(marginAttr), fmt.Sprint(v), "")
+	n.SafeSet(string(marginAttr), fmt.Sprint(v), "")
 	return n
 }
 
@@ -1438,7 +1438,7 @@ func (n *Node) SetMargin(v float64) *Node {
 // Sets the number of iterations used.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:maxiter
 func (g *Graph) SetMaxIterator(v int) *Graph {
-	g.graph.SafeSet(string(maxIterAttr), fmt.Sprint(v), "200")
+	g.SafeSet(string(maxIterAttr), fmt.Sprint(v), "200")
 	return g
 }
 
@@ -1447,7 +1447,7 @@ func (g *Graph) SetMaxIterator(v int) *Graph {
 // These correspond to the number of tries without improvement before quitting and the maximum number of iterations in each pass.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:mclimit
 func (g *Graph) SetMCLimit(v float64) *Graph {
-	g.graph.SafeSet(string(mcLimitAttr), fmt.Sprint(v), "1.0")
+	g.SafeSet(string(mcLimitAttr), fmt.Sprint(v), "1.0")
 	return g
 }
 
@@ -1455,7 +1455,7 @@ func (g *Graph) SetMCLimit(v float64) *Graph {
 // Specifies the minimum separation between all nodes.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:mindist
 func (g *Graph) SetMinDist(v float64) *Graph {
-	g.graph.SafeSet(string(minDistAttr), fmt.Sprint(v), "1.0")
+	g.SafeSet(string(minDistAttr), fmt.Sprint(v), "1.0")
 	return g
 }
 
@@ -1463,7 +1463,7 @@ func (g *Graph) SetMinDist(v float64) *Graph {
 // Minimum edge length (rank difference between head and tail).
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:minlen
 func (e *Edge) SetMinLen(v int) *Edge {
-	e.edge.SafeSet(string(minLenAttr), fmt.Sprint(v), "1")
+	e.SafeSet(string(minLenAttr), fmt.Sprint(v), "1")
 	return e
 }
 
@@ -1491,7 +1491,7 @@ const (
 // Setting mode to "maxent" causes a similar model to be run but one that also takes into account edge lengths specified by the "len" attribute.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:mode
 func (g *Graph) SetMode(v ModeType) *Graph {
-	g.graph.SafeSet(string(modeAttr), string(v), string(MajorMode))
+	g.SafeSet(string(modeAttr), string(v), string(MajorMode))
 	return g
 }
 
@@ -1521,7 +1521,7 @@ const (
 // Thus, by supplying a complete graph, the input can specify all of the relevant distances.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:model
 func (g *Graph) SetModel(v ModelType) *Graph {
-	g.graph.SafeSet(string(modelAttr), string(v), string(ShortPathModel))
+	g.SafeSet(string(modelAttr), string(v), string(ShortPathModel))
 	return g
 }
 
@@ -1529,7 +1529,7 @@ func (g *Graph) SetModel(v ModelType) *Graph {
 // If Graphviz is built with MOSEK defined, mode=ipsep and mosek=true, the Mosek software (www.mosek.com) is use to solve the ipsep constraints.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:mosek
 func (g *Graph) SetMosek(v bool) *Graph {
-	g.graph.SafeSet(string(mosekAttr), toBoolString(v), falseStr)
+	g.SafeSet(string(mosekAttr), toBoolString(v), falseStr)
 	return g
 }
 
@@ -1544,7 +1544,7 @@ func (g *Graph) SetMosek(v bool) *Graph {
 // Rank constraints will usually take precedence over edge constraints.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:newrank
 func (g *Graph) SetNewRank(v bool) *Graph {
-	g.graph.SafeSet(string(newRankAttr), toBoolString(v), falseStr)
+	g.SafeSet(string(newRankAttr), toBoolString(v), falseStr)
 	return g
 }
 
@@ -1553,7 +1553,7 @@ func (g *Graph) SetNewRank(v bool) *Graph {
 // For other layouts, this affects the spacing between loops on a single node, or multiedges between a pair of nodes.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:nodesep
 func (g *Graph) SetNodeSeparator(v float64) *Graph {
-	g.graph.SafeSet(string(nodeSepAttr), fmt.Sprint(v), "0.25")
+	g.SafeSet(string(nodeSepAttr), fmt.Sprint(v), "0.25")
 	return g
 }
 
@@ -1566,7 +1566,7 @@ func (g *Graph) SetNodeSeparator(v float64) *Graph {
 // and left-justified, the second will align with the left-most character in the first line, regardless of how large the node might be.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:nojustify
 func (g *Graph) SetNoJustify(v bool) *Graph {
-	g.graph.SafeSet(string(noJustifyAttr), toBoolString(v), falseStr)
+	g.SafeSet(string(noJustifyAttr), toBoolString(v), falseStr)
 	return g
 }
 
@@ -1579,7 +1579,7 @@ func (g *Graph) SetNoJustify(v bool) *Graph {
 // and left-justified, the second will align with the left-most character in the first line, regardless of how large the node might be.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:nojustify
 func (n *Node) SetNoJustify(v bool) *Node {
-	n.node.SafeSet(string(noJustifyAttr), toBoolString(v), falseStr)
+	n.SafeSet(string(noJustifyAttr), toBoolString(v), falseStr)
 	return n
 }
 
@@ -1592,7 +1592,7 @@ func (n *Node) SetNoJustify(v bool) *Node {
 // and left-justified, the second will align with the left-most character in the first line, regardless of how large the node might be.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:nojustify
 func (e *Edge) SetNoJustify(v bool) *Edge {
-	e.edge.SafeSet(string(noJustifyAttr), toBoolString(v), falseStr)
+	e.SafeSet(string(noJustifyAttr), toBoolString(v), falseStr)
 	return e
 }
 
@@ -1603,7 +1603,7 @@ func (e *Edge) SetNoJustify(v bool) *Edge {
 // NOTE: Since the attribute is evaluated first as a number, 0 and 1 cannot be used for false and true.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:normalize
 func (g *Graph) SetNormalize(v bool) *Graph {
-	g.graph.SafeSet(string(normalizeAttr), toBoolString(v), falseStr)
+	g.SafeSet(string(normalizeAttr), toBoolString(v), falseStr)
 	return g
 }
 
@@ -1613,7 +1613,7 @@ func (g *Graph) SetNormalize(v bool) *Graph {
 // To avoid this translation, set notranslate to true.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:notranslate
 func (g *Graph) SetNoTranslate(v bool) *Graph {
-	g.graph.SafeSet(string(noTranslateAttr), toBoolString(v), falseStr)
+	g.SafeSet(string(noTranslateAttr), toBoolString(v), falseStr)
 	return g
 }
 
@@ -1622,7 +1622,7 @@ func (g *Graph) SetNoTranslate(v bool) *Graph {
 // nslimit is used in computing node x coordinates, nslimit1 for ranking nodes.
 // If defined, # iterations = nslimit(1) * # nodes; otherwise, # iterations = MAXINT.
 func (g *Graph) SetNsLimit(v float64) *Graph {
-	g.graph.SafeSet(string(nsLimitAttr), fmt.Sprint(v), "")
+	g.SafeSet(string(nsLimitAttr), fmt.Sprint(v), "")
 	return g
 }
 
@@ -1632,7 +1632,7 @@ func (g *Graph) SetNsLimit(v float64) *Graph {
 // If defined, # iterations = nslimit(1) * # nodes; otherwise, # iterations = MAXINT.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:nslimit
 func (g *Graph) SetNsLimit1(v float64) *Graph {
-	g.graph.SafeSet(string(nsLimit1Attr), fmt.Sprint(v), "")
+	g.SafeSet(string(nsLimit1Attr), fmt.Sprint(v), "")
 	return g
 }
 
@@ -1653,7 +1653,7 @@ const (
 // Note that the graph attribute takes precedence over the node attribute.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:ordering
 func (g *Graph) SetOrdering(v OrderingType) *Graph {
-	g.graph.SafeSet(string(orderingAttr), string(v), "")
+	g.SafeSet(string(orderingAttr), string(v), "")
 	return g
 }
 
@@ -1667,7 +1667,7 @@ func (g *Graph) SetOrdering(v OrderingType) *Graph {
 // Note that the graph attribute takes precedence over the node attribute.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:ordering
 func (n *Node) SetOrdering(v OrderingType) *Node {
-	n.node.SafeSet(string(orderingAttr), string(v), "")
+	n.SafeSet(string(orderingAttr), string(v), "")
 	return n
 }
 
@@ -1675,7 +1675,7 @@ func (n *Node) SetOrdering(v OrderingType) *Node {
 // If "[lL]*", set graph orientation to landscape Used only if rotate is not defined.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#aa:orientation
 func (g *Graph) SetOrientation(v string) *Graph {
-	g.graph.SafeSet(string(orientationAttr), v, "")
+	g.SafeSet(string(orientationAttr), v, "")
 	return g
 }
 
@@ -1684,7 +1684,7 @@ func (g *Graph) SetOrientation(v string) *Graph {
 // For any number of polygon sides, 0 degrees rotation results in a flat base.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:orientation
 func (n *Node) SetOrientation(v float64) *Node {
-	n.node.SafeSet(string(orientationAttr), fmt.Sprint(v), "0.0")
+	n.SafeSet(string(orientationAttr), fmt.Sprint(v), "0.0")
 	return n
 }
 
@@ -1700,7 +1700,7 @@ const (
 // Specify order in which nodes and edges are drawn.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:outputorder
 func (g *Graph) SetOutputOrder(v OutputMode) *Graph {
-	g.graph.SafeSet(string(outputOrderAttr), string(v), string(BreadthFirst))
+	g.SafeSet(string(outputOrderAttr), string(v), string(BreadthFirst))
 	return g
 }
 
@@ -1759,7 +1759,7 @@ func (g *Graph) SetOutputOrder(v OutputMode) *Graph {
 // For these, orthogonal ordering is only preserved among nodes related by an edge.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:overlap
 func (g *Graph) SetOverlap(v bool) *Graph {
-	g.graph.SafeSet(string(overlapAttr), toBoolString(v), trueStr)
+	g.SafeSet(string(overlapAttr), toBoolString(v), trueStr)
 	return g
 }
 
@@ -1773,7 +1773,7 @@ func (g *Graph) SetOverlap(v bool) *Graph {
 // If overlap_scaling is zero, no scaling is done.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:overlap_scaling
 func (g *Graph) SetOverlapScaling(v float64) *Graph {
-	g.graph.SafeSet(string(overlapScalingAttr), fmt.Sprint(v), "-4")
+	g.SafeSet(string(overlapScalingAttr), fmt.Sprint(v), "-4")
 	return g
 }
 
@@ -1781,7 +1781,7 @@ func (g *Graph) SetOverlapScaling(v float64) *Graph {
 // If true, the overlap removal algorithm will perform a compression pass to reduce the size of the layout.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:overlap_shrink
 func (g *Graph) SetOverlapShrink(v bool) *Graph {
-	g.graph.SafeSet(string(overlapShrinkAttr), toBoolString(v), trueStr)
+	g.SafeSet(string(overlapShrinkAttr), toBoolString(v), trueStr)
 	return g
 }
 
@@ -1797,7 +1797,7 @@ func (g *Graph) SetOverlapShrink(v bool) *Graph {
 // For layouts which always do packing, such a twopi, the pack attribute is just used to set the margin.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:pack
 func (g *Graph) SetPack(v bool) *Graph {
-	g.graph.SafeSet(string(packAttr), toBoolString(v), falseStr)
+	g.SafeSet(string(packAttr), toBoolString(v), falseStr)
 	return g
 }
 
@@ -1814,7 +1814,7 @@ const (
 // Note that defining packmode will automatically turn on packing as though one had set pack=true.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:packmode
 func (g *Graph) SetPackMode(v PackMode) *Graph {
-	g.graph.SafeSet(string(packModeAttr), string(v), string(NodePack))
+	g.SafeSet(string(packModeAttr), string(v), string(NodePack))
 	return g
 }
 
@@ -1829,7 +1829,7 @@ func (g *Graph) SetPackMode(v PackMode) *Graph {
 // to avoid having nodes and edges abutting the boundary of the drawn region.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:pad
 func (g *Graph) SetPad(v float64) *Graph {
-	g.graph.SafeSet(string(padAttr), fmt.Sprint(v), "0.0555")
+	g.SafeSet(string(padAttr), fmt.Sprint(v), "0.0555")
 	return g
 }
 
@@ -1846,7 +1846,7 @@ func (g *Graph) SetPad(v float64) *Graph {
 // Or use the viewport to generate multiple files.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:page
 func (g *Graph) SetPage(v float64) *Graph {
-	g.graph.SafeSet(string(pageAttr), fmt.Sprint(v), "")
+	g.SafeSet(string(pageAttr), fmt.Sprint(v), "")
 	return g
 }
 
@@ -1869,7 +1869,7 @@ const (
 // This is limited to one of the 8 row or column major orders.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:pagedir
 func (g *Graph) SetPageDir(v PageDir) *Graph {
-	g.graph.SafeSet(string(pageDirAttr), string(v), string(BLDir))
+	g.SafeSet(string(pageDirAttr), string(v), string(BLDir))
 	return g
 }
 
@@ -1884,7 +1884,7 @@ func (g *Graph) SetPageDir(v PageDir) *Graph {
 // If both are used, penwidth will be used.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:penwidth
 func (n *Node) SetPenWidth(v float64) *Node {
-	n.node.SafeSet(string(penWidthAttr), fmt.Sprint(v), "1.0")
+	n.SafeSet(string(penWidthAttr), fmt.Sprint(v), "1.0")
 	return n
 }
 
@@ -1899,7 +1899,7 @@ func (n *Node) SetPenWidth(v float64) *Node {
 // If both are used, penwidth will be used.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:penwidth
 func (e *Edge) SetPenWidth(v float64) *Edge {
-	e.edge.SafeSet(string(penWidthAttr), fmt.Sprint(v), "1.0")
+	e.SafeSet(string(penWidthAttr), fmt.Sprint(v), "1.0")
 	return e
 }
 
@@ -1911,7 +1911,7 @@ func (e *Edge) SetPenWidth(v float64) *Edge {
 // Also, 1 is the maximum peripheries value for clusters.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:peripheries
 func (n *Node) SetPeripheries(v int) *Node {
-	n.node.SafeSet(string(peripheriesAttr), fmt.Sprint(v), "1")
+	n.SafeSet(string(peripheriesAttr), fmt.Sprint(v), "1")
 	return n
 }
 
@@ -1931,7 +1931,7 @@ func (n *Node) SetPeripheries(v int) *Node {
 // However, if the graph specifies node overlap removal or a change in aspect ratio, node coordinates may still change.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:pin
 func (n *Node) SetPin(v bool) *Node {
-	n.node.SafeSet(string(pinAttr), toBoolString(v), falseStr)
+	n.SafeSet(string(pinAttr), toBoolString(v), falseStr)
 	return n
 }
 
@@ -1950,7 +1950,7 @@ func (n *Node) SetPin(v bool) *Node {
 // Thus, neato -n can accept input correctly without requiring a -s flag and, in fact, ignores any such flag.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:pos
 func (n *Node) SetPos(x, y float64) *Node {
-	n.node.SafeSet(string(posAttr), fmt.Sprintf("%f,%f", x, y), "")
+	n.SafeSet(string(posAttr), fmt.Sprintf("%f,%f", x, y), "")
 	return n
 }
 
@@ -1969,7 +1969,7 @@ func (n *Node) SetPos(x, y float64) *Node {
 // Thus, neato -n can accept input correctly without requiring a -s flag and, in fact, ignores any such flag.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:pos
 func (e *Edge) SetPos(x, y float64) *Edge {
-	e.edge.SafeSet(string(posAttr), fmt.Sprintf("%f,%f", x, y), "")
+	e.SafeSet(string(posAttr), fmt.Sprintf("%f,%f", x, y), "")
 	return e
 }
 
@@ -1989,7 +1989,7 @@ const (
 // As a slight exception to the normal interpretation of bool, a value of "2" corresponds to "fast".
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:quadtree
 func (g *Graph) SetQuadTree(v QuadType) *Graph {
-	g.graph.SafeSet(string(quadTreeAttr), string(v), string(NormalQuad))
+	g.SafeSet(string(quadTreeAttr), string(v), string(NormalQuad))
 	return g
 }
 
@@ -1997,7 +1997,7 @@ func (g *Graph) SetQuadTree(v QuadType) *Graph {
 // If quantum > 0.0, node label dimensions will be rounded to integral multiples of the quantum.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#d:quantum
 func (g *Graph) SetQuantum(v float64) *Graph {
-	g.graph.SafeSet(string(quantumAttr), fmt.Sprint(v), "0.0")
+	g.SafeSet(string(quantumAttr), fmt.Sprint(v), "0.0")
 	return g
 }
 
@@ -2019,7 +2019,7 @@ const (
 // See record shapes.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:rankdir
 func (g *Graph) SetRankDir(v RankDir) *Graph {
-	g.graph.SafeSet(string(rankDirAttr), string(v), string(TBRank))
+	g.SafeSet(string(rankDirAttr), string(v), string(TBRank))
 	return g
 }
 
@@ -2036,7 +2036,7 @@ func (g *Graph) SetRankDir(v RankDir) *Graph {
 // etc. If there are more circles than numbers, the last number is used as the increment for the remainder.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:ranksep
 func (g *Graph) SetRankSeparator(v float64) *Graph {
-	g.graph.SafeSet(string(rankSepAttr), fmt.Sprint(v), "0.5")
+	g.SafeSet(string(rankSepAttr), fmt.Sprint(v), "0.5")
 	return g
 }
 
@@ -2091,7 +2091,7 @@ const (
 // This feature only works in dot.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:ratio
 func (g *Graph) SetRatio(v RatioType) *Graph {
-	g.graph.SafeSet(string(ratioAttr), string(v), "")
+	g.SafeSet(string(ratioAttr), string(v), "")
 	return g
 }
 
@@ -2099,7 +2099,7 @@ func (g *Graph) SetRatio(v RatioType) *Graph {
 // Rectangles for fields of records, in points.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:rects
 func (n *Node) SetRects(llx, lly, urx, ury float64) *Node {
-	n.node.SafeSet(string(rectsAttr), fmt.Sprintf("%f,%f,%f,%f", llx, lly, urx, ury), "")
+	n.SafeSet(string(rectsAttr), fmt.Sprintf("%f,%f,%f,%f", llx, lly, urx, ury), "")
 	return n
 }
 
@@ -2108,7 +2108,7 @@ func (n *Node) SetRects(llx, lly, urx, ury float64) *Node {
 // i.e., the vertices of the polygon will lie on a circle whose center is the center of the node.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:regular
 func (n *Node) SetRegular(v bool) *Node {
-	n.node.SafeSet(string(regularAttr), toBoolString(v), falseStr)
+	n.SafeSet(string(regularAttr), toBoolString(v), falseStr)
 	return n
 }
 
@@ -2116,7 +2116,7 @@ func (n *Node) SetRegular(v bool) *Node {
 // If true and there are multiple clusters, run crossing minimization a second time.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:remincross
 func (g *Graph) SetReminCross(v bool) *Graph {
-	g.graph.SafeSet(string(remincrossAttr), toBoolString(v), trueStr)
+	g.SafeSet(string(remincrossAttr), toBoolString(v), trueStr)
 	return g
 }
 
@@ -2125,7 +2125,7 @@ func (g *Graph) SetReminCross(v bool) *Graph {
 // Values larger than 1 tend to reduce the warping effect at the expense of less clustering.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:repulsiveforce
 func (g *Graph) SetRepulsiveForce(v float64) *Graph {
-	g.graph.SafeSet(string(repulsiveforceAttr), fmt.Sprint(v), "1.0")
+	g.SafeSet(string(repulsiveforceAttr), fmt.Sprint(v), "1.0")
 	return g
 }
 
@@ -2133,7 +2133,7 @@ func (g *Graph) SetRepulsiveForce(v float64) *Graph {
 // This is a synonym for the dpi attribute.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:resolution
 func (g *Graph) SetResolution(v float64) *Graph {
-	g.graph.SafeSet(string(resolutionAttr), fmt.Sprint(v), "96.0")
+	g.SafeSet(string(resolutionAttr), fmt.Sprint(v), "96.0")
 	return g
 }
 
@@ -2151,7 +2151,7 @@ func (g *Graph) SetResolution(v float64) *Graph {
 // If more than one node in a component is marked as the root, twopi will pick one.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:root
 func (g *Graph) SetRoot(v bool) *Graph {
-	g.graph.SafeSet(string(rootAttr), toBoolString(v), falseStr)
+	g.SafeSet(string(rootAttr), toBoolString(v), falseStr)
 	return g
 }
 
@@ -2169,7 +2169,7 @@ func (g *Graph) SetRoot(v bool) *Graph {
 // If more than one node in a component is marked as the root, twopi will pick one.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:root
 func (n *Node) SetRoot(v bool) *Node {
-	n.node.SafeSet(string(rootAttr), toBoolString(v), falseStr)
+	n.SafeSet(string(rootAttr), toBoolString(v), falseStr)
 	return n
 }
 
@@ -2177,7 +2177,7 @@ func (n *Node) SetRoot(v bool) *Node {
 // If 90, set drawing orientation to landscape.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:rotate
 func (g *Graph) SetRotate(v int) *Graph {
-	g.graph.SafeSet(string(rotateAttr), fmt.Sprint(v), "0")
+	g.SafeSet(string(rotateAttr), fmt.Sprint(v), "0")
 	return g
 }
 
@@ -2185,7 +2185,7 @@ func (g *Graph) SetRotate(v int) *Graph {
 // Causes the final layout to be rotated counter-clockwise by the specified number of degrees.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:rotation
 func (g *Graph) SetRotation(v float64) *Graph {
-	g.graph.SafeSet(string(rotationAttr), fmt.Sprint(v), "0")
+	g.SafeSet(string(rotationAttr), fmt.Sprint(v), "0")
 	return g
 }
 
@@ -2195,7 +2195,7 @@ func (g *Graph) SetRotation(v float64) *Graph {
 // Each node can have at most 5 unique samehead values.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:samehead
 func (e *Edge) SetSameHead(v string) *Edge {
-	e.edge.SafeSet(string(sameHeadAttr), v, "")
+	e.SafeSet(string(sameHeadAttr), v, "")
 	return e
 }
 
@@ -2205,7 +2205,7 @@ func (e *Edge) SetSameHead(v string) *Edge {
 // Each node can have at most 5 unique sametail values
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:sametail
 func (e *Edge) SetSameTail(v string) *Edge {
-	e.edge.SafeSet(string(sameTailAttr), v, "")
+	e.SafeSet(string(sameTailAttr), v, "")
 	return e
 }
 
@@ -2217,7 +2217,7 @@ func (e *Edge) SetSameTail(v string) *Edge {
 // when adjusting the layout to avoid overlapping nodes, and in image maps.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:samplepoints
 func (n *Node) SetSamplePoints(v int) *Node {
-	n.node.SafeSet(string(samplePointsAttr), fmt.Sprint(v), "8")
+	n.SafeSet(string(samplePointsAttr), fmt.Sprint(v), "8")
 	return n
 }
 
@@ -2226,7 +2226,7 @@ func (n *Node) SetSamplePoints(v int) *Node {
 // If only a single number is given, this is used for both factors.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:scale
 func (g *Graph) SetScale(x, y float64) *Graph {
-	g.graph.SafeSet(string(scaleAttr), fmt.Sprintf("%f,%f", x, y), "")
+	g.SafeSet(string(scaleAttr), fmt.Sprintf("%f,%f", x, y), "")
 	return g
 }
 
@@ -2235,7 +2235,7 @@ func (g *Graph) SetScale(x, y float64) *Graph {
 // maximum number of edges with negative cut values to search when looking for one with minimum cut value.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:searchsize
 func (g *Graph) SetSearchSize(v int) *Graph {
-	g.graph.SafeSet(string(searchSizeAttr), fmt.Sprint(v), "30")
+	g.SafeSet(string(searchSizeAttr), fmt.Sprint(v), "30")
 	return g
 }
 
@@ -2254,7 +2254,7 @@ func (g *Graph) SetSearchSize(v int) *Graph {
 // If esep is unset, the default value is used.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:sep
 func (g *Graph) SetSeparator(v string) *Graph {
-	g.graph.SafeSet(string(sepAttr), v, "+4")
+	g.SafeSet(string(sepAttr), v, "+4")
 	return g
 }
 
@@ -2327,7 +2327,7 @@ const (
 // Set the shape of a node.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:shape
 func (n *Node) SetShape(v Shape) *Node {
-	n.node.SafeSet(string(shapeAttr), string(v), string(EllipseShape))
+	n.SafeSet(string(shapeAttr), string(v), string(EllipseShape))
 	return n
 }
 
@@ -2344,7 +2344,7 @@ func (n *Node) SetShape(v Shape) *Node {
 // For further details, see External PostScript files.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:shapefile
 func (n *Node) SetShapeFile(v string) *Node {
-	n.node.SafeSet(string(shapeFileAttr), v, "")
+	n.SafeSet(string(shapeFileAttr), v, "")
 	return n
 }
 
@@ -2352,7 +2352,7 @@ func (n *Node) SetShapeFile(v string) *Node {
 // Print guide boxes in PostScript at the beginning of routesplines if 1, or at the end if 2. (Debugging)
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:showboxes
 func (g *Graph) SetShowBoxes(v int) *Graph {
-	g.graph.SafeSet(string(showBoxesAttr), fmt.Sprint(v), "0")
+	g.SafeSet(string(showBoxesAttr), fmt.Sprint(v), "0")
 	return g
 }
 
@@ -2360,7 +2360,7 @@ func (g *Graph) SetShowBoxes(v int) *Graph {
 // Print guide boxes in PostScript at the beginning of routesplines if 1, or at the end if 2. (Debugging)
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:showboxes
 func (n *Node) SetShowBoxes(v int) *Node {
-	n.node.SafeSet(string(showBoxesAttr), fmt.Sprint(v), "0")
+	n.SafeSet(string(showBoxesAttr), fmt.Sprint(v), "0")
 	return n
 }
 
@@ -2368,7 +2368,7 @@ func (n *Node) SetShowBoxes(v int) *Node {
 // Print guide boxes in PostScript at the beginning of routesplines if 1, or at the end if 2. (Debugging)
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:showboxes
 func (e *Edge) SetShowBoxes(v int) *Edge {
-	e.edge.SafeSet(string(showBoxesAttr), fmt.Sprint(v), "0")
+	e.SafeSet(string(showBoxesAttr), fmt.Sprint(v), "0")
 	return e
 }
 
@@ -2376,7 +2376,7 @@ func (e *Edge) SetShowBoxes(v int) *Edge {
 // Number of sides if shape=polygon.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:sides
 func (n *Node) SetSides(v int) *Node {
-	n.node.SafeSet(string(sidesAttr), fmt.Sprint(v), "4")
+	n.SafeSet(string(sidesAttr), fmt.Sprint(v), "4")
 	return n
 }
 
@@ -2394,7 +2394,7 @@ func (n *Node) SetSides(v int) *Node {
 // Note that there is some interaction between the size and ratio attributes.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:size
 func (g *Graph) SetSize(x, y float64) *Graph {
-	g.graph.SafeSet(string(sizeAttr), fmt.Sprintf("%f,%f", x, y), "")
+	g.SafeSet(string(sizeAttr), fmt.Sprintf("%f,%f", x, y), "")
 	return g
 }
 
@@ -2403,7 +2403,7 @@ func (g *Graph) SetSize(x, y float64) *Graph {
 // Positive values skew top of polygon to right; negative to left.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:skew
 func (n *Node) SetSkew(v float64) *Node {
-	n.node.SafeSet(string(skewAttr), fmt.Sprint(v), "0.0")
+	n.SafeSet(string(skewAttr), fmt.Sprint(v), "0.0")
 	return n
 }
 
@@ -2423,7 +2423,7 @@ const (
 // Specifies a post-processing step used to smooth out an uneven distribution of nodes.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:smoothing
 func (g *Graph) SetSmoothing(v SmoothType) *Graph {
-	g.graph.SafeSet(string(smoothingAttr), string(v), string(NoneSmooth))
+	g.SafeSet(string(smoothingAttr), string(v), string(NoneSmooth))
 	return g
 }
 
@@ -2433,7 +2433,7 @@ func (g *Graph) SetSmoothing(v SmoothType) *Graph {
 // with smaller values inserted first.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:sortv
 func (g *Graph) SetSortv(v int) *Graph {
-	g.graph.SafeSet(string(sortvAttr), fmt.Sprint(v), "0")
+	g.SafeSet(string(sortvAttr), fmt.Sprint(v), "0")
 	return g
 }
 
@@ -2443,7 +2443,7 @@ func (g *Graph) SetSortv(v int) *Graph {
 // with smaller values inserted first.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:sortv
 func (n *Node) SetSortv(v int) *Node {
-	n.node.SafeSet(string(sortvAttr), fmt.Sprint(v), "0")
+	n.SafeSet(string(sortvAttr), fmt.Sprint(v), "0")
 	return n
 }
 
@@ -2454,7 +2454,7 @@ func (n *Node) SetSortv(v int) *Node {
 // If set to none or "", no edges are drawn at all.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:splines
 func (g *Graph) SetSplines(v string) *Graph {
-	g.graph.SafeSet(string(splinesAttr), v, "")
+	g.SafeSet(string(splinesAttr), v, "")
 	return g
 }
 
@@ -2472,7 +2472,7 @@ const (
 // so the initial placement is repeatable.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:start
 func (g *Graph) SetStart(v StartType) *Graph {
-	g.graph.SafeSet(string(startAttr), string(v), "")
+	g.SafeSet(string(startAttr), string(v), "")
 	return g
 }
 
@@ -2528,7 +2528,7 @@ const (
 // Of course, the component can also explicitly set its style attribute to the desired value.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:style
 func (g *Graph) SetStyle(v GraphStyle) *Graph {
-	g.graph.SafeSet(string(styleAttr), string(v), "")
+	g.SafeSet(string(styleAttr), string(v), "")
 	return g
 }
 
@@ -2549,7 +2549,7 @@ func (g *Graph) SetStyle(v GraphStyle) *Graph {
 // Of course, the component can also explicitly set its style attribute to the desired value.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:style
 func (n *Node) SetStyle(v NodeStyle) *Node {
-	n.node.SafeSet(string(styleAttr), string(v), "")
+	n.SafeSet(string(styleAttr), string(v), "")
 	return n
 }
 
@@ -2570,7 +2570,7 @@ func (n *Node) SetStyle(v NodeStyle) *Node {
 // Of course, the component can also explicitly set its style attribute to the desired value.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:style
 func (e *Edge) SetStyle(v EdgeStyle) *Edge {
-	e.edge.SafeSet(string(styleAttr), string(v), "")
+	e.SafeSet(string(styleAttr), string(v), "")
 	return e
 }
 
@@ -2578,7 +2578,7 @@ func (e *Edge) SetStyle(v EdgeStyle) *Edge {
 // A URL or pathname specifying an XML style sheet, used in SVG output.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:stylesheet
 func (g *Graph) SetStyleSheet(v string) *Graph {
-	g.graph.SafeSet(string(stylesheetAttr), v, "")
+	g.SafeSet(string(stylesheetAttr), v, "")
 	return g
 }
 
@@ -2587,7 +2587,7 @@ func (g *Graph) SetStyleSheet(v string) *Graph {
 // Also, this value is used near the tail node, overriding any URL value.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:tailURL
 func (e *Edge) SetTailURL(v string) *Edge {
-	e.edge.SafeSet(string(tailURLAttr), v, "")
+	e.SafeSet(string(tailURLAttr), v, "")
 	return e
 }
 
@@ -2596,7 +2596,7 @@ func (e *Edge) SetTailURL(v string) *Edge {
 // The position indicates the center of the label.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:tail_lp
 func (e *Edge) SetTailLabelPoint(x, y float64) *Edge {
-	e.edge.SafeSet(string(tailLpAttr), fmt.Sprintf("%f,%f", x, y), "")
+	e.SafeSet(string(tailLpAttr), fmt.Sprintf("%f,%f", x, y), "")
 	return e
 }
 
@@ -2605,7 +2605,7 @@ func (e *Edge) SetTailLabelPoint(x, y float64) *Edge {
 // otherwise, the end of the edge goes to the center of the node, or the center of a port, if applicable.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:tailclip
 func (e *Edge) SetTailClip(v bool) *Edge {
-	e.edge.SafeSet(string(tailClipAttr), toBoolString(v), trueStr)
+	e.SafeSet(string(tailClipAttr), toBoolString(v), trueStr)
 	return e
 }
 
@@ -2613,7 +2613,7 @@ func (e *Edge) SetTailClip(v bool) *Edge {
 // Synonym for tailURL.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:tailhref
 func (e *Edge) SetTailHref(v string) *Edge {
-	e.edge.SafeSet(string(tailHrefAttr), v, "")
+	e.SafeSet(string(tailHrefAttr), v, "")
 	return e
 }
 
@@ -2621,7 +2621,7 @@ func (e *Edge) SetTailHref(v string) *Edge {
 // Text label to be placed near tail of edge.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:taillabel
 func (e *Edge) SetTailLabel(v string) *Edge {
-	e.edge.SafeSet(string(tailLabelAttr), v, "")
+	e.SafeSet(string(tailLabelAttr), v, "")
 	return e
 }
 
@@ -2629,7 +2629,7 @@ func (e *Edge) SetTailLabel(v string) *Edge {
 // Indicates where on the tail node to attach the tail of the edge.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:tailport
 func (e *Edge) SetTailPort(v string) *Edge {
-	e.edge.SafeSet(string(tailPortAttr), v, "center")
+	e.SafeSet(string(tailPortAttr), v, "center")
 	return e
 }
 
@@ -2639,7 +2639,7 @@ func (e *Edge) SetTailPort(v string) *Edge {
 // If undefined, the value of the target is used.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:tailtarget
 func (e *Edge) SetTailTarget(v string) *Edge {
-	e.edge.SafeSet(string(tailTargetAttr), v, "")
+	e.SafeSet(string(tailTargetAttr), v, "")
 	return e
 }
 
@@ -2648,7 +2648,7 @@ func (e *Edge) SetTailTarget(v string) *Edge {
 // This is used only if the edge has a tailURL attribute.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:tailtooltip
 func (e *Edge) SetTailTooltip(v string) *Edge {
-	e.edge.SafeSet(string(tailTooltipAttr), v, "")
+	e.SafeSet(string(tailTooltipAttr), v, "")
 	return e
 }
 
@@ -2656,7 +2656,7 @@ func (e *Edge) SetTailTooltip(v string) *Edge {
 // If the object has a URL, this attribute determines which window of the browser is used for the URL.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:target
 func (g *Graph) SetTarget(v string) *Graph {
-	g.graph.SafeSet(string(targetAttr), v, "")
+	g.SafeSet(string(targetAttr), v, "")
 	return g
 }
 
@@ -2664,7 +2664,7 @@ func (g *Graph) SetTarget(v string) *Graph {
 // If the object has a URL, this attribute determines which window of the browser is used for the URL.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:target
 func (n *Node) SetTarget(v string) *Node {
-	n.node.SafeSet(string(targetAttr), v, "")
+	n.SafeSet(string(targetAttr), v, "")
 	return n
 }
 
@@ -2672,7 +2672,7 @@ func (n *Node) SetTarget(v string) *Node {
 // If the object has a URL, this attribute determines which window of the browser is used for the URL.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:target
 func (e *Edge) SetTarget(v string) *Edge {
-	e.edge.SafeSet(string(targetAttr), v, "")
+	e.SafeSet(string(targetAttr), v, "")
 	return e
 }
 
@@ -2683,7 +2683,7 @@ func (e *Edge) SetTarget(v string) *Edge {
 // In this case, if tooltips will be generated, the user should set a tooltip attribute explicitly.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:tooltip
 func (n *Node) SetTooltip(v string) *Node {
-	n.node.SafeSet(string(tooltipAttr), v, "")
+	n.SafeSet(string(tooltipAttr), v, "")
 	return n
 }
 
@@ -2694,7 +2694,7 @@ func (n *Node) SetTooltip(v string) *Node {
 // In this case, if tooltips will be generated, the user should set a tooltip attribute explicitly.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:tooltip
 func (e *Edge) SetTooltip(v string) *Edge {
-	e.edge.SafeSet(string(tooltipAttr), v, "")
+	e.SafeSet(string(tooltipAttr), v, "")
 	return e
 }
 
@@ -2712,7 +2712,7 @@ func (e *Edge) SetTooltip(v string) *Edge {
 // Using truecolor=true avoids this problem.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:truecolor
 func (g *Graph) SetTrueColor(v bool) *Graph {
-	g.graph.SafeSet(string(trueColorAttr), toBoolString(v), "")
+	g.SafeSet(string(trueColorAttr), toBoolString(v), "")
 	return g
 }
 
@@ -2722,7 +2722,7 @@ func (g *Graph) SetTrueColor(v bool) *Graph {
 // If the node is an ellipse or circle, the samplepoints attribute affects the output.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:vertices
 func (n *Node) SetVertices(v string) *Node {
-	n.node.SafeSet(string(verticesAttr), v, "")
+	n.SafeSet(string(verticesAttr), v, "")
 	return n
 }
 
@@ -2732,7 +2732,7 @@ func (n *Node) SetVertices(v string) *Node {
 // The width and height of the viewport specify precisely the final size of the output.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:viewport
 func (g *Graph) SetViewport(v string) *Graph {
-	g.graph.SafeSet(string(viewportAttr), v, "")
+	g.SafeSet(string(viewportAttr), v, "")
 	return g
 }
 
@@ -2741,7 +2741,7 @@ func (g *Graph) SetViewport(v string) *Graph {
 // dim' = (1+2*margin)*dim.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:voro_margin
 func (g *Graph) SetVoroMargin(v float64) *Graph {
-	g.graph.SafeSet(string(voroMarginAttr), fmt.Sprint(v), "0.05")
+	g.SafeSet(string(voroMarginAttr), fmt.Sprint(v), "0.05")
 	return g
 }
 
@@ -2753,7 +2753,7 @@ func (g *Graph) SetVoroMargin(v float64) *Graph {
 // For other layouts, a larger weight encourages the layout to make the edge length closer to that specified by the len attribute.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:weight
 func (e *Edge) SetWeight(v float64) *Edge {
-	e.edge.SafeSet(string(weightAttr), fmt.Sprint(v), "1")
+	e.SafeSet(string(weightAttr), fmt.Sprint(v), "1")
 	return e
 }
 
@@ -2770,7 +2770,7 @@ func (e *Edge) SetWeight(v float64) *Edge {
 // If neither is set explicitly, the minimum of the two default values is used.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:width
 func (n *Node) SetWidth(v float64) *Node {
-	n.node.SafeSet(string(widthAttr), fmt.Sprint(v), "0.75")
+	n.SafeSet(string(widthAttr), fmt.Sprint(v), "0.75")
 	return n
 }
 
@@ -2779,7 +2779,7 @@ func (n *Node) SetWidth(v float64) *Node {
 // If not set, the attribute will be set to the xdot version used for output.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:xdotversion
 func (g *Graph) SetXDotVersion(v string) *Graph {
-	g.graph.SafeSet(string(xdotVersionAttr), v, "")
+	g.SafeSet(string(xdotVersionAttr), v, "")
 	return g
 }
 
@@ -2796,7 +2796,7 @@ func (g *Graph) SetXDotVersion(v string) *Graph {
 // To force placing all of them, use the forcelabels attribute.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:xlabel
 func (n *Node) SetXLabel(v string) *Node {
-	n.node.SafeSet(string(xlabelAttr), v, "")
+	n.SafeSet(string(xlabelAttr), v, "")
 	return n
 }
 
@@ -2813,7 +2813,7 @@ func (n *Node) SetXLabel(v string) *Node {
 // To force placing all of them, use the forcelabels attribute.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:xlabel
 func (e *Edge) SetXLabel(v string) *Edge {
-	e.edge.SafeSet(string(xlabelAttr), v, "")
+	e.SafeSet(string(xlabelAttr), v, "")
 	return e
 }
 
@@ -2822,7 +2822,7 @@ func (e *Edge) SetXLabel(v string) *Edge {
 // The position indicates the center of the label.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:xlp
 func (n *Node) SetXLabelPosition(x, y float64) *Node {
-	n.node.SafeSet(string(xlpAttr), fmt.Sprintf("%f,%f", x, y), "")
+	n.SafeSet(string(xlpAttr), fmt.Sprintf("%f,%f", x, y), "")
 	return n
 }
 
@@ -2831,7 +2831,7 @@ func (n *Node) SetXLabelPosition(x, y float64) *Node {
 // The position indicates the center of the label.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:xlp
 func (e *Edge) SetXLabelPosition(x, y float64) *Edge {
-	e.edge.SafeSet(string(xlpAttr), fmt.Sprintf("%f,%f", x, y), "")
+	e.SafeSet(string(xlpAttr), fmt.Sprintf("%f,%f", x, y), "")
 	return e
 }
 
@@ -2848,6 +2848,6 @@ func (e *Edge) SetXLabelPosition(x, y float64) *Edge {
 // If the z attribute is declared, the final rendering will be in 3D.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:z
 func (n *Node) SetZ(v float64) *Node {
-	n.node.SafeSet(string(zAttr), fmt.Sprint(v), "0.0")
+	n.SafeSet(string(zAttr), fmt.Sprint(v), "0.0")
 	return n
 }
