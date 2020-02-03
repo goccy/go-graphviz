@@ -369,7 +369,7 @@ func (n *Node) Root() *Graph {
 	return &Graph{Agraph: v}
 }
 
-func (n *Node) SetRoot(v *Graph) {
+func (n *Node) SetRootGraph(v *Graph) {
 	if v == nil || v.Agraph == nil {
 		return
 	}
@@ -833,7 +833,7 @@ func (g *Graph) Root() *Graph {
 	return &Graph{Agraph: v}
 }
 
-func (g *Graph) SetRoot(v *Graph) {
+func (g *Graph) SetRootGraph(v *Graph) {
 	if v == nil || v.Agraph == nil {
 		return
 	}
@@ -903,8 +903,16 @@ func (g *Graph) IsSimple() bool {
 	return ccall.Agissimple(g.Agraph)
 }
 
-func (g *Graph) Node(name string, createFlag int) (*Node, error) {
-	node, err := ccall.Agnodef(g.Agraph, name, createFlag)
+func (g *Graph) CreateNode(name string) (*Node, error) {
+	node, err := ccall.Agnodef(g.Agraph, name, 1)
+	if err != nil {
+		return nil, err
+	}
+	return toNode(node), nil
+}
+
+func (g *Graph) Node(name string) (*Node, error) {
+	node, err := ccall.Agnodef(g.Agraph, name, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -949,8 +957,8 @@ func (g *Graph) SubRep(n *Node) *SubNode {
 	}
 }
 
-func (g *Graph) Edge(start *Node, end *Node, name string, createFlag int) (*Edge, error) {
-	edge, err := ccall.Agedgef(g.Agraph, start.Agnode, end.Agnode, name, createFlag)
+func (g *Graph) CreateEdge(name string, start *Node, end *Node) (*Edge, error) {
+	edge, err := ccall.Agedgef(g.Agraph, start.Agnode, end.Agnode, name, 1)
 	if err != nil {
 		return nil, err
 	}

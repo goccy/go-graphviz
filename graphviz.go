@@ -15,18 +15,6 @@ type Graphviz struct {
 	layout Layout
 }
 
-type Graph struct {
-	graph *cgraph.Graph
-}
-
-type Node struct {
-	node *cgraph.Node
-}
-
-type Edge struct {
-	edge *cgraph.Edge
-}
-
 type Layout string
 
 const (
@@ -49,20 +37,20 @@ const (
 	JPG  Format = "jpg"
 )
 
-func ParseFile(path string) (*Graph, error) {
+func ParseFile(path string) (*cgraph.Graph, error) {
 	graph, err := cgraph.ParseFile(path)
 	if err != nil {
 		return nil, err
 	}
-	return toGraph(graph), nil
+	return graph, nil
 }
 
-func ParseBytes(bytes []byte) (*Graph, error) {
+func ParseBytes(bytes []byte) (*cgraph.Graph, error) {
 	graph, err := cgraph.ParseBytes(bytes)
 	if err != nil {
 		return nil, err
 	}
-	return toGraph(graph), nil
+	return graph, nil
 }
 
 func New() *Graphviz {
@@ -71,27 +59,6 @@ func New() *Graphviz {
 		dir:    cgraph.Directed,
 		layout: DOT,
 	}
-}
-
-func toGraph(g *cgraph.Graph) *Graph {
-	if g == nil {
-		return nil
-	}
-	return &Graph{graph: g}
-}
-
-func toNode(n *cgraph.Node) *Node {
-	if n == nil {
-		return nil
-	}
-	return &Node{node: n}
-}
-
-func toEdge(e *cgraph.Edge) *Edge {
-	if e == nil {
-		return nil
-	}
-	return &Edge{edge: e}
 }
 
 func (g *Graphviz) Close() {
@@ -103,55 +70,55 @@ func (g *Graphviz) SetLayout(layout Layout) *Graphviz {
 	return g
 }
 
-func (g *Graphviz) Render(graph *Graph, format Format, w io.Writer) (e error) {
-	if err := g.ctx.Layout(graph.graph, string(g.layout)); err != nil {
+func (g *Graphviz) Render(graph *cgraph.Graph, format Format, w io.Writer) (e error) {
+	if err := g.ctx.Layout(graph, string(g.layout)); err != nil {
 		return err
 	}
 	defer func() {
-		if err := g.ctx.FreeLayout(graph.graph); err != nil {
+		if err := g.ctx.FreeLayout(graph); err != nil {
 			e = err
 		}
 	}()
 
-	if err := g.ctx.RenderData(graph.graph, string(format), w); err != nil {
+	if err := g.ctx.RenderData(graph, string(format), w); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (g *Graphviz) RenderImage(graph *Graph, format Format) (img image.Image, e error) {
-	if err := g.ctx.Layout(graph.graph, string(g.layout)); err != nil {
+func (g *Graphviz) RenderImage(graph *cgraph.Graph, format Format) (img image.Image, e error) {
+	if err := g.ctx.Layout(graph, string(g.layout)); err != nil {
 		return nil, err
 	}
 	defer func() {
-		if err := g.ctx.FreeLayout(graph.graph); err != nil {
+		if err := g.ctx.FreeLayout(graph); err != nil {
 			e = err
 		}
 	}()
-	image, err := g.ctx.RenderImage(graph.graph, string(format))
+	image, err := g.ctx.RenderImage(graph, string(format))
 	if err != nil {
 		return nil, err
 	}
 	return image, nil
 }
 
-func (g *Graphviz) RenderFilename(graph *Graph, format Format, path string) (e error) {
-	if err := g.ctx.Layout(graph.graph, string(g.layout)); err != nil {
+func (g *Graphviz) RenderFilename(graph *cgraph.Graph, format Format, path string) (e error) {
+	if err := g.ctx.Layout(graph, string(g.layout)); err != nil {
 		return err
 	}
 	defer func() {
-		if err := g.ctx.FreeLayout(graph.graph); err != nil {
+		if err := g.ctx.FreeLayout(graph); err != nil {
 			e = err
 		}
 	}()
 
-	if err := g.ctx.RenderFilename(graph.graph, string(format), path); err != nil {
+	if err := g.ctx.RenderFilename(graph, string(format), path); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (g *Graphviz) Graph(option ...GraphOption) (*Graph, error) {
+func (g *Graphviz) Graph(option ...GraphOption) (*cgraph.Graph, error) {
 	for _, opt := range option {
 		opt(g)
 	}
@@ -159,33 +126,5 @@ func (g *Graphviz) Graph(option ...GraphOption) (*Graph, error) {
 	if err != nil {
 		return nil, err
 	}
-	return toGraph(graph), nil
-}
-
-func (g *Graph) Close() error {
-	return g.graph.Close()
-}
-
-func (g *Graph) Node(id string) (*Node, error) {
-	node, err := g.graph.Node(id, 0)
-	if err != nil {
-		return nil, err
-	}
-	return toNode(node), nil
-}
-
-func (g *Graph) CreateNode(id string) (*Node, error) {
-	node, err := g.graph.Node(id, 1)
-	if err != nil {
-		return nil, err
-	}
-	return toNode(node), nil
-}
-
-func (g *Graph) CreateEdge(id string, start *Node, end *Node) (*Edge, error) {
-	edge, err := g.graph.Edge(start.node, end.node, id, 1)
-	if err != nil {
-		return nil, err
-	}
-	return toEdge(edge).SetLabel(""), nil
+	return graph, nil
 }
