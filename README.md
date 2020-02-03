@@ -1,4 +1,4 @@
-# go-graphviz [![GoDoc](https://godoc.org/github.com/goccy/go-graphviz?status.svg)](https://godoc.org/github.com/goccy/go-graphviz)
+# go-graphviz ![Go](https://github.com/goccy/go-graphviz/workflows/Go/badge.svg) [![GoDoc](https://godoc.org/github.com/goccy/go-graphviz?status.svg)](https://godoc.org/github.com/goccy/go-graphviz) 
 
 Go bindings for Graphviz ( port of version `2.40.1` )
 
