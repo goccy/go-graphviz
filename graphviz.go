@@ -94,9 +94,15 @@ func (g *Graphviz) SetLayout(layout Layout) *Graphviz {
 	return g
 }
 
-func (g *Graphviz) Render(graph *Graph, format string, w io.Writer) error {
-	g.ctx.Layout(graph.graph, string(g.layout))
-	defer g.ctx.FreeLayout(graph.graph)
+func (g *Graphviz) Render(graph *Graph, format string, w io.Writer) (e error) {
+	if err := g.ctx.Layout(graph.graph, string(g.layout)); err != nil {
+		return err
+	}
+	defer func() {
+		if err := g.ctx.FreeLayout(graph.graph); err != nil {
+			e = err
+		}
+	}()
 
 	if err := g.ctx.RenderData(graph.graph, format, w); err != nil {
 		return err
@@ -104,18 +110,35 @@ func (g *Graphviz) Render(graph *Graph, format string, w io.Writer) error {
 	return nil
 }
 
-func (g *Graphviz) RenderImage(graph *Graph, format string) image.Image {
-	g.ctx.Layout(graph.graph, string(g.layout))
-	defer g.ctx.FreeLayout(graph.graph)
-
-	return g.ctx.RenderImage(graph.graph, format)
+func (g *Graphviz) RenderImage(graph *Graph, format string) (img image.Image, e error) {
+	if err := g.ctx.Layout(graph.graph, string(g.layout)); err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err := g.ctx.FreeLayout(graph.graph); err != nil {
+			e = err
+		}
+	}()
+	image, err := g.ctx.RenderImage(graph.graph, format)
+	if err != nil {
+		return nil, err
+	}
+	return image, nil
 }
 
-func (g *Graphviz) RenderFilename(graph *Graph, format, path string) error {
-	g.ctx.Layout(graph.graph, string(g.layout))
-	defer g.ctx.FreeLayout(graph.graph)
+func (g *Graphviz) RenderFilename(graph *Graph, format, path string) (e error) {
+	if err := g.ctx.Layout(graph.graph, string(g.layout)); err != nil {
+		return err
+	}
+	defer func() {
+		if err := g.ctx.FreeLayout(graph.graph); err != nil {
+			e = err
+		}
+	}()
 
-	g.ctx.RenderFilename(graph.graph, format, path)
+	if err := g.ctx.RenderFilename(graph.graph, format, path); err != nil {
+		return err
+	}
 	return nil
 }
 
