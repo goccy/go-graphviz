@@ -3,6 +3,9 @@ package gvc
 import (
 	"bytes"
 	"image"
+	"image/jpeg"
+	"io"
+	"os"
 
 	"github.com/fogleman/gg"
 	"github.com/goccy/go-graphviz/internal/ccall"
@@ -10,12 +13,12 @@ import (
 	"golang.org/x/image/font/gofont/gobold"
 )
 
-type pngRenderer struct {
+type ImageRenderer struct {
 	*DefaultRenderer
 	ctx *gg.Context
 }
 
-func (r *pngRenderer) BeginPage(job *Job) error {
+func (r *ImageRenderer) BeginPage(job *Job) error {
 	scale := job.Scale()
 	translation := job.Translation()
 	ctx := gg.NewContext(int(job.Width()), int(job.Height()))
@@ -25,28 +28,73 @@ func (r *pngRenderer) BeginPage(job *Job) error {
 	return nil
 }
 
-func (r *pngRenderer) EndPage(job *Job) error {
-	if job.OutputData() != nil {
+func (r *ImageRenderer) isRenderDataMode(job *Job) bool {
+	return job.OutputData() != nil
+}
+
+func (r *ImageRenderer) isRenderImageMode(job *Job) bool {
+	return job.ExternalContext()
+}
+
+func (r *ImageRenderer) isPNG(job *Job) bool {
+	return job.OutputLangname() == "png"
+}
+
+func (r *ImageRenderer) isJPG(job *Job) bool {
+	return job.OutputLangname() == "jpg"
+}
+
+func (r *ImageRenderer) encodeJPG(w io.Writer) error {
+	return jpeg.Encode(w, r.ctx.Image(), &jpeg.Options{
+		Quality: jpeg.DefaultQuality,
+	})
+}
+
+func (r *ImageRenderer) saveJPG(path string) error {
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	return r.encodeJPG(file)
+}
+
+func (r *ImageRenderer) EndPage(job *Job) error {
+	if r.isRenderDataMode(job) {
 		var buf bytes.Buffer
-		if err := r.ctx.EncodePNG(&buf); err != nil {
-			return err
+		switch {
+		case r.isPNG(job):
+			if err := r.ctx.EncodePNG(&buf); err != nil {
+				return err
+			}
+		case r.isJPG(job):
+			if err := r.encodeJPG(&buf); err != nil {
+				return err
+			}
 		}
 		job.SetOutputData(buf.Bytes())
 	}
-	if job.ExternalContext() {
+	if r.isRenderImageMode(job) {
 		img := (*image.Image)(job.Context())
 		*img = r.ctx.Image()
 	}
 	filename := job.OutputFilename()
 	if filename != "" {
-		if err := r.ctx.SavePNG(job.OutputFilename()); err != nil {
-			return err
+		switch {
+		case r.isPNG(job):
+			if err := r.ctx.SavePNG(filename); err != nil {
+				return err
+			}
+		case r.isJPG(job):
+			if err := r.saveJPG(filename); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
 }
 
-func (r *pngRenderer) TextSpan(job *Job, p Pointf, span *TextSpan) error {
+func (r *ImageRenderer) TextSpan(job *Job, p Pointf, span *TextSpan) error {
 	r.ctx.Push()
 	defer r.ctx.Pop()
 
@@ -71,7 +119,7 @@ func (r *pngRenderer) TextSpan(job *Job, p Pointf, span *TextSpan) error {
 	return nil
 }
 
-func (r *pngRenderer) Ellipse(job *Job, a0, a1 Pointf, filled int) error {
+func (r *ImageRenderer) Ellipse(job *Job, a0, a1 Pointf, filled int) error {
 	r.ctx.Push()
 	defer r.ctx.Pop()
 	rx := a1.X - a0.X
@@ -93,7 +141,7 @@ func (r *pngRenderer) Ellipse(job *Job, a0, a1 Pointf, filled int) error {
 	return nil
 }
 
-func (r *pngRenderer) Polygon(job *Job, a []Pointf, filled int) error {
+func (r *ImageRenderer) Polygon(job *Job, a []Pointf, filled int) error {
 	r.ctx.Push()
 	defer r.ctx.Pop()
 	var c ccall.GVColor
@@ -116,7 +164,7 @@ func (r *pngRenderer) Polygon(job *Job, a []Pointf, filled int) error {
 	return nil
 }
 
-func (r *pngRenderer) BezierCurve(job *Job, a []Pointf, arrowAtStart, arrowAtEnd int) error {
+func (r *ImageRenderer) BezierCurve(job *Job, a []Pointf, arrowAtStart, arrowAtEnd int) error {
 	r.ctx.Push()
 	defer r.ctx.Pop()
 	c := job.Obj().PenColor()
@@ -130,5 +178,6 @@ func (r *pngRenderer) BezierCurve(job *Job, a []Pointf, arrowAtStart, arrowAtEnd
 }
 
 func init() {
-	RegisterRenderer("png", &pngRenderer{})
+	RegisterRenderer("png", &ImageRenderer{})
+	RegisterRenderer("jpg", &ImageRenderer{})
 }
