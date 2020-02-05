@@ -9,7 +9,8 @@ import (
 )
 
 type Option struct {
-	Format     graphviz.Format `description:"specify output format ( currently supported: dot svg png )" short:"T" default:"dot"`
+	Format     graphviz.Format `description:"specify output format ( currently supported: dot svg png jpg )" short:"T" default:"dot"`
+	Layout     graphviz.Layout `description:"specify layout engine ( currently supported: circo dot fdp neato nop nop1 nop2 osage patchwork sfdp twopi )" short:"K" default:"dot"`
 	OutputFile string          `description:"specify output file name" short:"o" required:"true"`
 }
 
@@ -27,8 +28,8 @@ func _main(args []string, opt *Option) error {
 		graph.Close()
 		g.Close()
 	}()
-	g.RenderFilename(graph, opt.Format, opt.OutputFile)
-	return nil
+	g.SetLayout(opt.Layout)
+	return g.RenderFilename(graph, opt.Format, opt.OutputFile)
 }
 
 func main() {
