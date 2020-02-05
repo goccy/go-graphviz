@@ -9,7 +9,7 @@ Go bindings for Graphviz ( port of version `2.40.1` )
 - Supports rendering graph in pure Go
 - Supports switch renderer to your own
 - Supports type safed property setting
-- `gvc` `cgraph` are available as sub package
+- `gvc` `cgraph` `cdt` are available as sub package
 
 ## Currently supported Layout
 
@@ -17,7 +17,7 @@ Go bindings for Graphviz ( port of version `2.40.1` )
 
 ## Currently supported format
 
-`dot` `svg` `png` `jpeg`
+`dot` `svg` `png` `jpg`
 
 # Installation
 
@@ -88,7 +88,7 @@ Usage:
   dot [OPTIONS]
 
 Application Options:
-  -T=         specify output format ( currently supported: dot svg png ) (default: dot)
+  -T=         specify output format ( currently supported: dot svg png jpg ) (default: dot)
   -o=         specify output file name
 
 Help Options:
