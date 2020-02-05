@@ -62,8 +62,8 @@ func New() *Graphviz {
 	}
 }
 
-func (g *Graphviz) Close() {
-	g.ctx.Close()
+func (g *Graphviz) Close() error {
+	return g.ctx.Close()
 }
 
 func (g *Graphviz) SetLayout(layout Layout) *Graphviz {

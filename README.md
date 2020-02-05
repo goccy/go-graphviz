@@ -89,6 +89,7 @@ Usage:
 
 Application Options:
   -T=         specify output format ( currently supported: dot svg png jpg ) (default: dot)
+  -K=         specify layout engine ( currently supported: circo dot fdp neato nop nop1 nop2 osage patchwork sfdp twopi )
   -o=         specify output file name
 
 Help Options:
