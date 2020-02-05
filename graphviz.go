@@ -95,7 +95,7 @@ func (g *Graphviz) Render(graph *cgraph.Graph, format Format, w io.Writer) (e er
 	return nil
 }
 
-func (g *Graphviz) RenderImage(graph *cgraph.Graph, format Format) (img image.Image, e error) {
+func (g *Graphviz) RenderImage(graph *cgraph.Graph) (img image.Image, e error) {
 	if err := g.ctx.Layout(graph, string(g.layout)); err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func (g *Graphviz) RenderImage(graph *cgraph.Graph, format Format) (img image.Im
 			e = err
 		}
 	}()
-	image, err := g.ctx.RenderImage(graph, string(format))
+	image, err := g.ctx.RenderImage(graph, string(PNG))
 	if err != nil {
 		return nil, err
 	}
