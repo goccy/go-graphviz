@@ -6,6 +6,7 @@ import (
 
 	"github.com/goccy/go-graphviz/cgraph"
 	"github.com/goccy/go-graphviz/gvc"
+	"golang.org/x/image/font"
 )
 
 type Graphviz struct {
@@ -70,6 +71,14 @@ func (g *Graphviz) SetLayout(layout Layout) *Graphviz {
 	return g
 }
 
+func (g *Graphviz) SetFontFace(callback func(size float64) (font.Face, error)) {
+	gvc.SetFontFace(callback)
+}
+
+func (g *Graphviz) SetRenderer(format Format, renderer gvc.Renderer) {
+	gvc.RegisterRenderer(string(format), renderer)
+}
+
 func (g *Graphviz) Render(graph *cgraph.Graph, format Format, w io.Writer) (e error) {
 	if err := g.ctx.Layout(graph, string(g.layout)); err != nil {
 		return err
@@ -86,7 +95,7 @@ func (g *Graphviz) Render(graph *cgraph.Graph, format Format, w io.Writer) (e er
 	return nil
 }
 
-func (g *Graphviz) RenderImage(graph *cgraph.Graph, format Format) (img image.Image, e error) {
+func (g *Graphviz) RenderImage(graph *cgraph.Graph) (img image.Image, e error) {
 	if err := g.ctx.Layout(graph, string(g.layout)); err != nil {
 		return nil, err
 	}
@@ -95,7 +104,7 @@ func (g *Graphviz) RenderImage(graph *cgraph.Graph, format Format) (img image.Im
 			e = err
 		}
 	}()
-	image, err := g.ctx.RenderImage(graph, string(format))
+	image, err := g.ctx.RenderImage(graph, string(PNG))
 	if err != nil {
 		return nil, err
 	}

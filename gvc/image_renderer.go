@@ -10,12 +10,18 @@ import (
 	"github.com/fogleman/gg"
 	"github.com/goccy/go-graphviz/internal/ccall"
 	"github.com/golang/freetype/truetype"
+	"golang.org/x/image/font"
 	"golang.org/x/image/font/gofont/gobold"
 )
 
 type ImageRenderer struct {
 	*DefaultRenderer
-	ctx *gg.Context
+	ctx      *gg.Context
+	fontFace func(float64) (font.Face, error)
+}
+
+func (r *ImageRenderer) SetFontFace(fn func(size float64) (font.Face, error)) {
+	r.fontFace = fn
 }
 
 func (r *ImageRenderer) BeginPage(job *Job) error {
@@ -100,19 +106,10 @@ func (r *ImageRenderer) TextSpan(job *Job, p Pointf, span *TextSpan) error {
 
 	r.ctx.SetRGB(0, 0, 0)
 
-	ft, err := truetype.Parse(gobold.TTF)
+	face, err := r.fontFace(span.Font().Size())
 	if err != nil {
 		return err
 	}
-	opt := &truetype.Options{
-		Size:              span.Font().Size(),
-		DPI:               0,
-		Hinting:           0,
-		GlyphCacheEntries: 0,
-		SubPixelsX:        0,
-		SubPixelsY:        0,
-	}
-	face := truetype.NewFace(ft, opt)
 	r.ctx.SetFontFace(face)
 	y := p.Y + span.YOffsetCenterLine() + span.YOffsetLayout()
 	r.ctx.DrawStringAnchored(span.Str(), p.X, -y, 0.5, 0)
@@ -177,7 +174,31 @@ func (r *ImageRenderer) BezierCurve(job *Job, a []Pointf, arrowAtStart, arrowAtE
 	return nil
 }
 
+var (
+	imgRenderer *ImageRenderer
+)
+
+func SetFontFace(fn func(size float64) (font.Face, error)) {
+	imgRenderer.SetFontFace(fn)
+}
+
 func init() {
-	RegisterRenderer("png", &ImageRenderer{})
-	RegisterRenderer("jpg", &ImageRenderer{})
+	imgRenderer = &ImageRenderer{}
+	imgRenderer.SetFontFace(func(size float64) (font.Face, error) {
+		ft, err := truetype.Parse(gobold.TTF)
+		if err != nil {
+			return nil, err
+		}
+		opt := &truetype.Options{
+			Size:              size,
+			DPI:               0,
+			Hinting:           0,
+			GlyphCacheEntries: 0,
+			SubPixelsX:        0,
+			SubPixelsY:        0,
+		}
+		return truetype.NewFace(ft, opt), nil
+	})
+	RegisterRenderer("png", imgRenderer)
+	RegisterRenderer("jpg", imgRenderer)
 }

@@ -42,7 +42,7 @@ func TestGraphviz_Image(t *testing.T) {
 			}
 		})
 		t.Run("RenderImage", func(t *testing.T) {
-			image, err := g.RenderImage(graph, graphviz.PNG)
+			image, err := g.RenderImage(graph)
 			if err != nil {
 				t.Fatalf("%+v", err)
 			}
@@ -66,7 +66,7 @@ func TestGraphviz_Image(t *testing.T) {
 			}
 		})
 		t.Run("RenderImage", func(t *testing.T) {
-			image, err := g.RenderImage(graph, graphviz.JPG)
+			image, err := g.RenderImage(graph)
 			if err != nil {
 				t.Fatalf("%+v", err)
 			}
