@@ -353,8 +353,8 @@ limitBoxes (boxf* boxes, int boxn, pointf *pps, int pn, int delta)
 	    for (bi = 0; bi < boxn; bi++) {
 /* this tested ok on 64bit machines, but on 32bit we need this FUDGE
  *     or graphs/directed/records.gv fails */
-#define FUDGE .0001
-		if (sp[0].y <= boxes[bi].UR.y+FUDGE && sp[0].y >= boxes[bi].LL.y-FUDGE) {
+#define ROUTESPL_FUDGE .0001
+		if (sp[0].y <= boxes[bi].UR.y+ROUTESPL_FUDGE && sp[0].y >= boxes[bi].LL.y-ROUTESPL_FUDGE) {
 		    if (boxes[bi].LL.x > sp[0].x)
 			boxes[bi].LL.x = sp[0].x;
 		    if (boxes[bi].UR.x < sp[0].x)
@@ -1045,3 +1045,5 @@ makeStraightEdges(graph_t * g, edge_t** edges, int e_cnt, int et, splineInfo* si
 	dumb[2].y += del.y;
     }
 }
+
+#undef ROUTESPL_FUDGE

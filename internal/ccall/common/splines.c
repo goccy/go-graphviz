@@ -386,10 +386,7 @@ void add_box(path * P, boxf b)
  * too close the side of the node.
  *
  */
-#ifndef FUDGE
-#define FUDGE 2
-#endif
-
+#define SPLINES_FUDGE 2
 #define HT2(n) (ND_ht(n)/2)
 
 void
@@ -433,7 +430,7 @@ beginpath(path * P, edge_t * e, int et, pathend_t * endp, boolean merge)
 		b0.LL.y = P->start.p.y;
 		b0.UR.x = b.UR.x;
 		b0.UR.y = ND_coord(n).y + HT2(n) + GD_ranksep(agraphof(n))/2;
-		b.UR.x = ND_coord(n).x - ND_lw(n) - (FUDGE-2);
+		b.UR.x = ND_coord(n).x - ND_lw(n) - (SPLINES_FUDGE-2);
 		b.UR.y = b0.LL.y;
 		b.LL.y = ND_coord(n).y - HT2(n);
 		b.LL.x -= 1;
@@ -446,7 +443,7 @@ beginpath(path * P, edge_t * e, int et, pathend_t * endp, boolean merge)
 		/* b0.LL.y = ND_coord(n).y + HT2(n); */
 		b0.UR.x = b.UR.x+1;
 		b0.UR.y = ND_coord(n).y + HT2(n) + GD_ranksep(agraphof(n))/2;
-		b.LL.x = ND_coord(n).x + ND_rw(n) + (FUDGE-2);
+		b.LL.x = ND_coord(n).x + ND_rw(n) + (SPLINES_FUDGE-2);
 		b.UR.y = b0.LL.y;
 		b.LL.y = ND_coord(n).y - HT2(n);
 		b.UR.x += 1;
@@ -503,7 +500,7 @@ beginpath(path * P, edge_t * e, int et, pathend_t * endp, boolean merge)
 		b0.UR.x = b.UR.x+1;
 		b0.LL.x = P->start.p.x;
 		b0.LL.y = b0.UR.y - GD_ranksep(agraphof(n))/2;
-		b.LL.x = ND_coord(n).x + ND_rw(n) + (FUDGE-2);
+		b.LL.x = ND_coord(n).x + ND_rw(n) + (SPLINES_FUDGE-2);
 		b.LL.y = b0.UR.y;
 		b.UR.y = ND_coord(n).y + HT2(n);
 		b.UR.x += 1;
@@ -634,7 +631,7 @@ void endpath(path * P, edge_t * e, int et, pathend_t * endp, boolean merge)
 		b0.UR.y = P->end.p.y;
 		b0.UR.x = b.UR.x;
 		b0.LL.y = ND_coord(n).y - HT2(n) - GD_ranksep(agraphof(n))/2;
-		b.UR.x = ND_coord(n).x - ND_lw(n) - (FUDGE-2);
+		b.UR.x = ND_coord(n).x - ND_lw(n) - (SPLINES_FUDGE-2);
 		b.LL.y = b0.UR.y;
 		b.UR.y = ND_coord(n).y + HT2(n);
 		b.LL.x -= 1;
@@ -647,7 +644,7 @@ void endpath(path * P, edge_t * e, int et, pathend_t * endp, boolean merge)
 		/* b0.UR.y = ND_coord(n).y - HT2(n); */
 		b0.UR.x = b.UR.x+1;
 		b0.LL.y = ND_coord(n).y - HT2(n) - GD_ranksep(agraphof(n))/2;
-		b.LL.x = ND_coord(n).x + ND_rw(n) + (FUDGE-2);
+		b.LL.x = ND_coord(n).x + ND_rw(n) + (SPLINES_FUDGE-2);
 		b.LL.y = b0.UR.y;
 		b.UR.y = ND_coord(n).y + HT2(n);
 		b.UR.x += 1;
@@ -1491,3 +1488,4 @@ splines *getsplinepoints(edge_t * e)
     return sp;
 }
 
+#undef SPLINES_FUDGE
