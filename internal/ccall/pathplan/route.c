@@ -69,8 +69,8 @@ static int p2en;
 static elist_t *elist;
 #endif
 
-static Ppoint_t *ops;
-static int opn, opl;
+static Ppoint_t *route_ops;
+static int route_opn, route_opl;
 
 static int reallyroutespline(Pedge_t *, int,
 			     Ppoint_t *, int, Ppoint_t, Ppoint_t);
@@ -85,7 +85,7 @@ static void addroot(double, double *, int *);
 
 static Pvector_t normv(Pvector_t);
 
-static void _growops(int);
+static void _growroute_ops(int);
 
 static Ppoint_t add(Ppoint_t, Ppoint_t);
 static Ppoint_t sub(Ppoint_t, Ppoint_t);
@@ -119,7 +119,7 @@ int Proutespline(Pedge_t * edges, int edgen, Ppolyline_t input,
     Ppoint_t p0, p1, p2, p3;
     Ppoint_t *pp;
     Pvector_t v1, v2, v12, v23;
-    int ipi, opi;
+    int ipi, route_opi;
     int ei, p2ei;
     Pedge_t *e0p, *e1p;
 #endif
@@ -174,22 +174,22 @@ int Proutespline(Pedge_t * edges, int edgen, Ppolyline_t input,
     /* generate the splines */
     evs[0] = normv(evs[0]);
     evs[1] = normv(evs[1]);
-    opl = 0;
-    _growops(4);
-    ops[opl++] = inps[0];
+    route_opl = 0;
+    _growroute_ops(4);
+    route_ops[route_opl++] = inps[0];
     if (reallyroutespline(edges, edgen, inps, inpn, evs[0], evs[1]) == -1)
 	return -1;
-    output->pn = opl;
-    output->ps = ops;
+    output->pn = route_opl;
+    output->ps = route_ops;
 
 #if 0
     fprintf(stderr, "edge\na\nb\n");
     fprintf(stderr, "points\n%d\n", inpn);
     for (ipi = 0; ipi < inpn; ipi++)
 	fprintf(stderr, "%f %f\n", inps[ipi].x, inps[ipi].y);
-    fprintf(stderr, "splpoints\n%d\n", opl);
-    for (opi = 0; opi < opl; opi++)
-	fprintf(stderr, "%f %f\n", ops[opi].x, ops[opi].y);
+    fprintf(stderr, "splpoints\n%d\n", route_opl);
+    for (route_opi = 0; route_opi < route_opl; route_opi++)
+	fprintf(stderr, "%f %f\n", route_ops[route_opi].x, route_ops[route_opi].y);
 #endif
 
     return 0;
@@ -349,9 +349,9 @@ static int splinefits(Pedge_t * edges, int edgen, Ppoint_t pa,
 	first = 0;
 
 	if (splineisinside(edges, edgen, &sps[0])) {
-      _growops(opl + 4);
+      _growroute_ops(route_opl + 4);
 	    for (pi = 1; pi < 4; pi++)
-		ops[opl].x = sps[pi].x, ops[opl++].y = sps[pi].y;
+		route_ops[route_opl].x = sps[pi].x, route_ops[route_opl++].y = sps[pi].y;
 #if defined(DEBUG) && DEBUG >= 1
 	    fprintf(stderr, "success: %f %f\n", a, b);
 #endif
@@ -359,9 +359,9 @@ static int splinefits(Pedge_t * edges, int edgen, Ppoint_t pa,
 	}
 	if (a == 0 && b == 0) {
 	    if (forceflag) {
-          _growops(opl + 4);
+          _growroute_ops(route_opl + 4);
 		for (pi = 1; pi < 4; pi++)
-		    ops[opl].x = sps[pi].x, ops[opl++].y = sps[pi].y;
+		    route_ops[route_opl].x = sps[pi].x, route_ops[route_opl++].y = sps[pi].y;
 #if defined(DEBUG) && DEBUG >= 1
 		fprintf(stderr, "forced straight line: %f %f\n", a, b);
 #endif
@@ -522,23 +522,23 @@ static Pvector_t normv(Pvector_t v)
     return v;
 }
 
-static void _growops(int newopn)
+static void _growroute_ops(int newroute_opn)
 {
-    if (newopn <= opn)
+    if (newroute_opn <= route_opn)
 	return;
-    if (!ops) {
-	if (!(ops = (Ppoint_t *) malloc(POINTSIZE * newopn))) {
-	    prerror("cannot malloc ops");
+    if (!route_ops) {
+	if (!(route_ops = (Ppoint_t *) malloc(POINTSIZE * newroute_opn))) {
+	    prerror("cannot malloc route_ops");
 	    longjmp(jbuf,1);
 	}
     } else {
-	if (!(ops = (Ppoint_t *) realloc((void *) ops,
-					 POINTSIZE * newopn))) {
-	    prerror("cannot realloc ops");
+	if (!(route_ops = (Ppoint_t *) realloc((void *) route_ops,
+					 POINTSIZE * newroute_opn))) {
+	    prerror("cannot realloc route_ops");
 	    longjmp(jbuf,1);
 	}
     }
-    opn = newopn;
+    route_opn = newroute_opn;
 }
 
 static Ppoint_t add(Ppoint_t p1, Ppoint_t p2)

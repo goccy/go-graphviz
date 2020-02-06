@@ -2416,7 +2416,7 @@ static Agraph_t *cl_bound(graph_t* g,  node_t *n, node_t *adj)
  * FUDGE-2 away from the node, so the routing can avoid the node and the
  * box is at least 2 wide.
  */
-#define FUDGE 4
+#define DOTSPLINES_FUDGE 4
 
 static boxf maximal_bbox(graph_t* g, spline_info_t* sp, node_t* vn, edge_t* ie, edge_t* oe)
 {
@@ -2428,7 +2428,7 @@ static boxf maximal_bbox(graph_t* g, spline_info_t* sp, node_t* vn, edge_t* ie, 
     left_cl = right_cl = NULL;
 
     /* give this node all the available space up to its neighbors */
-    b = (double)(ND_coord(vn).x - ND_lw(vn) - FUDGE);
+    b = (double)(ND_coord(vn).x - ND_lw(vn) - DOTSPLINES_FUDGE);
     if ((left = _neighbor(g, vn, ie, oe, -1))) {
 	if ((left_cl = cl_bound(g, vn, left)))
 	    nb = GD_bb(left_cl).UR.x + (double)(sp->Splinesep);
@@ -2449,7 +2449,7 @@ static boxf maximal_bbox(graph_t* g, spline_info_t* sp, node_t* vn, edge_t* ie, 
     if ((ND_node_type(vn) == VIRTUAL) && (ND_label(vn)))
 	b = (double)(ND_coord(vn).x + 10);
     else
-	b = (double)(ND_coord(vn).x + ND_rw(vn) + FUDGE);
+	b = (double)(ND_coord(vn).x + ND_rw(vn) + DOTSPLINES_FUDGE);
     if ((right = _neighbor(g, vn, ie, oe, 1))) {
 	if ((right_cl = cl_bound(g, vn, right)))
 	    nb = GD_bb(right_cl).LL.x - (double)(sp->Splinesep);
@@ -2564,3 +2564,5 @@ void showpath(path * p)
     fprintf(stderr, "showpage\n");
 }
 #endif
+
+#undef DOTSPLINES_FUDGE
