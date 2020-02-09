@@ -11,7 +11,7 @@ import (
 	"github.com/goccy/go-graphviz/internal/ccall"
 	"github.com/golang/freetype/truetype"
 	"golang.org/x/image/font"
-	"golang.org/x/image/font/gofont/gobold"
+	"golang.org/x/image/font/gofont/goregular"
 )
 
 type ImageRenderer struct {
@@ -198,7 +198,7 @@ func SetFontFace(fn func(size float64) (font.Face, error)) {
 func init() {
 	imgRenderer = &ImageRenderer{}
 	imgRenderer.SetFontFace(func(size float64) (font.Face, error) {
-		ft, err := truetype.Parse(gobold.TTF)
+		ft, err := truetype.Parse(goregular.TTF)
 		if err != nil {
 			return nil, err
 		}
