@@ -8,26 +8,32 @@ import (
 	"github.com/goccy/go-graphviz/internal/ccall"
 )
 
+// Graph graph, subgraph (or hyperedge)
 type Graph struct {
 	*ccall.Agraph
 }
 
+// Node node (atom)
 type Node struct {
 	*ccall.Agnode
 }
 
+// SubNode the node per graph or subgraph record
 type SubNode struct {
 	*ccall.Agsubnode
 }
 
+// Edge node pair
 type Edge struct {
 	*ccall.Agedge
 }
 
+// Desc graph descriptor
 type Desc struct {
 	*ccall.Agdesc
 }
 
+// Disc union of client discipline methods
 type Disc struct {
 	*ccall.Agdisc
 }
@@ -37,39 +43,55 @@ type Symbol struct {
 	*ccall.Agsym
 }
 
-// Record generic runtime record
+// Record header of a user record.
+// These records are attached by client programs dynamically at runtime.
+// A unique string ID must be given to each record attached to the same object.
+// Cgraph has functions to create, search for, and delete these records.
+// The records are maintained in a circular list, with obj.Data pointing somewhere in the list.
+// The search function has an option to lock this pointer on a given record.
+// The application must be written so only one such lock is outstanding at a time.
 type Record struct {
 	*ccall.Agrec
 }
 
+// Tag Object tag for graphs, nodes, and edges.
+// While there may be several structs
+// for a given node or edges, there is only one unique ID (per main graph).
 type Tag struct {
 	*ccall.Agtag
 }
 
+// Object generic object header
 type Object struct {
 	*ccall.Agobj
 }
 
+// Clos common fields for graph/subgs
 type Clos struct {
 	*ccall.Agclos
 }
 
+// State client state (closures)
 type State struct {
 	*ccall.Agdstate
 }
 
+// CallbackStack enclosing state for Disc
 type CallbackStack struct {
 	*ccall.Agcbstack
 }
 
+// Attr string attribute container
 type Attr struct {
 	*ccall.Agattr
 }
 
+// DataDict set of dictionaries per graph
 type DataDict struct {
 	*ccall.Agdatadict
 }
 
+// IDTYPE type of ID
 type IDTYPE uint64
 
 var (
