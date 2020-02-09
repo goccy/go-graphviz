@@ -161,6 +161,19 @@ func (r *ImageRenderer) Polygon(job *Job, a []Pointf, filled int) error {
 	return nil
 }
 
+func (r *ImageRenderer) Polyline(job *Job, a []Pointf) error {
+	r.ctx.Push()
+	defer r.ctx.Pop()
+	c := job.Obj().PenColor()
+	r.ctx.SetRGB(float64(c.R)/255.0, float64(c.G)/255.0, float64(c.B)/255.0)
+	r.ctx.MoveTo(a[0].X, -a[0].Y)
+	for i := 1; i < len(a); i++ {
+		r.ctx.LineTo(a[i].X, -a[i].Y)
+	}
+	r.ctx.Stroke()
+	return nil
+}
+
 func (r *ImageRenderer) BezierCurve(job *Job, a []Pointf, arrowAtStart, arrowAtEnd int) error {
 	r.ctx.Push()
 	defer r.ctx.Pop()
