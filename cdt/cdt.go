@@ -46,8 +46,36 @@ func StrHash(a0 uint, a1 unsafe.Pointer, a2 int) uint {
 	return ccall.Dtstrhash(a0, a1, a2)
 }
 
+func toDict(v *ccall.Dict) *Dict {
+	if v == nil {
+		return nil
+	}
+	return &Dict{Dict: v}
+}
+
+func toDisc(v *ccall.Dtdisc) *Disc {
+	if v == nil {
+		return nil
+	}
+	return &Disc{Dtdisc: v}
+}
+
+func toData(v *ccall.Dtdata) *Data {
+	if v == nil {
+		return nil
+	}
+	return &Data{Dtdata: v}
+}
+
+func toLink(v *ccall.Dtlink) *Link {
+	if v == nil {
+		return nil
+	}
+	return &Link{Dtlink: v}
+}
+
 func Open(a0 *Disc, a1 *Method) *Dict {
-	return &Dict{Dict: ccall.Dtopen(a0.Dtdisc, a1.Dtmethod)}
+	return toDict(ccall.Dtopen(a0.Dtdisc, a1.Dtmethod))
 }
 
 func (d *Dict) Close() int {
@@ -55,11 +83,33 @@ func (d *Dict) Close() int {
 }
 
 func (d *Dict) View(a0 *Dict) *Dict {
-	return &Dict{Dict: ccall.Dtview(d.Dict, a0.Dict)}
+	return toDict(ccall.Dtview(d.Dict, a0.Dict))
 }
 
 func (d *Dict) Disc(a0 *Disc, a1 int) *Disc {
-	return &Disc{Dtdisc: ccall.Dtdiscf(d.Dict, a0.Dtdisc, a1)}
+	return toDisc(ccall.Dtdiscf(d.Dict, a0.Dtdisc, a1))
+}
+
+func (d *Dict) GetDisc() *Disc {
+	return toDisc(d.Dict.Disc())
+}
+
+func (d *Dict) SetDisc(v *Disc) {
+	if v == nil {
+		return
+	}
+	d.Dict.SetDisc(v.Dtdisc)
+}
+
+func (d *Dict) Data() *Data {
+	return toData(d.Dict.Data())
+}
+
+func (d *Dict) SetData(v *Data) {
+	if v == nil {
+		return
+	}
+	d.Dict.SetData(v.Dtdata)
 }
 
 func (d *Dict) Method(a0 *Method) *Method {
@@ -101,30 +151,22 @@ func (d *Dict) Stat(a0 *Stat, a1 int) int {
 }
 
 func (l *Link) Right() *Link {
-	v := l.Dtlink.Right()
-	if v == nil {
-		return nil
-	}
-	return &Link{Dtlink: v}
+	return toLink(l.Dtlink.Right())
 }
 
 func (l *Link) SetRight(v *Link) {
-	if v == nil || v.Dtlink == nil {
+	if v == nil {
 		return
 	}
 	l.Dtlink.SetRight(v.Dtlink)
 }
 
 func (l *Link) Left() *Link {
-	v := l.Dtlink.Left()
-	if v == nil {
-		return nil
-	}
-	return &Link{Dtlink: v}
+	return toLink(l.Dtlink.Left())
 }
 
 func (l *Link) SetLeft(v *Link) {
-	if v == nil || v.Dtlink == nil {
+	if v == nil {
 		return
 	}
 	l.Dtlink.SetLeft(v.Dtlink)
@@ -136,4 +178,23 @@ func (l *Link) Hash() uint {
 
 func (l *Link) SetHash(v uint) {
 	l.Dtlink.SetHash(v)
+}
+
+func (h *Hold) Header() *Link {
+	return toLink(h.Dthold.Hdr())
+}
+
+func (h *Hold) SetHeader(v *Link) {
+	if v == nil {
+		return
+	}
+	h.Dthold.SetHdr(v.Dtlink)
+}
+
+func (h *Hold) Object() unsafe.Pointer {
+	return h.Dthold.Obj()
+}
+
+func (h *Hold) SetObject(v unsafe.Pointer) {
+	h.Dthold.SetObj(v)
 }
