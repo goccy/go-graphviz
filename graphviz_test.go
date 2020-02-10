@@ -37,8 +37,8 @@ func TestGraphviz_Image(t *testing.T) {
 			if err := g.Render(graph, graphviz.PNG, &buf); err != nil {
 				t.Fatalf("%+v", err)
 			}
-			if len(buf.Bytes()) != 4610 {
-				t.Fatal("failed to encode png")
+			if len(buf.Bytes()) != 4638 {
+				t.Fatalf("failed to encode png: bytes length is %d", len(buf.Bytes()))
 			}
 		})
 		t.Run("RenderImage", func(t *testing.T) {
@@ -61,8 +61,8 @@ func TestGraphviz_Image(t *testing.T) {
 			if err := g.Render(graph, graphviz.JPG, &buf); err != nil {
 				t.Fatalf("%+v", err)
 			}
-			if len(buf.Bytes()) != 3322 {
-				t.Fatal("failed to encode png")
+			if len(buf.Bytes()) != 3281 {
+				t.Fatalf("failed to encode jpg: bytes length is %d", len(buf.Bytes()))
 			}
 		})
 		t.Run("RenderImage", func(t *testing.T) {
