@@ -19,6 +19,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <limits.h>
+#include "config.h"
 #include "vispath.h"
 #include "pathutil.h"
 

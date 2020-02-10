@@ -22,8 +22,9 @@ package ccall
 #cgo CFLAGS: -Itwopigen
 #cgo CFLAGS: -I../
 #cgo CFLAGS: -I../libltdl
-#cgo CFLAGS: -Wno-unused-result -Wno-format
+#cgo CFLAGS: -Wno-unused-result -Wno-format -Wno-pointer-to-int-cast -Wno-attributes
 #cgo LDFLAGS: -lm
+#include "config.h"
 #include "gvc.h"
 #include "color.h"
 #include "gvcjob.h"

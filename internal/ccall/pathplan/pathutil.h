@@ -17,6 +17,7 @@
 #define _PATHUTIL_INCLUDE
 #define _BLD_pathplan 1
 
+#include "config.h"
 #include "pathplan.h"
 
 #ifdef __cplusplus

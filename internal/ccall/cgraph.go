@@ -22,7 +22,8 @@ package ccall
 #cgo CFLAGS: -Itwopigen
 #cgo CFLAGS: -I../
 #cgo CFLAGS: -I../libltdl
-#cgo CFLAGS: -Wno-unused-result -Wno-format
+#cgo CFLAGS: -Wno-unused-result -Wno-format -Wno-pointer-to-int-cast -Wno-attributes
+#include "config.h"
 #include "cgraph.h"
 #include <stdlib.h>
 
@@ -1150,7 +1151,7 @@ func Agcountuniqedges(g *Agraph, n *Agnode, in int, out int) int {
 }
 
 func Agalloc(g *Agraph, size uint) unsafe.Pointer {
-	return C.agalloc(g.c, C.ulong(size))
+	return C.agalloc(g.c, C.size_t(size))
 }
 
 func Agfree(g *Agraph, ptr unsafe.Pointer) {

@@ -22,7 +22,8 @@ package ccall
 #cgo CFLAGS: -Itwopigen
 #cgo CFLAGS: -I../
 #cgo CFLAGS: -I../libltdl
-#cgo CFLAGS: -Wno-unused-result -Wno-format
+#cgo CFLAGS: -Wno-unused-result -Wno-format -Wno-pointer-to-int-cast -Wno-attributes
+#include "config.h"
 #include "cdt.h"
 
 extern void *call_searchf(Dtsearch_f searchf, Dt_t *a0, void *a1, int a2);
@@ -330,7 +331,7 @@ func (g *Dtdisc) Memory() Dtmemory {
 		return g.memoryf
 	}
 	return func(a0 *Dict, a1 unsafe.Pointer, a2 uint, a3 *Dtdisc) unsafe.Pointer {
-		return C.call_memoryf(g.c.memoryf, a0.c, a1, C.ulong(a2), a3.c)
+		return C.call_memoryf(g.c.memoryf, a0.c, a1, C.size_t(a2), a3.c)
 	}
 }
 
@@ -407,7 +408,7 @@ func (g *Dict) Memory() Dtmemory {
 		return g.memory
 	}
 	return func(a0 *Dict, a1 unsafe.Pointer, a2 uint, a3 *Dtdisc) unsafe.Pointer {
-		return C.call_memoryf(g.c.memoryf, a0.c, a1, C.ulong(a2), a3.c)
+		return C.call_memoryf(g.c.memoryf, a0.c, a1, C.size_t(a2), a3.c)
 	}
 }
 

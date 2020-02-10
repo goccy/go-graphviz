@@ -2,14 +2,15 @@
 #include "gvplugin.h"
 #include "gvplugin_render.h"
 #include <stdio.h>
+#include "_cgo_export.h"
 
 extern gvplugin_library_t gvplugin_dot_layout_LTX_library;
 extern gvplugin_library_t gvplugin_neato_layout_LTX_library;
 extern gvplugin_library_t gvplugin_core_LTX_library;
 extern gvplugin_library_t gvplugin_go_library;
 
-lt_symlist_t lt_preloaded_symbols[] = {
-	{ "gvplugin_dot_layout_LTX_library", (void*)(&gvplugin_dot_layout_LTX_library) },
+lt_symlist_t lt_preloaded_symbols[PRLOADED_SYMBOL_N] = {
+    { "gvplugin_dot_layout_LTX_library", (void *)(&gvplugin_dot_layout_LTX_library) },
     { "gvplugin_neato_layout_LTX_library", (void*)(&gvplugin_neato_layout_LTX_library) },
 	{ "gvplugin_core_LTX_library", (void*)(&gvplugin_core_LTX_library) },
     { "gvplugin_go_LTX_library", (void*)(&gvplugin_go_library) },
@@ -28,8 +29,6 @@ static gvplugin_api_t go_apis[] = {
 gvplugin_library_t gvplugin_go_library = { "go", go_apis };
 
 typedef enum { FORMAT_PNG, FORMAT_JPG } go_format_type;
-
-#include "_cgo_export.h"
 
 void *call_searchf(Dtsearch_f searchf, Dt_t *a0, void *a1, int a2) {
     return searchf(a0, a1, a2);
