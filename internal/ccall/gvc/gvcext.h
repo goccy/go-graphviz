@@ -66,23 +66,22 @@ extern "C" {
 /*visual studio*/
 #ifdef WIN32
 #ifndef GVC_EXPORTS
-__declspec(dllimport) lt_symlist_t lt_preloaded_symbols[];
+__declspec(dllimport) lt_symlist_t lt_preloaded_symbols[PRLOADED_SYMBOL_N];
 #else
 //__declspec(dllexport) lt_symlist_t lt_preloaded_symbols[];
 #if !defined(LTDL_H)
-lt_symlist_t lt_preloaded_symbols[];
+lt_symlist_t lt_preloaded_symbols[PRLOADED_SYMBOL_N];
 #endif
 #endif
 #endif
 /*end visual studio*/
 
-
 #ifndef WIN32
 #if defined(GVDLL)
-	__declspec(dllexport) lt_symlist_t lt_preloaded_symbols[];
+	__declspec(dllexport) lt_symlist_t lt_preloaded_symbols[PRLOADED_SYMBOL_N];
 #else
 #if !defined(LTDL_H)
-	extern lt_symlist_t lt_preloaded_symbols[];
+	extern lt_symlist_t lt_preloaded_symbols[PRLOADED_SYMBOL_N];
 #endif
 #endif
 #endif

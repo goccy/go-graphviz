@@ -160,10 +160,10 @@ struct _dtstat_s
 
 /* public data */
 #if defined(_BLD_cdt) && defined(__EXPORT__)
-#define extern	__EXPORT__
+#define extern
 #endif
 #if !defined(_BLD_cdt) && defined(__IMPORT__)
-#define extern	__IMPORT__
+#define extern
 #endif
 
 extern Dtmethod_t* 	Dtset;
@@ -191,7 +191,7 @@ extern Dtmethod_t	_Dtstack;
 
 /* public functions */
 #if defined(_BLD_cdt) && defined(__EXPORT__)
-#define extern	__EXPORT__
+#define extern
 #endif
 
 extern Dt_t*		dtopen(Dtdisc_t*, Dtmethod_t*);

@@ -20,7 +20,7 @@
 #define DIGCOLA 1
 
 /* Define if you want on-demand plugin loading */
-#define ENABLE_LTDL 1
+//#define ENABLE_LTDL 1
 
 /* Define for DLLs on Windows. */
 /* #undef GVDLL */
@@ -98,8 +98,10 @@
 /* Define to 1 if you have the <dl.h> header file. */
 /* #undef HAVE_DL_H */
 
+#ifndef WIN32
 /* Define to 1 if you have the `drand48' function. */
 #define HAVE_DRAND48 1
+#endif
 
 /* Define if you have the _dyld_func_lookup function. */
 /* #undef HAVE_DYLD */
@@ -302,8 +304,10 @@
 /* Define to 1 if you have the <search.h> header file. */
 #define HAVE_SEARCH_H 1
 
+#ifndef WIN32
 /* Define to 1 if you have the `setenv' function. */
 #define HAVE_SETENV 1
+#endif
 
 /* Define to 1 if you have the `setmode' function. */
 #define HAVE_SETMODE 1
@@ -315,7 +319,9 @@
 /* #undef HAVE_SINCOS */
 
 /* Define to 1 if you have the `srand48' function. */
+#ifndef WIN32
 #define HAVE_SRAND48 1
+#endif
 
 /* Define to 1 if stdbool.h conforms to C99. */
 #define HAVE_STDBOOL_H 1
@@ -367,7 +373,9 @@
 #define HAVE_SYS_IOCTL_H 1
 
 /* Define to 1 if you have the <sys/mman.h> header file. */
+#ifndef WIN32
 #define HAVE_SYS_MMAN_H 1
+#endif
 
 /* Define to 1 if you have the <sys/ndir.h> header file, and it defines `DIR'.
    */
@@ -522,6 +530,11 @@
 
 /* Define to a type to use for `error_t' if it is not otherwise available. */
 #define error_t int
+
+#define GVC_EXPORTS 1
+#define PATHPLAN_EXPORTS 1
+
+#define PRLOADED_SYMBOL_N 5
 
 /* Define to `int' if <sys/types.h> doesn't define. */
 /* #undef gid_t */

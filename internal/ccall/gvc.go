@@ -22,7 +22,8 @@ package ccall
 #cgo CFLAGS: -Itwopigen
 #cgo CFLAGS: -I../
 #cgo CFLAGS: -I../libltdl
-#cgo CFLAGS: -Wno-unused-result -Wno-format
+#cgo CFLAGS: -Wno-unused-result -Wno-format -Wno-pointer-to-int-cast -Wno-attributes
+#include "config.h"
 #include "gvc.h"
 #include "gvcjob.h"
 #include "cgraph.h"
@@ -485,9 +486,9 @@ func (g *GVJ) OutputData() []byte {
 
 func (g *GVJ) SetOutputData(v []byte) {
 	length := len(v)
-	g.c.output_data = (*C.char)(C.realloc(unsafe.Pointer(g.c.output_data), C.ulong(length)))
+	g.c.output_data = (*C.char)(C.realloc(unsafe.Pointer(g.c.output_data), C.size_t(length)))
 	header := (*reflect.SliceHeader)(unsafe.Pointer(&v))
-	C.memcpy(unsafe.Pointer(g.c.output_data), unsafe.Pointer(header.Data), C.ulong(length))
+	C.memcpy(unsafe.Pointer(g.c.output_data), unsafe.Pointer(header.Data), C.size_t(length))
 	g.c.output_data_position = C.uint(length)
 }
 

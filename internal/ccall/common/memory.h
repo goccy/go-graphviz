@@ -14,6 +14,7 @@
 #ifndef GV_MEMORY_H
 #define GV_MEMORY_H
 
+#include "config.h"
 #include <stdlib.h>
 #ifdef HAVE_MALLOC_H
 #include <malloc.h>

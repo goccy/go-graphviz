@@ -19,7 +19,9 @@
 #include "geom.h"
 #include "geomprocs.h"
 #ifdef _WIN32
-#define inline 
+#ifndef inline
+#define inline
+#endif
 #endif
 
 box mkbox(point p, point q)

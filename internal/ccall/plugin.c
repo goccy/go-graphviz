@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "../plugin/core/gvplugin_core.c"
 #include "../plugin/core/gvrender_core_dot.c"
 #include "../plugin/core/gvrender_core_json.c"

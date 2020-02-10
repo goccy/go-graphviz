@@ -28,7 +28,10 @@
 #define DMKEY "Software\\Microsoft" //key to look for library dir
 #endif
 
+#ifndef WIN32
 #include <regex.h>
+#endif
+
 #include "types.h"
 #include "logic.h"
 #include "memory.h"
@@ -167,10 +170,14 @@ static unsigned int svg_units_convert(double n, char *u)
 }
 
 static char* svg_attr_value_re = "([a-z][a-zA-Z]*)=\"([^\"]*)\"";
+
+#ifndef WIN32
 static regex_t re, *pre = NULL;
+#endif
 
 static void svg_size (usershape_t *us)
 {
+#ifndef WIN32
     unsigned int w = 0, h = 0;
     double n, x0, y0, x1, y1;
     char u[10];
@@ -235,6 +242,7 @@ static void svg_size (usershape_t *us)
     us->dpi = 0;
     us->w = w;
     us->h = h;
+#endif
 }
 
 static void png_size (usershape_t *us)

@@ -16,7 +16,9 @@
 #include "gvconfig.h"
 
 #include	<string.h>
+#ifndef WIN32
 #include    <regex.h>
+#endif
 
 #ifdef ENABLE_LTDL
 #include	<sys/types.h>
