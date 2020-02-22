@@ -116,10 +116,10 @@
 /* #undef HAVE_ERROR_T */
 
 /* Define if you have the expat library */
-//#define HAVE_EXPAT 1
+#define HAVE_EXPAT 1
 
 /* Define to 1 if you have the <expat.h> header file. */
-//#define HAVE_EXPAT_H 1
+#define HAVE_EXPAT_H 1
 
 /* Define to 1 if you have the <fcntl.h> header file. */
 #define HAVE_FCNTL_H 1
