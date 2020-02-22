@@ -69,9 +69,9 @@ func (r *ImageRenderer) setPenStyle(job *Job) {
 	o := job.Obj()
 	switch o.Pen() {
 	case ccall.PEN_DASHED:
-		r.ctx.SetDash(6.0)
+		r.ctx.SetDash(4.0)
 	case ccall.PEN_DOTTED:
-		r.ctx.SetDash(2.0, 6.0)
+		r.ctx.SetDash(2.0, 4.0)
 	case ccall.PEN_SOLID, ccall.PEN_NONE:
 	}
 	r.ctx.SetLineWidth(o.PenWidth())
