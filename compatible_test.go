@@ -84,13 +84,9 @@ func TestGraphviz_Compatible(t *testing.T) {
 	if err := json.Unmarshal(file, &pathToHashDump); err != nil {
 		t.Fatal(err)
 	}
-	notSupportedFile := "testdata/directed/table.gv" // required libexpat
 	for _, path := range testPaths {
 		filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 			if info.IsDir() {
-				return nil
-			}
-			if path == notSupportedFile {
 				return nil
 			}
 			file, err := ioutil.ReadFile(path)
