@@ -65,6 +65,18 @@ func (r *ImageRenderer) saveJPG(path string) error {
 	return r.encodeJPG(file)
 }
 
+func (r *ImageRenderer) setPenStyle(job *Job) {
+	o := job.Obj()
+	switch o.Pen() {
+	case ccall.PEN_DASHED:
+		r.ctx.SetDash(4.0)
+	case ccall.PEN_DOTTED:
+		r.ctx.SetDash(2.0, 4.0)
+	case ccall.PEN_SOLID, ccall.PEN_NONE:
+	}
+	r.ctx.SetLineWidth(o.PenWidth())
+}
+
 func (r *ImageRenderer) EndPage(job *Job) error {
 	if r.isRenderDataMode(job) {
 		var buf bytes.Buffer
@@ -104,7 +116,8 @@ func (r *ImageRenderer) TextSpan(job *Job, p Pointf, span *TextSpan) error {
 	r.ctx.Push()
 	defer r.ctx.Pop()
 
-	r.ctx.SetRGB(0, 0, 0)
+	c := job.Obj().PenColor()
+	r.ctx.SetRGB(float64(c.R)/255.0, float64(c.G)/255.0, float64(c.B)/255.0)
 
 	face, err := r.fontFace(span.Font().Size())
 	if err != nil {
@@ -127,6 +140,7 @@ func (r *ImageRenderer) TextSpan(job *Job, p Pointf, span *TextSpan) error {
 func (r *ImageRenderer) Ellipse(job *Job, a0, a1 Pointf, filled int) error {
 	r.ctx.Push()
 	defer r.ctx.Pop()
+	r.setPenStyle(job)
 	rx := a1.X - a0.X
 	ry := a1.Y - a0.Y
 	var c ccall.GVColor
@@ -149,6 +163,7 @@ func (r *ImageRenderer) Ellipse(job *Job, a0, a1 Pointf, filled int) error {
 func (r *ImageRenderer) Polygon(job *Job, a []Pointf, filled int) error {
 	r.ctx.Push()
 	defer r.ctx.Pop()
+	r.setPenStyle(job)
 	var c ccall.GVColor
 	if filled > 0 {
 		c = job.Obj().FillColor()
@@ -172,6 +187,7 @@ func (r *ImageRenderer) Polygon(job *Job, a []Pointf, filled int) error {
 func (r *ImageRenderer) Polyline(job *Job, a []Pointf) error {
 	r.ctx.Push()
 	defer r.ctx.Pop()
+	r.setPenStyle(job)
 	c := job.Obj().PenColor()
 	r.ctx.SetRGB(float64(c.R)/255.0, float64(c.G)/255.0, float64(c.B)/255.0)
 	r.ctx.MoveTo(a[0].X, -a[0].Y)
@@ -185,6 +201,7 @@ func (r *ImageRenderer) Polyline(job *Job, a []Pointf) error {
 func (r *ImageRenderer) BezierCurve(job *Job, a []Pointf, arrowAtStart, arrowAtEnd int) error {
 	r.ctx.Push()
 	defer r.ctx.Pop()
+	r.setPenStyle(job)
 	c := job.Obj().PenColor()
 	r.ctx.SetRGB(float64(c.R)/255.0, float64(c.G)/255.0, float64(c.B)/255.0)
 	r.ctx.MoveTo(a[0].X, -a[0].Y)
