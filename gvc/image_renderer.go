@@ -110,9 +110,17 @@ func (r *ImageRenderer) TextSpan(job *Job, p Pointf, span *TextSpan) error {
 	if err != nil {
 		return err
 	}
+	switch span.Just() {
+	case 'r':
+		p.X -= span.Size().X
+	case 'l':
+		p.X -= 0.0
+	case 'n':
+		p.X -= (span.Size().X / 2.0)
+	}
 	r.ctx.SetFontFace(face)
 	y := p.Y + span.YOffsetCenterLine() + span.YOffsetLayout()
-	r.ctx.DrawStringAnchored(span.Str(), p.X, -y, 0.5, 0)
+	r.ctx.DrawStringAnchored(span.Str(), p.X, -y, 0, 0)
 	return nil
 }
 
