@@ -10,7 +10,8 @@
 /* Define to 1 if you have the `arc4random' function. */
 /* #undef HAVE_ARC4RANDOM */
 
-#if defined(__APPLE__)
+#if defined(_WIN32)
+#elif defined(__APPLE__)
 /* Define to 1 if you have the `arc4random_buf' function. */
 #define HAVE_ARC4RANDOM_BUF 1
 #else
@@ -72,25 +73,25 @@
 #define LT_OBJDIR ".libs/"
 
 /* Name of package */
-#define PACKAGE "expat"
+#define EXPAT_PACKAGE "expat"
 
 /* Define to the address where bug reports for this package should be sent. */
-#define PACKAGE_BUGREPORT "expat-bugs@libexpat.org"
+#define EXPAT_PACKAGE_BUGREPORT "expat-bugs@libexpat.org"
 
 /* Define to the full name of this package. */
-#define PACKAGE_NAME "expat"
+#define EXPAT_PACKAGE_NAME "expat"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "expat 2.2.9"
+#define EXPAT_PACKAGE_STRING "expat 2.2.9"
 
 /* Define to the one symbol short name of this package. */
-#define PACKAGE_TARNAME "expat"
+#define EXPAT_PACKAGE_TARNAME "expat"
 
 /* Define to the home page for this package. */
-#define PACKAGE_URL ""
+#define EXPAT_PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "2.2.9"
+#define EXPAT_PACKAGE_VERSION "2.2.9"
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
