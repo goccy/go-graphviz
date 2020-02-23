@@ -96,6 +96,17 @@ Help Options:
   -h, --help  Show this help message
 ```
 
+# How it works
+
+<img width = "600px" src="https://user-images.githubusercontent.com/209884/75105919-48685b00-565c-11ea-8add-ebd5545f5399.png"></img>
+
+`go-graphviz` has four layers.
+
+1. `graphviz` package provides facade interface for manipulating all features of graphviz library
+2. `gvc` `cgraph` `cdt` are sub packages ( FYI: C library section in https://www.graphviz.org/documentation )
+3. `internal/ccall` package provides bridge interface between Go and C
+4. `go-graphviz` includes full graphviz sources with customize
+
 # License
 
 MIT
