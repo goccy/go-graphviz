@@ -1,6 +1,0 @@
-gvplugin_neato_layout.lo: gvplugin_neato_layout.c \
-  ../../lib/gvc/gvplugin.h ../../lib/gvc/gvcext.h
-
-../../lib/gvc/gvplugin.h:
-
-../../lib/gvc/gvcext.h:
