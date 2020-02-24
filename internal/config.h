@@ -236,7 +236,7 @@
 /* #undef HAVE_LIBGEN */
 
 /* Define to 1 if you have the `ltdl' library (-lltdl). */
-#define HAVE_LIBLTDL 1
+//#define HAVE_LIBLTDL 1
 
 /* Define if you have the XPM library */
 /* #undef HAVE_LIBXPMFORLEFTY */
@@ -254,7 +254,7 @@
 #define HAVE_LRAND48 1
 
 /* Define this if a modern libltdl is already installed */
-#define HAVE_LTDL 1
+//#define HAVE_LTDL 1
 
 /* Define to 1 if you have the <mach-o/dyld.h> header file. */
 #define HAVE_MACH_O_DYLD_H 1
