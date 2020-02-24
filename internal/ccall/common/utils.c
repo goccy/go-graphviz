@@ -18,9 +18,9 @@
 #include "logic.h"
 #include "gvc.h"
 
-#ifdef _WIN32
-#include "libltdl/lt_system.h"
-#endif
+//#ifdef _WIN32
+//#include "libltdl/lt_system.h"
+//#endif
 
 #include <unistd.h>
 #include <ctype.h>
