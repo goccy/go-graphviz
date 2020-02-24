@@ -27,6 +27,8 @@ $ go get github.com/goccy/go-graphviz
 
 # Synopsis
 
+## 1. Write DOT Graph in Go
+
 ```go
 package main
 
@@ -71,6 +73,46 @@ func main() {
 }
 ```
 
+## 2. Parse DOT Graph
+
+```go
+path := "/path/to/dot.gv"
+b, err := ioutil.ReadFile(path)
+if err != nil {
+  log.Fatal(err)
+}
+graph := graphviz.ParseBytes(b)
+```
+
+## 3. Render Graph
+
+```go
+g := graphviz.New()
+graph, err := g.Graph()
+if err != nil {
+  log.Fatal(err)
+}
+
+// create your graph
+
+// 1. write encoded PNG data to buffer
+var buf bytes.Buffer
+if err := g.Render(graph, graphviz.PNG, &buf); err != nil {
+  log.Fatal(err)
+}
+
+// 2. get as image.Image instance
+image, err := g.RenderImage(graph)
+if err != nil {
+  log.Fatal(err)
+}
+
+// 3. write to file directly
+if err := g.RenderFilename(graph, graphviz.PNG, "/path/to/graph.png"); err != nil {
+  log.Fatal(err)
+}
+```
+
 # Tool
 
 ## `dot`
@@ -105,7 +147,7 @@ Help Options:
 1. `graphviz` package provides facade interface for manipulating all features of graphviz library
 2. `gvc` `cgraph` `cdt` are sub packages ( FYI: C library section in https://www.graphviz.org/documentation )
 3. `internal/ccall` package provides bridge interface between Go and C
-4. `go-graphviz` includes full graphviz sources with customize
+4. `go-graphviz` includes full graphviz sources
 
 # License
 
