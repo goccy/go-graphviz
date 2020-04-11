@@ -10,12 +10,9 @@
 /* Define to 1 if you have the `arc4random' function. */
 /* #undef HAVE_ARC4RANDOM */
 
-#if defined(_WIN32)
-#elif defined(__APPLE__)
+#if defined(__APPLE__)
 /* Define to 1 if you have the `arc4random_buf' function. */
 #define HAVE_ARC4RANDOM_BUF 1
-#else
-#define HAVE_GETRANDOM 1
 #endif
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
