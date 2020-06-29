@@ -121,7 +121,7 @@ func TestGraphviz_Compatible(t *testing.T) {
 				t.Fatal(err)
 			}
 			if distance > imageThreshold {
-				t.Fatalf("doesn't compatible image with dot. distance = %d", distance)
+				t.Fatalf("doesn't compatible image with dot. %s distance = %d", path, distance)
 			}
 			return nil
 		})
