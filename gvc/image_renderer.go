@@ -24,12 +24,18 @@ func (r *ImageRenderer) SetFontFace(fn func(size float64) (font.Face, error)) {
 	r.fontFace = fn
 }
 
+func (r *ImageRenderer) toX(job *Job, x float64) float64 {
+	return job.Scale().X * x
+}
+
+func (r *ImageRenderer) toY(job *Job, y float64) float64 {
+	return job.Scale().Y * y
+}
+
 func (r *ImageRenderer) BeginPage(job *Job) error {
-	scale := job.Scale()
 	translation := job.Translation()
 	ctx := gg.NewContext(int(job.Width()), int(job.Height()))
-	ctx.Scale(scale.X, scale.Y)
-	ctx.Translate(translation.X, -translation.Y)
+	ctx.Translate(r.toX(job, translation.X), r.toY(job, -translation.Y))
 	r.ctx = ctx
 	return nil
 }
@@ -119,20 +125,21 @@ func (r *ImageRenderer) TextSpan(job *Job, p Pointf, span *TextSpan) error {
 	c := job.Obj().PenColor()
 	r.ctx.SetRGB(float64(c.R)/255.0, float64(c.G)/255.0, float64(c.B)/255.0)
 
-	face, err := r.fontFace(span.Font().Size())
+	face, err := r.fontFace(r.toX(job, span.Font().Size()))
 	if err != nil {
 		return err
 	}
+	p.X = r.toX(job, p.X)
 	switch span.Just() {
 	case 'r':
-		p.X -= span.Size().X
+		p.X -= r.toX(job, span.Size().X)
 	case 'l':
 		p.X -= 0.0
 	case 'n':
-		p.X -= (span.Size().X / 2.0)
+		p.X -= r.toX(job, span.Size().X/2.0)
 	}
 	r.ctx.SetFontFace(face)
-	y := p.Y + span.YOffsetCenterLine() + span.YOffsetLayout()
+	y := r.toY(job, p.Y+span.YOffsetCenterLine()+span.YOffsetLayout())
 	r.ctx.DrawStringAnchored(span.Str(), p.X, -y, 0, 0)
 	return nil
 }
@@ -141,8 +148,8 @@ func (r *ImageRenderer) Ellipse(job *Job, a0, a1 Pointf, filled int) error {
 	r.ctx.Push()
 	defer r.ctx.Pop()
 	r.setPenStyle(job)
-	rx := a1.X - a0.X
-	ry := a1.Y - a0.Y
+	rx := r.toX(job, a1.X-a0.X)
+	ry := r.toY(job, a1.Y-a0.Y)
 	var c ccall.GVColor
 	if filled > 0 {
 		c = job.Obj().FillColor()
@@ -151,7 +158,7 @@ func (r *ImageRenderer) Ellipse(job *Job, a0, a1 Pointf, filled int) error {
 		c = job.Obj().PenColor()
 	}
 	r.ctx.SetRGB(float64(c.R)/255.0, float64(c.G)/255.0, float64(c.B)/255.0)
-	r.ctx.DrawEllipse(a0.X, -a0.Y, rx, ry)
+	r.ctx.DrawEllipse(r.toX(job, a0.X), r.toY(job, -a0.Y), rx, ry)
 	if filled > 0 {
 		r.ctx.Fill()
 	} else {
@@ -171,9 +178,9 @@ func (r *ImageRenderer) Polygon(job *Job, a []Pointf, filled int) error {
 		c = job.Obj().PenColor()
 	}
 	r.ctx.SetRGB(float64(c.R)/255.0, float64(c.G)/255.0, float64(c.B)/255.0)
-	r.ctx.MoveTo(a[0].X, -a[0].Y)
+	r.ctx.MoveTo(r.toX(job, a[0].X), r.toY(job, -a[0].Y))
 	for i := 1; i < len(a); i++ {
-		r.ctx.LineTo(a[i].X, -a[i].Y)
+		r.ctx.LineTo(r.toX(job, a[i].X), r.toY(job, -a[i].Y))
 	}
 	r.ctx.ClosePath()
 	if filled > 0 {
@@ -190,9 +197,9 @@ func (r *ImageRenderer) Polyline(job *Job, a []Pointf) error {
 	r.setPenStyle(job)
 	c := job.Obj().PenColor()
 	r.ctx.SetRGB(float64(c.R)/255.0, float64(c.G)/255.0, float64(c.B)/255.0)
-	r.ctx.MoveTo(a[0].X, -a[0].Y)
+	r.ctx.MoveTo(r.toX(job, a[0].X), r.toY(job, -a[0].Y))
 	for i := 1; i < len(a); i++ {
-		r.ctx.LineTo(a[i].X, -a[i].Y)
+		r.ctx.LineTo(r.toX(job, a[i].X), r.toY(job, -a[i].Y))
 	}
 	r.ctx.Stroke()
 	return nil
@@ -204,9 +211,16 @@ func (r *ImageRenderer) BezierCurve(job *Job, a []Pointf, arrowAtStart, arrowAtE
 	r.setPenStyle(job)
 	c := job.Obj().PenColor()
 	r.ctx.SetRGB(float64(c.R)/255.0, float64(c.G)/255.0, float64(c.B)/255.0)
-	r.ctx.MoveTo(a[0].X, -a[0].Y)
+	r.ctx.MoveTo(r.toX(job, a[0].X), r.toY(job, -a[0].Y))
 	for i := 1; i < len(a); i += 3 {
-		r.ctx.CubicTo(a[i].X, -a[i].Y, a[i+1].X, -a[i+1].Y, a[i+2].X, -a[i+2].Y)
+		r.ctx.CubicTo(
+			r.toX(job, a[i].X),
+			r.toY(job, -a[i].Y),
+			r.toX(job, a[i+1].X),
+			r.toY(job, -a[i+1].Y),
+			r.toX(job, a[i+2].X),
+			r.toY(job, -a[i+2].Y),
+		)
 	}
 	r.ctx.Stroke()
 	return nil
