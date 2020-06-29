@@ -125,7 +125,7 @@ func (r *ImageRenderer) TextSpan(job *Job, p Pointf, span *TextSpan) error {
 	c := job.Obj().PenColor()
 	r.ctx.SetRGB(float64(c.R)/255.0, float64(c.G)/255.0, float64(c.B)/255.0)
 
-	face, err := r.fontFace(span.Font().Size())
+	face, err := r.fontFace(r.toX(job, span.Font().Size()))
 	if err != nil {
 		return err
 	}
