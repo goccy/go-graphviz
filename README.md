@@ -2,6 +2,8 @@
 
 Go bindings for Graphviz ( port of version `2.40.1` )
 
+<img src="https://user-images.githubusercontent.com/209884/90976476-64e84000-e578-11ea-9596-fb4a7d3b11a6.png" width="400px"></img>
+
 # Features
 
 - No need to install Graphviz library ( ~`brew install graphviz`~ or ~`apt-get install graphviz`~ )
