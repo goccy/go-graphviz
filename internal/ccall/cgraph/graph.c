@@ -77,7 +77,7 @@ Agraph_t *agopen1(Agraph_t * g)
     g->n_id = agdtopen(g, &Ag_subnode_id_disc, Dttree);
     g->e_seq = agdtopen(g, g == agroot(g)? &Ag_mainedge_seq_disc : &Ag_subedge_seq_disc, Dttree);
     g->e_id = agdtopen(g, g == agroot(g)? &Ag_mainedge_id_disc : &Ag_subedge_id_disc, Dttree);
-    g->g_dict = agdtopen(g, &Ag_subgraph_id_disc, Dttree);
+    g->g_dict = agdtopen(g, &Ag_subgraph_id_disc, Dtlist);
 
     par = agparent(g);
     if (par) {
