@@ -83,7 +83,7 @@ b, err := ioutil.ReadFile(path)
 if err != nil {
   log.Fatal(err)
 }
-graph := graphviz.ParseBytes(b)
+graph, err := graphviz.ParseBytes(b)
 ```
 
 ## 3. Render Graph
