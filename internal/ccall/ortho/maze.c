@@ -14,7 +14,7 @@
 
 #include "config.h"
 
-#define DEBUG
+//#define DEBUG
 
 #include <stddef.h>
 #include <maze.h>

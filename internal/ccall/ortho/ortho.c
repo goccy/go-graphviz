@@ -24,7 +24,7 @@
 
 #include "config.h"
 
-#define DEBUG
+//#define DEBUG
 #include <stddef.h>
 #include <setjmp.h>
 #include <maze.h>
