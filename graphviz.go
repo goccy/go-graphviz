@@ -3,17 +3,21 @@ package graphviz
 import (
 	"image"
 	"io"
+	"errors"
 
 	"github.com/goccy/go-graphviz/cgraph"
 	"github.com/goccy/go-graphviz/gvc"
 	"golang.org/x/image/font"
 )
 
+var GraphvizContextClosed = errors.New("Graphviz context closed")
+
 type Graphviz struct {
 	ctx    *gvc.Context
 	name   string
 	dir    *cgraph.Desc
 	layout Layout
+	closed bool
 }
 
 type Layout string
@@ -63,6 +67,7 @@ func New() *Graphviz {
 }
 
 func (g *Graphviz) Close() error {
+	g.closed = true
 	return g.ctx.Close()
 }
 
@@ -80,6 +85,9 @@ func (g *Graphviz) SetRenderer(format Format, renderer gvc.Renderer) {
 }
 
 func (g *Graphviz) Render(graph *cgraph.Graph, format Format, w io.Writer) (e error) {
+	if g.closed {
+		return GraphvizContextClosed
+	}
 	if err := g.ctx.Layout(graph, string(g.layout)); err != nil {
 		return err
 	}
@@ -96,6 +104,9 @@ func (g *Graphviz) Render(graph *cgraph.Graph, format Format, w io.Writer) (e er
 }
 
 func (g *Graphviz) RenderImage(graph *cgraph.Graph) (img image.Image, e error) {
+	if g.closed {
+		return nil, GraphvizContextClosed
+	}
 	if err := g.ctx.Layout(graph, string(g.layout)); err != nil {
 		return nil, err
 	}
@@ -112,6 +123,9 @@ func (g *Graphviz) RenderImage(graph *cgraph.Graph) (img image.Image, e error) {
 }
 
 func (g *Graphviz) RenderFilename(graph *cgraph.Graph, format Format, path string) (e error) {
+	if g.closed {
+		return GraphvizContextClosed
+	}
 	if err := g.ctx.Layout(graph, string(g.layout)); err != nil {
 		return err
 	}
