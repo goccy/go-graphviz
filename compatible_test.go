@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"image"
-	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -114,7 +113,7 @@ func TestGraphviz_Compatible(t *testing.T) {
 				t.Fatal(err)
 			}
 			targetHash, err := goimagehash.LoadImageHash(bytes.NewBuffer(dump))
-			if err != nil && err != io.EOF {
+			if err != nil {
 				t.Fatal(err)
 			}
 			distance, err := hash.Distance(targetHash)

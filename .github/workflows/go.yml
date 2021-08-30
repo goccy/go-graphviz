@@ -18,4 +18,5 @@ jobs:
       - name: build dot command
         run: go build -v cmd/dot/dot.go
       - name: test
+        if: ${{ matrix.os != 'windows-latest' }}
         run: go test -race -v ./...
