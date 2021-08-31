@@ -42,6 +42,8 @@ import (
 	"unsafe"
 )
 
+const wordSize = 4 << (^uintptr(0) >> 63)
+
 type Dtlink struct {
 	c *C.Dtlink_t
 }
@@ -125,7 +127,7 @@ func (g *Dtlink) Left() *Dtlink {
 }
 
 func (g *Dtlink) SetLeft(v *Dtlink) {
-	g.c.hl = *(*[8]byte)(unsafe.Pointer(v.c))
+	g.c.hl = *(*[wordSize]byte)(unsafe.Pointer(v.c))
 }
 
 func ToDthold(c *C.Dthold_t) *Dthold {
@@ -235,7 +237,7 @@ func (g *Dtdata) Htab() []*Dtlink {
 
 func (g *Dtdata) SetHtab(v []*Dtlink) {
 	header := (*reflect.SliceHeader)(unsafe.Pointer(&v))
-	g.c.hh = *(*[8]byte)(unsafe.Pointer(header.Data))
+	g.c.hh = *(*[wordSize]byte)(unsafe.Pointer(header.Data))
 }
 
 func (g *Dtdata) Head() *Dtlink {
@@ -244,7 +246,7 @@ func (g *Dtdata) Head() *Dtlink {
 }
 
 func (g *Dtdata) SetHead(v *Dtlink) {
-	g.c.hh = *(*[8]byte)(unsafe.Pointer(v.c))
+	g.c.hh = *(*[wordSize]byte)(unsafe.Pointer(v.c))
 }
 
 func (g *Dtdata) Ntab() int {
