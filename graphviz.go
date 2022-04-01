@@ -54,6 +54,14 @@ func ParseBytes(bytes []byte) (*cgraph.Graph, error) {
 	return graph, nil
 }
 
+func UnflattenBytes(bytes []byte) (*cgraph.Graph, error) {
+	graph, err := cgraph.UnflattenBytes(bytes)
+	if err != nil {
+		return nil, err
+	}
+	return graph, nil
+}
+
 func New() *Graphviz {
 	return &Graphviz{
 		ctx:    gvc.New(),

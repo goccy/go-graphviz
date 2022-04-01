@@ -108,6 +108,15 @@ func ParseBytes(bytes []byte) (*Graph, error) {
 	return toGraph(graph), nil
 }
 
+func UnflattenBytes(bytes []byte) (*Graph, error) {
+	graph, err := ccall.Agmemread(string(bytes))
+	if err != nil {
+		return nil, err
+	}
+	ccall.Transform(graph)
+	return toGraph(graph), nil
+}
+
 func ParseFile(path string) (*Graph, error) {
 	file, err := ioutil.ReadFile(path)
 	if err != nil {

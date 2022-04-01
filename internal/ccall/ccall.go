@@ -7,6 +7,7 @@ package ccall
 #cgo CFLAGS: -Igvc
 #cgo CFLAGS: -Ipathplan
 #cgo CFLAGS: -Icgraph
+#cgo CFLAGS: -Iunflatten
 #cgo CFLAGS: -Ifdpgen
 #cgo CFLAGS: -Isfdpgen
 #cgo CFLAGS: -Ixdot
