@@ -54,12 +54,8 @@ func ParseBytes(bytes []byte) (*cgraph.Graph, error) {
 	return graph, nil
 }
 
-func UnflattenBytes(bytes []byte, maxMinlen int, chainLimit int, doFans bool) (*cgraph.Graph, error) {
-	graph, err := cgraph.UnflattenBytes(bytes, maxMinlen, chainLimit, doFans)
-	if err != nil {
-		return nil, err
-	}
-	return graph, nil
+func UnflattenGraph(graph *cgraph.Graph, maxMinlen int, chainLimit int, doFans bool) *cgraph.Graph {
+	return cgraph.UnflattenGraph(graph, maxMinlen, chainLimit, doFans)
 }
 
 func New() *Graphviz {

@@ -108,13 +108,9 @@ func ParseBytes(bytes []byte) (*Graph, error) {
 	return toGraph(graph), nil
 }
 
-func UnflattenBytes(bytes []byte, maxMinlen int, chainLimit int, doFans bool) (*Graph, error) {
-	graph, err := ccall.Agmemread(string(bytes))
-	if err != nil {
-		return nil, err
-	}
-	ccall.Transform(graph, maxMinlen, chainLimit, doFans)
-	return toGraph(graph), nil
+func UnflattenGraph(graph *Graph, maxMinlen int, chainLimit int, doFans bool) *Graph {
+	ccall.Transform(graph.Agraph, maxMinlen, chainLimit, doFans)
+	return graph
 }
 
 func ParseFile(path string) (*Graph, error) {
