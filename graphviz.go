@@ -54,8 +54,8 @@ func ParseBytes(bytes []byte) (*cgraph.Graph, error) {
 	return graph, nil
 }
 
-func UnflattenBytes(bytes []byte) (*cgraph.Graph, error) {
-	graph, err := cgraph.UnflattenBytes(bytes)
+func UnflattenBytes(bytes []byte, maxMinlen int, chainLimit int, doFans bool) (*cgraph.Graph, error) {
+	graph, err := cgraph.UnflattenBytes(bytes, maxMinlen, chainLimit, doFans)
 	if err != nil {
 		return nil, err
 	}

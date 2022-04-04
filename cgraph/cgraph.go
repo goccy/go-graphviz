@@ -108,12 +108,12 @@ func ParseBytes(bytes []byte) (*Graph, error) {
 	return toGraph(graph), nil
 }
 
-func UnflattenBytes(bytes []byte) (*Graph, error) {
+func UnflattenBytes(bytes []byte, maxMinlen int, chainLimit int, doFans bool) (*Graph, error) {
 	graph, err := ccall.Agmemread(string(bytes))
 	if err != nil {
 		return nil, err
 	}
-	ccall.Transform(graph)
+	ccall.Transform(graph, maxMinlen, chainLimit, doFans)
 	return toGraph(graph), nil
 }
 
