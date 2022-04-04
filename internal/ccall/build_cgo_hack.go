@@ -1,4 +1,3 @@
-//go:build required
 // +build required
 
 package ccall
@@ -43,7 +42,6 @@ import (
 	_ "github.com/goccy/go-graphviz/internal/ccall/spine"
 	_ "github.com/goccy/go-graphviz/internal/ccall/topfish"
 	_ "github.com/goccy/go-graphviz/internal/ccall/twopigen"
-	_ "github.com/goccy/go-graphviz/internal/ccall/unflatten"
 	_ "github.com/goccy/go-graphviz/internal/ccall/vmalloc"
 	_ "github.com/goccy/go-graphviz/internal/ccall/vpsc"
 	_ "github.com/goccy/go-graphviz/internal/ccall/vpsc/pairingheap"
