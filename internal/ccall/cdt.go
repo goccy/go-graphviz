@@ -2,6 +2,7 @@ package ccall
 
 /*
 #cgo CFLAGS: -DGVLIBDIR=graphviz
+#cgo CFLAGS: -fcommon
 #cgo CFLAGS: -Icdt
 #cgo CFLAGS: -Icommon
 #cgo CFLAGS: -Igvc
