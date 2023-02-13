@@ -178,7 +178,8 @@ int agreseterrors()
 
 void agclearerrors()
 {
-    fclose(agerrout);
+    if (agerrout)
+        fclose(agerrout);
     agerrout = NULL;
     aglast = 0;
 }
