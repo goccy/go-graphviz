@@ -2,7 +2,7 @@
 /* vim:set shiftwidth=4 ts=8: */
 
 /*************************************************************************
- * Copyright (c) 2011 AT&T Intellectual Property 
+ * Copyright (c) 2011 AT&T Intellectual Property
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -59,7 +59,7 @@ char *aglasterr()
 }
 
 /* userout:
- * Report messages using a user-supplied write function 
+ * Report messages using a user-supplied write function
  */
 static void
 userout (agerrlevel_t level, const char *fmt, va_list args)
@@ -169,10 +169,16 @@ void agwarningf(const char *fmt, ...)
 
 int agerrors() { return agmaxerr; }
 
-int agreseterrors() 
-{ 
+int agreseterrors()
+{
     int rc = agmaxerr;
     agmaxerr = 0;
-    return rc; 
+    return rc;
 }
 
+void agclearerrors()
+{
+    fclose(agerrout);
+    agerrout = NULL;
+    aglast = 0;
+}
