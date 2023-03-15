@@ -903,6 +903,14 @@ func (g *Graph) IsSimple() bool {
 	return ccall.Agissimple(g.Agraph)
 }
 
+func (g *Graph) GetNode(name string) (*Node, error) {
+	node, err := ccall.Agnodef(g.Agraph, name, 0)
+	if err != nil {
+		return nil, err
+	}
+	return toNode(node), nil
+}
+
 func (g *Graph) CreateNode(name string) (*Node, error) {
 	node, err := ccall.Agnodef(g.Agraph, name, 1)
 	if err != nil {
@@ -955,6 +963,14 @@ func (g *Graph) SubRep(n *Node) *SubNode {
 	return &SubNode{
 		Agsubnode: ccall.Agsubrep(g.Agraph, n.Agnode),
 	}
+}
+
+func (g *Graph) GetEdge(name string, start *Node, end *Node) (*Edge, error) {
+	edge, err := ccall.Agedgef(g.Agraph, start.Agnode, end.Agnode, name, 0)
+	if err != nil {
+		return nil, err
+	}
+	return toEdge(edge), nil
 }
 
 func (g *Graph) CreateEdge(name string, start *Node, end *Node) (*Edge, error) {
