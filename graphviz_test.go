@@ -149,3 +149,90 @@ func TestParseFile(t *testing.T) {
 		}
 	}
 }
+
+func TestGetNode(t *testing.T) {
+	g := graphviz.New()
+	graph, err := g.Graph()
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	defer func() {
+		graph.Close()
+		g.Close()
+	}()
+
+	_, err = graph.CreateNode("n")
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+
+	n, err := graph.GetNode("n")
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	if n == nil {
+		t.Fatal("failed to get node 'n'. Got `nil` instead.")
+	}
+	if name := n.Name(); name != "n" {
+		t.Fatalf("failed to get node 'n'. Got node '%s' instead.", name)
+	}
+
+	m, err := graph.GetNode("m")
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	if m != nil {
+		t.Fatal("got unexpected node 'm'")
+	}
+	if nodes := graph.NumberNodes(); nodes != 1 {
+		t.Fatalf("expected graph to have 1 node, but found %d", nodes)
+	}
+}
+
+func TestGetEdge(t *testing.T) {
+	g := graphviz.New()
+	graph, err := g.Graph()
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	defer func() {
+		graph.Close()
+		g.Close()
+	}()
+
+	n, err := graph.CreateNode("n")
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	m, err := graph.CreateNode("m")
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+
+	_, err = graph.CreateEdge("e1", n, m)
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+
+	e1, err := graph.GetEdge("e1", n, m)
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	if e1 == nil {
+		t.Fatal("failed to get edge 'e1'. Got `nil` instead.")
+	}
+	if name := e1.Name(); name != "e1" {
+		t.Fatalf("failed to get node 'n'. Got node '%s' instead.", name)
+	}
+
+	e2, err := graph.GetEdge("e2", m, n)
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	if e2 != nil {
+		t.Fatal("got unexpected edge 'e2'")
+	}
+	if edges := graph.NumberEdges(); edges != 1 {
+		t.Fatalf("expected graph to have 1 edge, but found %d", edges)
+	}
+}
