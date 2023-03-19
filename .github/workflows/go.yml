@@ -10,15 +10,15 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        go-version: [ "1.15", "1.16", "1.17" ]
+        go-version: [ "1.18", "1.19", "1.20" ]
     runs-on: ${{ matrix.os }}
     steps:
       - name: setup Go ${{ matrix.go-version }}
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go-version }}
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: build dot command
         run: go build -v cmd/dot/dot.go
       - name: test
