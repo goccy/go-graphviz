@@ -2,6 +2,7 @@ package graphviz_test
 
 import (
 	"bytes"
+	"io/ioutil"
 	"os"
 	"testing"
 
@@ -102,7 +103,7 @@ func TestParseBytes(t *testing.T) {
 		_, err := graphviz.ParseBytes([]byte(test.input))
 		actual_valid := err == nil
 		if actual_valid != test.expected_valid {
-			t.Errorf("Test %d of TestParseBytes failed. Parsing error: %+v", i, err)
+			t.Errorf("Test %d of TestParseBytes failed. Parsing error: %+v", i+1, err)
 		}
 	}
 }
@@ -124,7 +125,7 @@ func TestParseFile(t *testing.T) {
 	}
 
 	createTempFile := func(t *testing.T, content string) *os.File {
-		file, err := os.CreateTemp("", "*")
+		file, err := ioutil.TempFile("", "*")
 		if err != nil {
 			t.Fatalf("There was an error creating a temporary file. Error: %+v", err)
 			return nil
@@ -144,7 +145,7 @@ func TestParseFile(t *testing.T) {
 		_, err := graphviz.ParseFile(tmpfile.Name())
 		actual_valid := err == nil
 		if actual_valid != test.expected_valid {
-			t.Errorf("Test %d of TestParseFile failed. Parsing error: %+v", i, err)
+			t.Errorf("Test %d of TestParseFile failed. Parsing error: %+v", i+1, err)
 		}
 	}
 }
