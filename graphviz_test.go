@@ -2,6 +2,8 @@ package graphviz_test
 
 import (
 	"bytes"
+	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/goccy/go-graphviz"
@@ -79,4 +81,71 @@ func TestGraphviz_Image(t *testing.T) {
 			}
 		})
 	})
+}
+
+func TestParseBytes(t *testing.T) {
+	type test struct {
+		input          string
+		expected_valid bool
+	}
+
+	tests := []test{
+		{input: "graph test { a -- b }", expected_valid: true},
+		{input: "graph test { a -- b", expected_valid: false},
+		{input: "graph test { a -- b }", expected_valid: true},
+		{input: "graph test { a -- }", expected_valid: false},
+		{input: "graph test { a -- c }", expected_valid: true},
+		{input: "graph test { a - b }", expected_valid: false},
+		{input: "graph test { d -- e }", expected_valid: true},
+	}
+
+	for i, test := range tests {
+		_, err := graphviz.ParseBytes([]byte(test.input))
+		actual_valid := err == nil
+		if actual_valid != test.expected_valid {
+			t.Errorf("Test %d of TestParseBytes failed. Parsing error: %+v", i+1, err)
+		}
+	}
+}
+
+func TestParseFile(t *testing.T) {
+	type test struct {
+		input          string
+		expected_valid bool
+	}
+
+	tests := []test{
+		{input: "graph test { a -- b }", expected_valid: true},
+		{input: "graph test { a -- b", expected_valid: false},
+		{input: "graph test { a -- b }", expected_valid: true},
+		{input: "graph test { a -- }", expected_valid: false},
+		{input: "graph test { a -- c }", expected_valid: true},
+		{input: "graph test { a - b }", expected_valid: false},
+		{input: "graph test { d -- e }", expected_valid: true},
+	}
+
+	createTempFile := func(t *testing.T, content string) *os.File {
+		file, err := ioutil.TempFile("", "*")
+		if err != nil {
+			t.Fatalf("There was an error creating a temporary file. Error: %+v", err)
+			return nil
+		}
+		_, err = file.WriteString(content)
+		if err != nil {
+			t.Fatalf("There was an error writing '%s' to a temporary file. Error: %+v", content, err)
+			return nil
+		}
+		return file
+	}
+
+	for i, test := range tests {
+		tmpfile := createTempFile(t, test.input)
+		defer os.Remove(tmpfile.Name())
+
+		_, err := graphviz.ParseFile(tmpfile.Name())
+		actual_valid := err == nil
+		if actual_valid != test.expected_valid {
+			t.Errorf("Test %d of TestParseFile failed. Parsing error: %+v", i+1, err)
+		}
+	}
 }

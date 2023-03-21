@@ -101,6 +101,7 @@ func toEdge(e *ccall.Agedge) *Edge {
 }
 
 func ParseBytes(bytes []byte) (*Graph, error) {
+	ccall.Agclearerrors()
 	graph, err := ccall.Agmemread(string(bytes))
 	if err != nil {
 		return nil, err
@@ -113,6 +114,7 @@ func ParseFile(path string) (*Graph, error) {
 	if err != nil {
 		return nil, err
 	}
+	ccall.Agclearerrors()
 	graph, err := ccall.Agmemread(string(file))
 	if err != nil {
 		return nil, err

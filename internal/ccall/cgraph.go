@@ -1182,6 +1182,10 @@ func Agerr(msg string) {
 	C.free(unsafe.Pointer(s))
 }
 
+func Agclearerrors() {
+	C.agclearerrors()
+}
+
 func init() {
 	C.agseterr(C.AGMAX)
 }
