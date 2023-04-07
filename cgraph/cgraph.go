@@ -905,16 +905,6 @@ func (g *Graph) IsSimple() bool {
 	return ccall.Agissimple(g.Agraph)
 }
 
-// Returns the node with the given name in the graph.
-// If no node with the given name exists in the graph, nil is returned.
-func (g *Graph) GetNode(name string) (*Node, error) {
-	node, err := ccall.Agnodef(g.Agraph, name, 0)
-	if err != nil {
-		return nil, err
-	}
-	return toNode(node), nil
-}
-
 // Creates a new node with the given name in the graph, and returns the new node.
 //
 // Note: The name is not automatically used as the node's label.
@@ -926,6 +916,8 @@ func (g *Graph) CreateNode(name string) (*Node, error) {
 	return toNode(node), nil
 }
 
+// Returns the node with the given name in the graph.
+// If no node with the given name exists in the graph, nil is returned.
 func (g *Graph) Node(name string) (*Node, error) {
 	node, err := ccall.Agnodef(g.Agraph, name, 0)
 	if err != nil {
@@ -972,21 +964,21 @@ func (g *Graph) SubRep(n *Node) *SubNode {
 	}
 }
 
-// Returns the edge with the given name in the graph.
-// If no edge with the given name exists in the graph, nil is returned.
-func (g *Graph) GetEdge(name string, start *Node, end *Node) (*Edge, error) {
-	edge, err := ccall.Agedgef(g.Agraph, start.Agnode, end.Agnode, name, 0)
+// Creates a new edge with the given name in the graph, and returns the new edge.
+//
+// Note: The name is not automatically used as the edge's label.
+func (g *Graph) CreateEdge(name string, start *Node, end *Node) (*Edge, error) {
+	edge, err := ccall.Agedgef(g.Agraph, start.Agnode, end.Agnode, name, 1)
 	if err != nil {
 		return nil, err
 	}
 	return toEdge(edge), nil
 }
 
-// Creates a new edge with the given name in the graph, and returns the new edge.
-//
-// Note: The name is not automatically used as the edge's label.
-func (g *Graph) CreateEdge(name string, start *Node, end *Node) (*Edge, error) {
-	edge, err := ccall.Agedgef(g.Agraph, start.Agnode, end.Agnode, name, 1)
+// Returns the edge with the given name in the graph.
+// If no edge with the given name exists in the graph, nil is returned.
+func (g *Graph) Edge(name string, start *Node, end *Node) (*Edge, error) {
+	edge, err := ccall.Agedgef(g.Agraph, start.Agnode, end.Agnode, name, 0)
 	if err != nil {
 		return nil, err
 	}

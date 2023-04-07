@@ -166,7 +166,7 @@ func TestGetNode(t *testing.T) {
 		t.Fatalf("%+v", err)
 	}
 
-	n, err := graph.GetNode("n")
+	n, err := graph.Node("n")
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -177,7 +177,7 @@ func TestGetNode(t *testing.T) {
 		t.Fatalf("failed to get node 'n'. Got node '%s' instead.", name)
 	}
 
-	m, err := graph.GetNode("m")
+	m, err := graph.Node("m")
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -214,7 +214,7 @@ func TestGetEdge(t *testing.T) {
 		t.Fatalf("%+v", err)
 	}
 
-	e1, err := graph.GetEdge("e1", n, m)
+	e1, err := graph.Edge("e1", n, m)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -225,7 +225,7 @@ func TestGetEdge(t *testing.T) {
 		t.Fatalf("failed to get node 'n'. Got node '%s' instead.", name)
 	}
 
-	e2, err := graph.GetEdge("e2", m, n)
+	e2, err := graph.Edge("e2", m, n)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
