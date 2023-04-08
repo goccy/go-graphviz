@@ -1151,7 +1151,7 @@ func (g *Graph) Outdegree(n *Node) int {
 }
 
 // Returns the total degree of the given node in the graph.
-// This can be though of as the total number of edges coming
+// This can be thought of as the total number of edges coming
 // in and out of a node.
 func (g *Graph) TotalDegree(n *Node) int {
 	return ccall.Agdegree(g.Agraph, n.Agnode, 1, 1)
