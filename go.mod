@@ -1,6 +1,6 @@
 module github.com/goccy/go-graphviz
 
-go 1.18
+go 1.20
 
 require (
 	github.com/corona10/goimagehash v1.0.2
