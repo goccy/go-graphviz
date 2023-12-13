@@ -1,6 +1,6 @@
 module github.com/goccy/go-graphviz
 
-go 1.18
+go 1.20
 
 require (
 	github.com/corona10/goimagehash v1.0.2
@@ -9,7 +9,7 @@ require (
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/pkg/errors v0.9.1
 	golang.org/x/crypto v0.7.0
-	golang.org/x/image v0.6.0
+	golang.org/x/image v0.14.0
 )
 
 require (
