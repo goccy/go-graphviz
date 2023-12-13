@@ -236,3 +236,68 @@ func TestGetEdge(t *testing.T) {
 		t.Fatalf("expected graph to have 1 edge, but found %d", edges)
 	}
 }
+
+func TestNodeDegree(t *testing.T) {
+	type test struct {
+		node_name             string
+		expected_indegree     int
+		expected_outdegree    int
+		expected_total_degree int
+	}
+
+	type graphtest struct {
+		input string
+		tests []test
+	}
+
+	graphtests := []graphtest{
+		{input: "digraph test { a -> b }", tests: []test{
+			{node_name: "a", expected_indegree: 0, expected_outdegree: 1, expected_total_degree: 1},
+			{node_name: "b", expected_indegree: 1, expected_outdegree: 0, expected_total_degree: 1},
+		}},
+		{input: "digraph test { a -> b; a -> b; a -> a; c -> a }", tests: []test{
+			{node_name: "a", expected_indegree: 2, expected_outdegree: 3, expected_total_degree: 5},
+			{node_name: "b", expected_indegree: 2, expected_outdegree: 0, expected_total_degree: 2},
+			{node_name: "c", expected_indegree: 0, expected_outdegree: 1, expected_total_degree: 1},
+		}},
+		{input: "graph test { a -- b; a -- b; a -- a; c -- a }", tests: []test{
+			{node_name: "a", expected_indegree: 2, expected_outdegree: 3, expected_total_degree: 5},
+			{node_name: "b", expected_indegree: 2, expected_outdegree: 0, expected_total_degree: 2},
+			{node_name: "c", expected_indegree: 0, expected_outdegree: 1, expected_total_degree: 1},
+		}},
+		{input: "strict graph test { a -- b; b -- a; a -- a; c -- a }", tests: []test{
+			{node_name: "a", expected_indegree: 2, expected_outdegree: 2, expected_total_degree: 4},
+			{node_name: "b", expected_indegree: 1, expected_outdegree: 0, expected_total_degree: 1},
+			{node_name: "c", expected_indegree: 0, expected_outdegree: 1, expected_total_degree: 1},
+		}},
+	}
+
+	for _, graphtest := range graphtests {
+		input := graphtest.input
+		graph, err := graphviz.ParseBytes([]byte(input))
+		if err != nil {
+			t.Fatalf("Input: %s. Error: %+v", input, err)
+		}
+
+		for _, test := range graphtest.tests {
+			node_name := test.node_name
+			node, err := graph.Node(node_name)
+			if err != nil || node == nil {
+				t.Fatalf("Unable to retrieve node '%s'. Input: %s. Error: %+v", node_name, input, err)
+			}
+
+			indegree := graph.Indegree(node)
+			if test.expected_indegree != indegree {
+				t.Errorf("Unexpected indegree for node '%s'. Input: %s. Expected: %d. Actual: %d.", node_name, input, test.expected_indegree, indegree)
+			}
+			outdegree := graph.Outdegree(node)
+			if test.expected_outdegree != outdegree {
+				t.Errorf("Unexpected outdegree for node '%s'. Input: %s. Expected: %d. Actual: %d.", node_name, input, test.expected_outdegree, outdegree)
+			}
+			total_degree := graph.TotalDegree(node)
+			if test.expected_total_degree != total_degree {
+				t.Errorf("Unexpected total degree for node '%s'. Input: %s. Expected: %d. Actual: %d.", node_name, input, test.expected_total_degree, total_degree)
+			}
+		}
+	}
+}

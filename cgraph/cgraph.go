@@ -1135,8 +1135,44 @@ func (g *Graph) NumberSubGraph() int {
 	return ccall.Agnsubg(g.Agraph)
 }
 
+// Returns the degree of the given node in the graph, where arguments "in" and
+// "out" are C-like booleans that select which edge sets to query.
+//
+//	g.Degree(node, 0, 0) // always returns 0
+//	g.Degree(node, 0, 1) // returns the node's outdegree
+//	g.Degree(node, 1, 0) // returns the node's indegree
+//	g.Degree(node, 1, 1) // returns the node's total degree (indegree + outdegree)
 func (g *Graph) Degree(n *Node, in, out int) int {
 	return ccall.Agdegree(g.Agraph, n.Agnode, in, out)
+}
+
+// Returns the indegree of the given node in the graph.
+//
+// Note: While undirected graphs don't normally have a
+// notion of indegrees, calling this method on an
+// undirected graph will treat it as if it's directed.
+// As a result, it's best to avoid calling this method
+// on an undirected graph.
+func (g *Graph) Indegree(n *Node) int {
+	return ccall.Agdegree(g.Agraph, n.Agnode, 1, 0)
+}
+
+// Returns the outdegree of the given node in the graph.
+//
+// Note: While undirected graphs don't normally have a
+// notion of outdegrees, calling this method on an
+// undirected graph will treat it as if it's directed.
+// As a result, it's best to avoid calling this method
+// on an undirected graph.
+func (g *Graph) Outdegree(n *Node) int {
+	return ccall.Agdegree(g.Agraph, n.Agnode, 0, 1)
+}
+
+// Returns the total degree of the given node in the graph.
+// This can be thought of as the total number of edges coming
+// in and out of a node.
+func (g *Graph) TotalDegree(n *Node) int {
+	return ccall.Agdegree(g.Agraph, n.Agnode, 1, 1)
 }
 
 func (g *Graph) CountUniqueEdges(n *Node, in, out int) int {
