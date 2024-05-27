@@ -232,16 +232,16 @@ extern "C" {
 	char *tailtarget;
 	char *headtarget; 
 
-	int explicit_tooltip:1;
-	int explicit_tailtooltip:1;
-	int explicit_headtooltip:1;
-	int explicit_labeltooltip:1;
-	int explicit_tailtarget:1;
-	int explicit_headtarget:1;
-	int explicit_edgetarget:1;
-	int explicit_tailurl:1;
-	int explicit_headurl:1;
-	int labeledgealigned:1;
+	unsigned explicit_tooltip:1;
+	unsigned explicit_tailtooltip:1;
+	unsigned explicit_headtooltip:1;
+	unsigned explicit_labeltooltip:1;
+	unsigned explicit_tailtarget:1;
+	unsigned explicit_headtarget:1;
+	unsigned explicit_edgetarget:1;
+	unsigned explicit_tailurl:1;
+	unsigned explicit_headurl:1;
+	unsigned labeledgealigned:1;
 
 	/* primary mapped region - node shape, edge labels */
 	map_shape_t url_map_shape; 
