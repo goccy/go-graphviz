@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"image"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -35,7 +34,7 @@ func generateTestData() error {
 			if info.IsDir() {
 				return nil
 			}
-			tmpfile, err := ioutil.TempFile("", "graphviz")
+			tmpfile, err := os.CreateTemp("", "graphviz")
 			if err != nil {
 				return err
 			}
@@ -65,7 +64,7 @@ func generateTestData() error {
 	if err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(imageHashJSON, content, 0644); err != nil {
+	if err := os.WriteFile(imageHashJSON, content, 0644); err != nil {
 		return err
 	}
 	return nil
@@ -77,7 +76,7 @@ func TestGraphviz_Compatible(t *testing.T) {
 	//		t.Fatal(err)
 	//	}
 	var pathToHashDump map[string]string
-	file, err := ioutil.ReadFile(imageHashJSON)
+	file, err := os.ReadFile(imageHashJSON)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -89,7 +88,7 @@ func TestGraphviz_Compatible(t *testing.T) {
 			if info.IsDir() {
 				return nil
 			}
-			file, err := ioutil.ReadFile(path)
+			file, err := os.ReadFile(path)
 			if err != nil {
 				t.Fatal(err)
 			}

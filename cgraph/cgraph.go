@@ -1,7 +1,7 @@
 package cgraph
 
 import (
-	"io/ioutil"
+	"os"
 	"unsafe"
 
 	"github.com/goccy/go-graphviz/cdt"
@@ -110,7 +110,7 @@ func ParseBytes(bytes []byte) (*Graph, error) {
 }
 
 func ParseFile(path string) (*Graph, error) {
-	file, err := ioutil.ReadFile(path)
+	file, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}

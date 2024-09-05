@@ -2,7 +2,6 @@ package graphviz_test
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -125,7 +124,7 @@ func TestParseFile(t *testing.T) {
 	}
 
 	createTempFile := func(t *testing.T, content string) *os.File {
-		file, err := ioutil.TempFile("", "*")
+		file, err := os.CreateTemp("", "*")
 		if err != nil {
 			t.Fatalf("There was an error creating a temporary file. Error: %+v", err)
 			return nil

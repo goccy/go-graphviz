@@ -3,13 +3,13 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 
 	"github.com/goccy/go-graphviz"
 	"github.com/goccy/go-graphviz/cgraph"
 	"github.com/jessevdk/go-flags"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 )
 
 type Option struct {
@@ -20,10 +20,10 @@ type Option struct {
 
 func readGraph(args []string) (*cgraph.Graph, error) {
 	if len(args) == 0 {
-		if terminal.IsTerminal(0) {
+		if term.IsTerminal(0) {
 			return nil, errors.New("required dot file or stdin")
 		}
-		bytes, err := ioutil.ReadAll(os.Stdin)
+		bytes, err := io.ReadAll(os.Stdin)
 		if err != nil {
 			return nil, err
 		}
