@@ -1,139 +1,265 @@
 package cdt
 
 import (
-	"unsafe"
+	"context"
+	"errors"
 
-	"github.com/goccy/go-graphviz/internal/ccall"
+	"github.com/goccy/go-graphviz/internal/wasm"
 )
 
 type Dict struct {
-	*ccall.Dict
+	wasm *wasm.Dict
+}
+
+func toDict(v *wasm.Dict) *Dict {
+	if v == nil {
+		return nil
+	}
+	return &Dict{wasm: v}
+}
+
+func (d *Dict) getWasm() *wasm.Dict {
+	return d.wasm
 }
 
 type Hold struct {
-	*ccall.Dthold
+	wasm *wasm.DictHold
+}
+
+func toHold(v *wasm.DictHold) *Hold {
+	if v == nil {
+		return nil
+	}
+	return &Hold{wasm: v}
+}
+
+func (h *Hold) getWasm() *wasm.DictHold {
+	return h.wasm
 }
 
 type Link struct {
-	*ccall.Dtlink
+	wasm *wasm.DictLink
+}
+
+func toLink(v *wasm.DictLink) *Link {
+	if v == nil {
+		return nil
+	}
+	return &Link{wasm: v}
+}
+
+func (l *Link) getWasm() *wasm.DictLink {
+	return l.wasm
+}
+
+func toDictLinkWasm(v *Link) *wasm.DictLink {
+	return v.wasm
 }
 
 type Method struct {
-	*ccall.Dtmethod
+	wasm *wasm.DictMethod
+}
+
+func toMethod(v *wasm.DictMethod) *Method {
+	if v == nil {
+		return nil
+	}
+	return &Method{wasm: v}
+}
+
+func (m *Method) getWasm() *wasm.DictMethod {
+	return m.wasm
 }
 
 type Data struct {
-	*ccall.Dtdata
+	wasm *wasm.DictData
+}
+
+func toData(v *wasm.DictData) *Data {
+	if v == nil {
+		return nil
+	}
+	return &Data{wasm: v}
+}
+
+func (d *Data) getWasm() *wasm.DictData {
+	return d.wasm
 }
 
 type Disc struct {
-	*ccall.Dtdisc
+	wasm *wasm.DictDisc
+}
+
+func toDisc(v *wasm.DictDisc) *Disc {
+	if v == nil {
+		return nil
+	}
+	return &Disc{wasm: v}
+}
+
+func (d *Disc) getWasm() *wasm.DictDisc {
+	return d.wasm
 }
 
 type Stat struct {
-	*ccall.Dtstat
+	wasm *wasm.DictStat
 }
 
-type Search func(*Dict, unsafe.Pointer, int) unsafe.Pointer
-type Make func(*Dict, unsafe.Pointer, *Disc) unsafe.Pointer
-type Memory func(*Dict, unsafe.Pointer, uint, *Disc) unsafe.Pointer
-type Free func(*Dict, unsafe.Pointer, *Disc)
-type Compare func(*Dict, unsafe.Pointer, unsafe.Pointer, *Disc) int
-type Hash func(*Dict, unsafe.Pointer, *Disc) uint
-type Event func(*Dict, int, unsafe.Pointer, *Disc) int
-
-func StrHash(a0 uint, a1 unsafe.Pointer, a2 int) uint {
-	return ccall.Dtstrhash(a0, a1, a2)
+func toStat(v *wasm.DictStat) *Stat {
+	if v == nil {
+		return nil
+	}
+	return &Stat{wasm: v}
 }
 
-func Open(a0 *Disc, a1 *Method) *Dict {
-	return &Dict{Dict: ccall.Dtopen(a0.Dtdisc, a1.Dtmethod)}
+func (s *Stat) getWasm() *wasm.DictStat {
+	return s.wasm
 }
 
-func (d *Dict) Close() int {
-	return ccall.Dtclose(d.Dict)
+type Search func(*Dict, any, int) any
+type Make func(*Dict, any, *Disc) any
+type Memory func(*Dict, any, uint, *Disc) any
+type Free func(*Dict, any, *Disc)
+type Compare func(*Dict, any, any, *Disc) int
+type Hash func(*Dict, any, *Disc) uint
+type Event func(*Dict, int, any, *Disc) int
+
+func StrHash(a1 any, a2 int) (uint, error) {
+	return wasm.StrHash(context.Background(), a1, a2)
 }
 
-func (d *Dict) View(a0 *Dict) *Dict {
-	return &Dict{Dict: ccall.Dtview(d.Dict, a0.Dict)}
+func Open(disc *Disc, mtd *Method) (*Dict, error) {
+	res, err := wasm.NewDictWithDisc(context.Background(), disc.getWasm(), mtd.getWasm())
+	if err != nil {
+		return nil, err
+	}
+	return toDict(res), nil
 }
 
-func (d *Dict) Disc(a0 *Disc, a1 int) *Disc {
-	return &Disc{Dtdisc: ccall.Dtdiscf(d.Dict, a0.Dtdisc, a1)}
+func (d *Dict) Close() error {
+	res, err := d.wasm.Close(context.Background())
+	if err != nil {
+		return err
+	}
+	return toError(res)
 }
 
-func (d *Dict) Method(a0 *Method) *Method {
-	return &Method{Dtmethod: ccall.Dtmethodf(d.Dict, a0.Dtmethod)}
+func (d *Dict) View(dict *Dict) (*Dict, error) {
+	res, err := d.wasm.View(context.Background(), dict.getWasm())
+	if err != nil {
+		return nil, err
+	}
+	return toDict(res), nil
 }
 
-func (d *Dict) Flatten() *Link {
-	return &Link{Dtlink: ccall.Dtflatten(d.Dict)}
+func (d *Dict) Disc(disc *Disc) (*Disc, error) {
+	res, err := d.wasm.Disc(context.Background(), disc.getWasm())
+	if err != nil {
+		return nil, err
+	}
+	return toDisc(res), nil
 }
 
-func (d *Dict) Extract() *Link {
-	return &Link{Dtlink: ccall.Dtextract(d.Dict)}
+func (d *Dict) Method(mtd *Method) (*Method, error) {
+	res, err := d.wasm.Method(context.Background(), mtd.getWasm())
+	if err != nil {
+		return nil, err
+	}
+	return toMethod(res), nil
 }
 
-func (d *Dict) Restore(a0 *Link) int {
-	return ccall.Dtrestore(d.Dict, a0.Dtlink)
+func (d *Dict) Flatten() (*Link, error) {
+	res, err := d.wasm.Flatten(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return toLink(res), nil
 }
 
-func (d *Dict) TreeSet(a0 int, a1 int) int {
-	return ccall.Dttreeset(d.Dict, a0, a1)
+func (d *Dict) Extract() (*Link, error) {
+	res, err := d.wasm.Extract(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return toLink(res), nil
 }
 
-func (d *Dict) Walk(walk func(a0 *Dict, a1 unsafe.Pointer, a2 unsafe.Pointer) int, data unsafe.Pointer) int {
-	return ccall.Dtwalk(d.Dict, func(a0 *ccall.Dict, a1 unsafe.Pointer, a2 unsafe.Pointer) int {
-		return walk(&Dict{Dict: a0}, a1, a2)
-	}, data)
+func (d *Dict) Restore(link *Link) error {
+	res, err := d.wasm.Restore(context.Background(), link.getWasm())
+	if err != nil {
+		return err
+	}
+	return toError(res)
 }
 
-func (d *Dict) Renew(a0 unsafe.Pointer) unsafe.Pointer {
-	return ccall.Dtrenew(d.Dict, a0)
+func (d *Dict) Walk(fn func(context.Context, *Dict, any, any) error, data any) error {
+	// TODO
+	res, err := d.wasm.Walk(context.Background(), wasm.CreateCallbackFunc(func(ctx context.Context, a1 any, a2 any) (int, error) {
+		if err := fn(ctx, d, a1, a2); err != nil {
+			return 0, err
+		}
+		return 0, nil
+	}, wasm.WasmPtr(d.wasm)), data)
+	if err != nil {
+		return err
+	}
+	return toError(res)
 }
 
-func (d *Dict) Size() int {
-	return ccall.Dtsize(d.Dict)
+func (d *Dict) Renew(a0 any) (any, error) {
+	res, err := d.wasm.Renew(context.Background(), a0)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 
-func (d *Dict) Stat(a0 *Stat, a1 int) int {
-	return ccall.Dtstatf(d.Dict, a0.Dtstat, a1)
+func (d *Dict) Size() (int, error) {
+	res, err := d.wasm.Size(context.Background())
+	if err != nil {
+		return 0, err
+	}
+	return res, nil
+}
+
+func (d *Dict) Stat(a0 *Stat, a1 int) (int, error) {
+	res, err := d.wasm.Stat(context.Background(), a0.getWasm(), a1)
+	if err != nil {
+		return 0, err
+	}
+	return res, nil
 }
 
 func (l *Link) Right() *Link {
-	v := l.Dtlink.Right()
-	if v == nil {
-		return nil
-	}
-	return &Link{Dtlink: v}
+	return toLink(l.wasm.GetRight())
 }
 
 func (l *Link) SetRight(v *Link) {
-	if v == nil || v.Dtlink == nil {
-		return
-	}
-	l.Dtlink.SetRight(v.Dtlink)
+	l.wasm.SetRight(v.getWasm())
 }
 
 func (l *Link) Left() *Link {
-	v := l.Dtlink.Left()
-	if v == nil {
-		return nil
-	}
-	return &Link{Dtlink: v}
+	return toLink(l.wasm.GetLeft())
 }
 
 func (l *Link) SetLeft(v *Link) {
-	if v == nil || v.Dtlink == nil {
-		return
-	}
-	l.Dtlink.SetLeft(v.Dtlink)
+	l.wasm.SetLeft(v.getWasm())
 }
 
 func (l *Link) Hash() uint {
-	return l.Dtlink.Hash()
+	return uint(l.wasm.GetHash())
 }
 
 func (l *Link) SetHash(v uint) {
-	l.Dtlink.SetHash(v)
+	l.wasm.SetHash(uint32(v))
+}
+
+func toError(result int) error {
+	if result == 0 {
+		return nil
+	}
+	if e, _ := wasm.LastError(context.Background()); e != "" {
+		return errors.New(e)
+	}
+	return nil
 }

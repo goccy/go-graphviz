@@ -1,6 +1,7 @@
 package graphviz
 
 import (
+	"context"
 	"image"
 	"io"
 
@@ -12,7 +13,7 @@ import (
 type Graphviz struct {
 	ctx    *gvc.Context
 	name   string
-	dir    *cgraph.Desc
+	dir    *GraphDescriptor
 	layout Layout
 }
 
@@ -23,6 +24,9 @@ const (
 	DOT       Layout = "dot"
 	FDP       Layout = "fdp"
 	NEATO     Layout = "neato"
+	NOP       Layout = "nop"
+	NOP1      Layout = "nop1"
+	NOP2      Layout = "nop2"
 	OSAGE     Layout = "osage"
 	PATCHWORK Layout = "patchwork"
 	SFDP      Layout = "sfdp"
@@ -38,28 +42,28 @@ const (
 	JPG  Format = "jpg"
 )
 
-func ParseFile(path string) (*cgraph.Graph, error) {
-	graph, err := cgraph.ParseFile(path)
+func New(ctx context.Context) (*Graphviz, error) {
+	c, err := gvc.New(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return graph, nil
-}
-
-func ParseBytes(bytes []byte) (*cgraph.Graph, error) {
-	graph, err := cgraph.ParseBytes(bytes)
-	if err != nil {
-		return nil, err
-	}
-	return graph, nil
-}
-
-func New() *Graphviz {
 	return &Graphviz{
-		ctx:    gvc.New(),
-		dir:    cgraph.Directed,
+		ctx:    c,
+		dir:    Directed,
 		layout: DOT,
+	}, nil
+}
+
+func NewWithPlugins(ctx context.Context, plugins ...Plugin) (*Graphviz, error) {
+	c, err := gvc.NewWithPlugins(ctx, plugins...)
+	if err != nil {
+		return nil, err
 	}
+	return &Graphviz{
+		ctx:    c,
+		dir:    Directed,
+		layout: DOT,
+	}, nil
 }
 
 func (g *Graphviz) Close() error {
@@ -75,59 +79,56 @@ func (g *Graphviz) SetFontFace(callback func(size float64) (font.Face, error)) {
 	gvc.SetFontFace(callback)
 }
 
-func (g *Graphviz) SetRenderer(format Format, renderer gvc.Renderer) {
-	gvc.RegisterRenderer(string(format), renderer)
-}
-
-func (g *Graphviz) Render(graph *cgraph.Graph, format Format, w io.Writer) (e error) {
-	if err := g.ctx.Layout(graph, string(g.layout)); err != nil {
-		return err
-	}
+func (g *Graphviz) Render(ctx context.Context, graph *Graph, format Format, w io.Writer) (e error) {
 	defer func() {
-		if err := g.ctx.FreeLayout(graph); err != nil {
+		if err := g.ctx.FreeLayout(ctx, graph); err != nil {
 			e = err
 		}
 	}()
 
-	if err := g.ctx.RenderData(graph, string(format), w); err != nil {
+	if err := g.ctx.Layout(ctx, graph, string(g.layout)); err != nil {
+		return err
+	}
+	if err := g.ctx.RenderData(ctx, graph, string(format), w); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (g *Graphviz) RenderImage(graph *cgraph.Graph) (img image.Image, e error) {
-	if err := g.ctx.Layout(graph, string(g.layout)); err != nil {
-		return nil, err
-	}
+func (g *Graphviz) RenderImage(ctx context.Context, graph *Graph) (img image.Image, e error) {
 	defer func() {
-		if err := g.ctx.FreeLayout(graph); err != nil {
+		if err := g.ctx.FreeLayout(ctx, graph); err != nil {
 			e = err
 		}
 	}()
-	image, err := g.ctx.RenderImage(graph, string(PNG))
+
+	if err := g.ctx.Layout(ctx, graph, string(g.layout)); err != nil {
+		return nil, err
+	}
+	image, err := g.ctx.RenderImage(ctx, graph, string(PNG))
 	if err != nil {
 		return nil, err
 	}
 	return image, nil
 }
 
-func (g *Graphviz) RenderFilename(graph *cgraph.Graph, format Format, path string) (e error) {
-	if err := g.ctx.Layout(graph, string(g.layout)); err != nil {
-		return err
-	}
+func (g *Graphviz) RenderFilename(ctx context.Context, graph *Graph, format Format, path string) (e error) {
 	defer func() {
-		if err := g.ctx.FreeLayout(graph); err != nil {
+		if err := g.ctx.FreeLayout(ctx, graph); err != nil {
 			e = err
 		}
 	}()
 
-	if err := g.ctx.RenderFilename(graph, string(format), path); err != nil {
+	if err := g.ctx.Layout(ctx, graph, string(g.layout)); err != nil {
+		return err
+	}
+	if err := g.ctx.RenderFilename(ctx, graph, string(format), path); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (g *Graphviz) Graph(option ...GraphOption) (*cgraph.Graph, error) {
+func (g *Graphviz) Graph(option ...GraphOption) (*Graph, error) {
 	for _, opt := range option {
 		opt(g)
 	}

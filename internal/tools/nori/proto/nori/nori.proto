@@ -1,0 +1,135 @@
+syntax = "proto3";
+
+package nori;
+
+import "google/protobuf/descriptor.proto";
+
+option go_package = "github.com/goccy/nori/nori;nori";
+
+extend google.protobuf.FileOptions {
+  FileRule file = 5000;
+}
+
+extend google.protobuf.ServiceOptions {
+  ServiceRule service = 5000;
+}
+
+extend google.protobuf.MethodOptions {
+  MethodRule method = 5000;
+}
+
+extend google.protobuf.MessageOptions {
+  MessageRule message = 5000;
+}
+
+extend google.protobuf.FieldOptions {
+  FieldRule field = 5000;
+}
+
+extend google.protobuf.EnumOptions {
+  EnumRule enum = 5000;
+}
+
+extend google.protobuf.EnumValueOptions {
+  EnumValueRule enum_value = 5000;
+}
+
+extend google.protobuf.OneofOptions {
+  OneofRule oneof = 5000;
+}
+
+message FileRule {
+  repeated Export export = 1;
+}
+
+message Export {
+  repeated string header = 1;
+  repeated FunctionDef func = 2;
+  repeated MethodDef method = 3;
+}
+
+message FunctionDef {
+  string name = 1;
+  string alias = 2;
+  repeated Type args = 3;
+  Type return = 4;
+}
+
+message MethodDef {
+  string recv = 1;
+  string name = 2;
+  string alias = 3;
+  repeated Type args = 4;
+  Type return = 5;
+}
+
+enum TypeKind {
+  UNKNOWN = 0; // unknown type.
+  STRUCT = 1; // structure type.
+  INT = 2; // int type.
+  UINT = 3; // unsigned int type.
+  VOIDPTR = 4; // void* type.
+  CHARPTR = 5; // char* type.
+  STRING = 6; // std::string type.
+  BOOL = 7; // bool type.
+  UINT64 = 8; // uint64 type.
+  INT64 = 9; // int64 type.
+  ENUM = 10; // enum type.
+  FUNCPTR = 11; // function pointer type.
+  DOUBLE = 12; // double type.
+  INT32 = 13;
+  UINT32 = 14;
+  FLOAT = 15;
+  CHAR = 16;
+}
+
+message Type {
+  TypeKind kind = 1; // type kind.
+  string ref = 2; // reference name for type.
+  uint64 pointer = 3; // pointer number.
+  bool const = 4; // const value.
+  bool addr = 5; // & operatored value.
+  bool array = 6; // array type value.
+  optional uint64 array_num = 7; // array size.
+  optional uint64 array_num_arg = 8; // the argument number to decide array num.
+  optional uint64 string_length_arg = 9; // the argument number to decide string length.
+
+  // It is used as an argument for funcptr.
+  // To uniquely determine a function between Go and C, some of the arguments need to be flagged.
+  // It is used to specify those arguments.
+  // When using funcptr, you must specify funcbaseptr for one of the arguments.
+  bool funcbaseptr = 10;
+}
+
+message EnumRule {
+  string alias = 1;
+}
+
+message EnumValueRule {
+  string alias = 1;
+}
+
+message OneofRule {}
+
+message ServiceRule {
+}
+
+message MethodRule {
+}
+
+message MessageRule {
+  string alias = 1;
+  FunctionDef funcptr = 2;
+  bool anonymous = 3;
+  string parent = 4;
+  optional bool constructor = 5;
+}
+
+message FieldRule {
+  string alias = 1;
+  Type type = 2;
+}
+
+message Any {}
+
+message List {}

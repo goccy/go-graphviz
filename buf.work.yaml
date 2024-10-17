@@ -1,0 +1,4 @@
+version: v1
+directories:
+  - ./internal/tools/nori/proto
+  - internal/wasm

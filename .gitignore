@@ -1,1 +1,6 @@
 *.o
+*.svg
+*.png
+*.jpg
+.DS_Store
+bin

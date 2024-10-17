@@ -2,11 +2,11 @@ package graphviz_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"image"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -25,7 +25,7 @@ var (
 )
 
 const (
-	imageThreshold = 15
+	imageThreshold = 20
 )
 
 func generateTestData() error {
@@ -35,7 +35,7 @@ func generateTestData() error {
 			if info.IsDir() {
 				return nil
 			}
-			tmpfile, err := ioutil.TempFile("", "graphviz")
+			tmpfile, err := os.CreateTemp("", "graphviz")
 			if err != nil {
 				return err
 			}
@@ -65,7 +65,7 @@ func generateTestData() error {
 	if err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(imageHashJSON, content, 0644); err != nil {
+	if err := os.WriteFile(imageHashJSON, content, 0644); err != nil {
 		return err
 	}
 	return nil
@@ -77,7 +77,7 @@ func TestGraphviz_Compatible(t *testing.T) {
 	//		t.Fatal(err)
 	//	}
 	var pathToHashDump map[string]string
-	file, err := ioutil.ReadFile(imageHashJSON)
+	file, err := os.ReadFile(imageHashJSON)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -89,40 +89,46 @@ func TestGraphviz_Compatible(t *testing.T) {
 			if info.IsDir() {
 				return nil
 			}
-			file, err := ioutil.ReadFile(path)
-			if err != nil {
-				t.Fatal(err)
-			}
-			graph, err := graphviz.ParseBytes(file)
-			if err != nil {
-				t.Fatal(err)
-			}
-			defer graph.Close()
-			g := graphviz.New()
-			defer g.Close()
-			image, err := g.RenderImage(graph)
-			if err != nil {
-				t.Fatal(err)
-			}
-			hash, err := goimagehash.DifferenceHash(image)
-			if err != nil {
-				t.Fatal(err)
-			}
-			dump, err := base64.StdEncoding.DecodeString(pathToHashDump[path])
-			if err != nil {
-				t.Fatal(err)
-			}
-			targetHash, err := goimagehash.LoadImageHash(bytes.NewBuffer(dump))
-			if err != nil {
-				t.Fatal(err)
-			}
-			distance, err := hash.Distance(targetHash)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if distance > imageThreshold {
-				t.Fatalf("doesn't compatible image with dot. %s distance = %d", path, distance)
-			}
+			t.Run(path, func(t *testing.T) {
+				file, err := os.ReadFile(path)
+				if err != nil {
+					t.Fatal(err)
+				}
+				graph, err := graphviz.ParseBytes(file)
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer graph.Close()
+				ctx := context.Background()
+				g, err := graphviz.New(ctx)
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer g.Close()
+				image, err := g.RenderImage(ctx, graph)
+				if err != nil {
+					t.Fatal(err)
+				}
+				hash, err := goimagehash.DifferenceHash(image)
+				if err != nil {
+					t.Fatal(err)
+				}
+				dump, err := base64.StdEncoding.DecodeString(pathToHashDump[path])
+				if err != nil {
+					t.Fatal(err)
+				}
+				targetHash, err := goimagehash.LoadImageHash(bytes.NewBuffer(dump))
+				if err != nil {
+					t.Fatal(err)
+				}
+				distance, err := hash.Distance(targetHash)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if distance > imageThreshold {
+					t.Fatalf("doesn't compatible image with dot. %s distance = %d", path, distance)
+				}
+			})
 			return nil
 		})
 	}

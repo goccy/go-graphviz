@@ -1,0 +1,3275 @@
+syntax = "proto3";
+
+import "google/protobuf/any.proto";
+import "nori/nori.proto";
+
+package graphviz;
+
+// cgraph.h
+
+message Record {
+  option (nori.message).alias = "Agrec_t";
+
+  string name = 1 [(nori.field).type.kind = CHARPTR];
+  Record next = 2 [(nori.field).type.pointer = 1];
+}
+
+message Tag {
+  option (nori.message).alias = "Agtag_t";
+
+  uint32 object_type = 1 [(nori.field).alias = "objtype"];
+  uint32 mtflock = 2;
+  uint32 attrwf = 3;
+  uint32 seq = 4;
+  uint64 id = 5;
+}
+
+message Object {
+  option (nori.message).alias = "Agobj_t";
+
+  Tag tag = 1;
+  Record data = 2 [(nori.field).type.pointer = 1];
+}
+
+enum ObjectTag {
+  GRAPH = 0 [(nori.enum_value).alias = "AGRAPH"];
+  NODE = 1 [(nori.enum_value).alias = "AGNODE"];
+  OUT_EDGE = 2 [(nori.enum_value).alias = "AGOUTEDGE"];
+  IN_EDGE = 3 [(nori.enum_value).alias = "AGINEDGE"];
+  EDGE = 4 [(nori.enum_value).alias = "AGEDGE"];
+}
+
+message SubNode {
+  option (nori.message).alias = "Agsubnode_t";
+
+  DictLink seq_link = 1;
+  DictLink id_link = 2;
+  Node node = 3 [(nori.field).type.pointer = 1];
+  DictLink in_id = 4 [(nori.field).type.pointer = 1];
+  DictLink out_id = 5 [(nori.field).type.pointer = 1];
+  DictLink in_seq = 6 [(nori.field).type.pointer = 1];
+  DictLink out_seq = 7 [(nori.field).type.pointer = 1];
+}
+
+message Node {
+  option (nori.message).alias = "Agnode_t";
+
+  Object base = 1;
+  Graph root = 2 [(nori.field).type.pointer = 1];
+  SubNode mainsub = 3;
+}
+
+message Edge {
+  option (nori.message).alias = "Agedge_t";
+
+  Object base = 1;
+  DictLink id_link = 2;
+  DictLink seq_link = 3;
+  Node node = 4 [(nori.field).type.pointer = 1];
+}
+
+message EdgePair {
+  option (nori.message).alias = "Agedgepair_t";
+
+  Edge out = 1;
+  Edge in = 2;
+}
+
+message GraphDescriptor {
+  option (nori.message).alias = "Agdesc_t";
+
+  uint32 directed = 1;
+  uint32 strict = 2;
+  uint32 no_loop = 3;
+  uint32 maingraph = 4;
+  uint32 no_write = 5;
+  uint32 has_attrs = 6;
+  uint32 has_cmpnd = 7;
+}
+
+message IDAllocator {
+  option (nori.message).alias = "Agiddisc_t";
+
+  message Open {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Graph"
+        pointer: 1
+        funcbaseptr: true
+      }
+      args {
+        kind: STRUCT
+        ref: "ClientDiscipline"
+        pointer: 1
+      }
+      return {
+        kind: VOIDPTR
+      }
+    };
+  }
+  message Map {
+    option (nori.message).funcptr = {
+      args {
+        kind: VOIDPTR
+        funcbaseptr: true
+      }
+      args { kind: INT }
+      args { kind: CHARPTR }
+      args {
+        kind: UINT64
+        pointer: 1
+      }
+      args { kind: INT }
+      return { kind: INT32 }
+    };
+  }
+  message Alloc {
+    option (nori.message).funcptr = {
+      args {
+        kind: VOIDPTR
+        funcbaseptr: true
+      }
+      args { kind: INT }
+      args { kind: UINT64 }
+      return { kind: INT32 }
+    };
+  }
+  message Free {
+    option (nori.message).funcptr = {
+      args {
+        kind: VOIDPTR
+        funcbaseptr: true
+      }
+      args { kind: INT }
+      args { kind: UINT64 }
+    };
+  }
+  message Print {
+    option (nori.message).funcptr = {
+      args {
+        kind: VOIDPTR
+        funcbaseptr: true
+      }
+      args { kind: INT }
+      args { kind: UINT64 }
+      return { kind: CHARPTR }
+    };
+  }
+  message Close {
+    option (nori.message).funcptr = {
+      args {
+        kind: VOIDPTR
+        funcbaseptr: true
+      }
+    };
+  }
+  message IdRegister {
+    option (nori.message).funcptr = {
+      args {
+        kind: VOIDPTR
+        funcbaseptr: true
+      }
+      args { kind: INT }
+      args { kind: VOIDPTR }
+    };
+  }
+  Open open = 1;
+  Map map = 2;
+  Alloc alloc = 3;
+  Free free = 4;
+  Print print = 5;
+  Close close = 6;
+  IdRegister idregister = 7;
+}
+
+message IOService {
+  option (nori.message).alias = "Agiodisc_t";
+
+  message Afread {
+    option (nori.message).funcptr = {
+      args {
+        kind: VOIDPTR
+        funcbaseptr: true
+      }
+      args { kind: CHARPTR }
+      args { kind: INT }
+      return { kind: INT }
+    };
+  }
+  message Putstr {
+    option (nori.message).funcptr = {
+      args {
+        kind: VOIDPTR
+        funcbaseptr: true
+      }
+      args {
+        kind: CHARPTR
+        const: true
+      }
+      return { kind: INT }
+    };
+  }
+  message Flush {
+    option (nori.message).funcptr = {
+      args {
+        kind: VOIDPTR
+        funcbaseptr: true
+      }
+      return { kind: INT }
+    };
+  }
+  Afread afread = 1;
+  Putstr putstr = 2;
+  Flush flush = 3;
+}
+
+message ClientDiscipline {
+  option (nori.message).alias = "Agdisc_t";
+
+  IDAllocator id = 1 [(nori.field).type.pointer = 1];
+  IOService io = 2 [(nori.field).type.pointer = 1];
+}
+
+message State {
+  option (nori.message).alias = "Agdstate_t";
+
+  nori.Any id = 1 [(nori.field).type.kind = VOIDPTR];
+}
+
+message ClientEventCallback {
+  option (nori.message).alias = "Agcbdisc_t";
+
+  message ObjectFunc {
+    option (nori.message) = {
+      alias: "agobjfn_t"
+      funcptr: {
+        args {
+          kind: STRUCT
+          ref: "Graph"
+          pointer: 1
+          funcbaseptr: true
+        }
+        args {
+          kind: STRUCT
+          ref: "Object"
+          pointer: 1
+        }
+        args { kind: VOIDPTR }
+      }
+    };
+  }
+  message ObjectUpdateFunc {
+    option (nori.message) = {
+      alias: "agobjupdfn_t"
+      funcptr: {
+        args {
+          kind: STRUCT
+          ref: "Graph"
+          pointer: 1
+          funcbaseptr: true
+        }
+        args {
+          kind: STRUCT
+          ref: "Object"
+          pointer: 1
+        }
+        args {
+          kind: VOIDPTR
+        }
+        args {
+          kind: STRUCT
+          ref: "Sym"
+          pointer: 1
+        }
+      }
+    };
+  }
+};
+
+message CallbackStack {
+  option (nori.message).alias = "Agcbstack_t";
+
+  ClientEventCallback f = 1 [(nori.field).type.pointer = 1];
+  nori.Any state = 2 [(nori.field).type.kind = VOIDPTR];
+  CallbackStack prev = 3 [(nori.field).type.pointer = 1];
+};
+
+message CommonFields {
+  option (nori.message).alias = "Agclos_t";
+
+  ClientDiscipline disc = 1;
+  State state = 2;
+  Dict strdict = 3 [(nori.field).type.pointer = 1];
+  repeated uint64 seq = 4 [(nori.field).type.array_num = 3];
+  CallbackStack cb = 5 [(nori.field).type.pointer = 1];
+  repeated Dict lookup_by_name = 6 [(nori.field).type = {
+    pointer: 1
+    array_num: 3
+  }];
+  repeated Dict lookup_by_id = 7 [(nori.field).type = {
+    pointer: 1
+    array_num: 3
+  }];
+}
+
+message Graph {
+  option (nori.message).alias = "Agraph_t";
+
+  Object base = 1;
+  GraphDescriptor desc = 2;
+  DictLink seq_link = 3;
+  DictLink id_link = 4;
+  Dict n_seq = 5 [(nori.field).type.pointer = 1];
+  Dict e_seq = 6 [(nori.field).type.pointer = 1];
+  Dict e_id = 7 [(nori.field).type.pointer = 1];
+  Dict g_seq = 8 [(nori.field).type.pointer = 1];
+  Dict g_id = 9 [(nori.field).type.pointer = 1];
+  Graph parent = 10 [(nori.field).type.pointer = 1];
+  Graph root = 11 [(nori.field).type.pointer = 1];
+  CommonFields clos = 12 [(nori.field).type.pointer = 1];
+}
+
+message Attr {
+  option (nori.message).alias = "Agattr_t";
+
+  Record h = 1;
+  Dict dict = 2 [(nori.field).type.pointer = 1];
+  repeated string str = 3 [(nori.field).type = {
+    kind: CHARPTR
+    array: true
+  }];
+}
+
+message Sym {
+  option (nori.message).alias = "Agsym_t";
+
+  DictLink link = 1;
+  string name = 2 [(nori.field).type.kind = CHARPTR];
+  string defval = 3 [(nori.field).type.kind = CHARPTR];
+  int32 id = 4;
+  uint32 kind = 5;
+  uint32 fixed = 6;
+  uint32 print = 7;
+}
+
+message DataDict {
+  option (nori.message).alias = "Agdatadict_t";
+
+  Record h = 1;
+}
+
+enum ErrorLevel {
+  option (nori.enum).alias = "agerrlevel_t";
+
+  WARN = 0 [(nori.enum_value).alias = "AGWARN"];
+  ERR = 1 [(nori.enum_value).alias = "AGERR"];
+  MAX = 2 [(nori.enum_value).alias = "AGMAX"];
+  PREV = 3 [(nori.enum_value).alias = "AGPREV"];
+}
+
+message UserRef {
+  option (nori.message).funcptr = {
+    args {
+      kind: CHARPTR
+      funcbaseptr: true
+    }
+    return { kind: INT }
+  };
+}
+
+option (nori.file).export = {
+  header: [
+    "cgraph.h",
+    "gvc.h",
+    "gvcjob.h",
+    "cdt.h",
+    "gvplugin_device.h",
+    "gvplugin_render.h",
+    "gvplugin_layout.h",
+    "gvplugin_loadimage.h",
+    "gvplugin_textlayout.h"
+  ]
+  func {
+    name: "pushDisc"
+    alias: "agpushdisc"
+    args {
+      kind: STRUCT
+      ref: "Graph"
+      pointer: 1
+    }
+    args {
+      kind: STRUCT
+      ref: "ClientEventCallback"
+      pointer: 1
+    }
+    args { kind: VOIDPTR }
+  }
+  func {
+    name: "popDisc"
+    alias: "agpopdisc"
+    args {
+      kind: STRUCT
+      ref: "Graph"
+      pointer: 1
+    }
+    args {
+      kind: STRUCT
+      ref: "ClientEventCallback"
+      pointer: 1
+    }
+    return { kind: INT }
+  }
+  func {
+    name: "open"
+    alias: "agopen"
+    args { kind: CHARPTR }
+    args {
+      kind: STRUCT
+      ref: "GraphDescriptor"
+    }
+    args {
+      kind: STRUCT
+      ref: "ClientDiscipline"
+      pointer: 1
+    }
+    return { 
+      kind: STRUCT
+      ref: "Graph"
+      pointer: 1
+    }
+  }
+  method {
+    name: "close"
+    alias: "agclose"
+    recv: "Graph"
+    return { kind: INT }
+  }
+  func {
+    name: "read"
+    alias: "agread"
+    args { kind: CHARPTR }
+    args {
+      kind: STRUCT
+      ref: "ClientDiscipline"
+      pointer: 1
+    }
+    return {
+      kind: STRUCT
+      ref: "Graph"
+      pointer: 1
+    }
+  }
+  func {
+    name: "memRead"
+    alias: "agmemread"
+    args {
+      kind: CHARPTR
+      const: true
+    }
+    return {
+      kind: STRUCT
+      ref: "Graph"
+      pointer: 1
+    }
+  }
+  func {
+    name: "readline"
+    alias: "agreadline"
+    args { kind: INT }
+  }
+  func {
+    name: "setFile"
+    alias: "agsetfile"
+    args { kind: CHARPTR }
+  }
+  func {
+    name: "concat"
+    alias: "agconcat"
+    args {
+      kind: STRUCT
+      ref: "Graph"
+      pointer: 1
+    }
+    args { kind: VOIDPTR }
+    args {
+      kind: STRUCT
+      ref: "ClientDiscipline"
+      pointer: 1
+    }
+    return {
+      kind: STRUCT
+      ref: "Graph"
+      pointer: 1
+    }
+  }
+  func {
+    name: "write"
+    alias: "agwrite"
+    args {
+      kind: STRUCT
+      ref: "Graph"
+      pointer: 1
+    }
+    args { kind: VOIDPTR }
+    return { kind: INT }
+  }
+  func {
+    name: "isDirected"
+    alias: "agisdirected"
+    args {
+      kind: STRUCT
+      ref: "Graph"
+      pointer: 1
+    }
+    return { kind: INT }
+  }
+  func {
+    name: "isUndirected"
+    alias: "agisundirected"
+    args {
+      kind: STRUCT
+      ref: "Graph"
+      pointer: 1
+    }
+    return { kind: INT }
+  }
+  func {
+    name: "isStrict"
+    alias: "agisstrict"
+    args {
+      kind: STRUCT
+      ref: "Graph"
+      pointer: 1
+    }
+    return { kind: INT }
+  }
+  method {
+    recv: "Graph"
+    name: "isSimple"
+    alias: "agissimple"
+    return { kind: INT }
+  }
+  method {
+    recv: "Graph"
+    name: "node"
+    alias: "agnode"
+    args {
+      kind: CHARPTR
+    }
+    args { kind : INT }
+    return {
+      kind: STRUCT
+      ref: "Node"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Graph"
+    name: "idNode"
+    alias: "agidnode"
+    args { kind: UINT64 }
+    args { kind : INT }
+    return {
+      kind: STRUCT
+      ref: "Node"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Graph"
+    name: "subNode"
+    alias: "agsubnode"
+    args {
+      kind: STRUCT
+      ref: "Node"
+      pointer: 1
+    }
+    args { kind : INT }
+    return {
+      kind: STRUCT
+      ref: "Node"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Graph"
+    name: "firstNode"
+    alias: "agfstnode"
+    return {
+      kind: STRUCT
+      ref: "Node"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Graph"
+    name: "nextNode"
+    alias: "agnxtnode"
+    args {
+      kind: STRUCT
+      ref: "Node"
+      pointer: 1
+    }
+    return {
+      kind: STRUCT
+      ref: "Node"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Graph"
+    name: "lastNode"
+    alias: "aglstnode"
+    return {
+      kind: STRUCT
+      ref: "Node"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Graph"
+    name: "prevNode"
+    alias: "agprvnode"
+    args {
+      kind: STRUCT
+      ref: "Node"
+      pointer: 1
+    }
+    return {
+      kind: STRUCT
+      ref: "Node"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Graph"
+    name: "subRep"
+    alias: "agsubrep"
+    args {
+      kind: STRUCT
+      ref: "Node"
+      pointer: 1
+    }
+    return {
+      kind: STRUCT
+      ref: "SubNode"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Node"
+    name: "before"
+    alias: "agnodebefore"
+    args {
+      kind: STRUCT
+      ref: "Node"
+      pointer: 1
+    }
+    return { kind: INT }
+  }
+  method {
+    recv: "Graph"
+    name: "edge"
+    alias: "agedge"
+    args {
+      kind: STRUCT
+      ref: "Node"
+      pointer: 1  
+    }
+    args {
+      kind: STRUCT
+      ref: "Node"
+      pointer: 1
+    }
+    args { kind: CHARPTR }
+    args { kind: INT }
+    return {
+      kind: STRUCT
+      ref: "Edge"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Graph"
+    name: "idEdge"
+    alias: "agidedge"
+    args {
+      kind: STRUCT
+      ref: "Node"
+      pointer: 1
+    }
+    args {
+      kind: STRUCT
+      ref: "Node"
+      pointer: 1
+    }
+    args { kind: UINT64 }
+    args { kind: INT }
+    return {
+      kind: STRUCT
+      ref: "Edge"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Graph"
+    name: "subEdge"
+    alias: "agsubedge"
+    args {
+      kind: STRUCT
+      ref: "Edge"
+      pointer: 1
+    }
+    args { kind: INT }
+    return {
+      kind: STRUCT
+      ref: "Edge"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Graph"
+    name: "firstIn"
+    alias: "agfstin"
+    args {
+      kind: STRUCT
+      ref: "Node"
+      pointer: 1
+    }
+    return {
+      kind: STRUCT
+      ref: "Edge"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Graph"
+    name: "nextIn"
+    alias: "agnxtin"
+    args {
+      kind: STRUCT
+      ref: "Edge"
+      pointer: 1
+    }
+    return {
+      kind: STRUCT
+      ref: "Edge"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Graph"
+    name: "firstOut"
+    alias: "agfstout"
+    args {
+      kind: STRUCT
+      ref: "Node"
+      pointer: 1
+    }
+    return {
+      kind: STRUCT
+      ref: "Edge"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Graph"
+    name: "nextOut"
+    alias: "agnxtout"
+    args {
+      kind: STRUCT
+      ref: "Edge"
+      pointer: 1
+    }
+    return {
+      kind: STRUCT
+      ref: "Edge"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Graph"
+    name: "firstEdge"
+    alias: "agfstedge"
+    args {
+      kind: STRUCT
+      ref: "Node"
+      pointer: 1
+    }
+    return {
+      kind: STRUCT
+      ref: "Edge"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Graph"
+    name: "nextEdge"
+    alias: "agnxtedge"
+    args {
+      kind: STRUCT
+      ref: "Edge"
+      pointer: 1
+    }
+    args {
+      kind: STRUCT
+      ref: "Node"
+      pointer: 1
+    }
+    return {
+      kind: STRUCT
+      ref: "Edge"
+      pointer: 1
+    }
+  }
+  func {
+    name: "graphOf"
+    alias: "agraphof"
+    args { kind: VOIDPTR }
+    return {
+      kind: STRUCT
+      ref: "Graph"
+      pointer: 1
+    }
+  }
+  func {
+    name: "graphRoot"
+    alias: "agroot"
+    args { kind: VOIDPTR }
+    return {
+      kind: STRUCT
+      ref: "Graph"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Graph"
+    name: "contains"
+    alias: "agcontains"
+    args { kind: VOIDPTR }
+    return { kind: INT }
+  }
+  func {
+    name: "graphNameOf"
+    alias: "agnameof"
+    args { kind: VOIDPTR }
+    return { kind: CHARPTR }
+  }
+  method {
+    recv: "Node"
+    name: "reLabel"
+    alias: "agrelabel_node"
+    args { kind: CHARPTR }
+    return { kind: INT }
+  }
+  method {
+    recv: "Graph"
+    name: "delete"
+    alias: "agdelete"
+    args { kind: VOIDPTR }
+    return { kind: INT }
+  }
+  method {
+    recv: "Graph"
+    name: "deleteSubGraph"
+    alias: "agdelsubg"
+    args {
+      kind: STRUCT
+      ref: "Graph"
+      pointer: 1
+    }
+    return { kind: INT }
+  }
+  method {
+    recv: "Graph"
+    name: "deleteNode"
+    alias: "agdelnode"
+    args {
+      kind: STRUCT
+      ref: "Node"
+      pointer: 1
+    }
+    return { kind: INT }
+  }
+  method {
+    recv: "Graph"
+    name: "deleteEdge"
+    alias: "agdeledge"
+    args {
+      kind: STRUCT
+      ref: "Edge"
+      pointer: 1
+    }
+    return { kind: INT }
+  }
+  func {
+    name: "objectKind"
+    alias: "agobjkind"
+    args { kind: VOIDPTR }
+    return { kind: INT }
+  }
+  method {
+    recv: "Graph"
+    name: "strdup"
+    alias: "agstrdup"
+    args { kind: CHARPTR }
+    return { kind: CHARPTR }
+  }
+  method {
+    recv: "Graph"
+    name: "strdupHTML"
+    alias: "agstrdup_html"
+    args { kind: CHARPTR }
+    return { kind: CHARPTR }
+  }
+  func {
+    name: "htmlStr"
+    alias: "aghtmlstr"
+    args { kind: CHARPTR }
+    return { kind: BOOL }
+  }
+  method {
+    recv: "Graph"
+    name: "strBind"
+    alias: "agstrbind"
+    args { kind: CHARPTR }
+    return { kind: CHARPTR }
+  }
+  method {
+    recv: "Graph"
+    name: "strFree"
+    alias: "agstrfree"
+    args { kind: CHARPTR }
+    return { kind: INT }
+  }
+  func {
+    name: "canon"
+    alias: "agcanon"
+    args { kind: CHARPTR }
+    args { kind: INT }
+    return { kind: CHARPTR }
+  }
+  func {
+    name: "strCanon"
+    alias: "agstrcanon"
+    args { kind: CHARPTR }
+    args { kind: CHARPTR }
+    return { kind: CHARPTR }
+  }
+  func {
+    name: "canonStr"
+    alias: "agcanonStr"
+    args { kind: CHARPTR }
+    return { kind: CHARPTR }
+  }
+  method {
+    recv: "Graph"
+    name: "attr"
+    alias: "agattr"
+    args { kind: INT }
+    args { kind: CHARPTR }
+    args { kind: CHARPTR }
+    return {
+      kind: STRUCT
+      ref: "Sym"
+      pointer: 1
+    }
+  }
+  func {
+    name: "attrSym"
+    alias: "agattrsym"
+    args {
+      kind: STRUCT
+      ref: "Object"
+      pointer: 1
+    }
+    args { kind: CHARPTR }
+    return {
+      kind: STRUCT
+      ref: "Sym"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Graph"
+    name: "nextAttr"
+    alias: "agnxtattr"
+    args { kind: INT }
+    args {
+      kind: STRUCT
+      ref: "Sym"
+      pointer: 1
+    }
+    return {
+      kind: STRUCT
+      ref: "Sym"
+      pointer: 1
+    }
+  }
+  func {
+    name: "copyAttr"
+    alias: "agcopyattr"
+    args { kind: VOIDPTR }
+    args { kind: VOIDPTR }
+    return { kind: INT }
+  }
+  func {
+    name: "bindRecord"
+    alias: "agbindrec"
+    args { kind: VOIDPTR }
+    args { kind: CHARPTR }
+    args { kind: UINT }
+    args { kind: INT }
+    return { kind: VOIDPTR }
+  }
+  func {
+    name: "getRecord"
+    alias: "aggetrec"
+    args { kind: VOIDPTR }
+    args { kind: CHARPTR }
+    args { kind: INT }
+    return {
+      kind: STRUCT
+      ref: "Record"
+      pointer: 1
+    }
+  }
+  func {
+    name: "deleteRecord"
+    alias: "agdelrec"
+    args { kind: VOIDPTR }
+    args { kind: CHARPTR }
+    return { kind: INT }
+  }
+  method {
+    recv: "Graph"
+    name: "init"
+    alias: "aginit"
+    args { kind: INT }
+    args { kind: CHARPTR }
+    args { kind: INT }
+    args { kind: INT }
+  }
+  method {
+    recv: "Graph"
+    name: "clean"
+    alias: "agclean"
+    args { kind: INT }
+    args { kind: CHARPTR }
+  }
+  func {
+    name: "getStr"
+    alias: "agget"
+    args { kind: VOIDPTR }
+    args { kind: CHARPTR }
+    return { kind: CHARPTR }
+  }
+  func {
+    name: "getSymName"
+    alias: "agxget"
+    args { kind: VOIDPTR }
+    args {
+      kind: STRUCT
+      ref: "Sym"
+      pointer: 1
+    }
+    return { kind: CHARPTR }
+  }
+  func {
+    name: "setStr"
+    alias: "agset"
+    args { kind: VOIDPTR }
+    args { kind: CHARPTR }
+    args { kind: CHARPTR }
+    return { kind: INT }
+  }
+  func {
+    name: "setSymName"
+    alias: "agxset"
+    args { kind: VOIDPTR }
+    args {
+      kind: STRUCT
+      ref: "Sym"
+      pointer: 1
+    }
+    args { kind: CHARPTR }
+    return { kind: INT }
+  }
+  func {
+    name: "safeSetStr"
+    alias: "agsafeset"
+    args { kind: VOIDPTR }
+    args { kind: CHARPTR }
+    args { kind: CHARPTR }
+    args { kind: CHARPTR }
+    return { kind: INT }
+  }
+  method {
+    recv: "Graph"
+    name: "subGraph"
+    alias: "agsubg"
+    args { kind: CHARPTR }
+    args { kind: INT }
+    return {
+      kind: STRUCT
+      ref: "Graph"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Graph"
+    name: "idSubGraph"
+    alias: "agidsubg"
+    args { kind: UINT64 }
+    args { kind: INT }
+    return {
+      kind: STRUCT
+      ref: "Graph"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Graph"
+    name: "firstSubGraph"
+    alias: "agfstsubg"
+    return {
+      kind: STRUCT
+      ref: "Graph"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Graph"
+    name: "nextSubGraph"
+    alias: "agnxtsubg"
+    return {
+      kind: STRUCT
+      ref: "Graph"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Graph"
+    name: "parent"
+    alias: "agparent"
+    return {
+      kind: STRUCT
+      ref: "Graph"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Graph"
+    name: "nodeNum"
+    alias: "agnnodes"
+    return { kind: INT }
+  }
+  method {
+    recv: "Graph"
+    name: "edgeNum"
+    alias: "agnedges"
+    return { kind: INT }
+  }
+  method {
+    recv: "Graph"
+    name: "subGraphNum"
+    alias: "agnsubg"
+    return { kind: INT }
+  }
+  method {
+    recv: "Graph"
+    name: "degree"
+    alias: "agdegree"
+    args {
+      kind: STRUCT
+      ref: "Node"
+      pointer: 1
+    }
+    args { kind: INT }
+    args { kind: INT }
+    return { kind: INT }
+  }
+  method {
+    recv: "Graph"
+    name: "countUniqueEdges"
+    alias: "agcountuniqedges"
+    args {
+      kind: STRUCT
+      ref: "Node"
+      pointer: 1
+    }
+    args { kind: INT }
+    args { kind: INT }
+    return { kind: INT }
+  }
+  method {
+    recv: "Graph"
+    name: "alloc"
+    alias: "agalloc"
+    args { kind: UINT64 }
+    return { kind: VOIDPTR }
+  }
+  method {
+    recv: "Graph"
+    name: "realloc"
+    alias: "agrealloc"
+    args { kind: VOIDPTR }
+    args { kind: UINT64 }
+    args { kind: UINT64 }
+    return { kind: VOIDPTR }
+  }
+  method {
+    recv: "Graph"
+    name: "free"
+    alias: "agfree"
+    args { kind: VOIDPTR }
+  }
+  func {
+    name: "setError"
+    alias: "agseterr"
+    args {
+      kind: ENUM
+      ref: "ErrorLevel"
+    }
+    return {
+      kind: ENUM
+      ref: "ErrorLevel"
+    }
+  }
+  func {
+    name: "lastError"
+    alias: "aglasterr"
+    return { kind: CHARPTR }
+  }
+  func {
+    name: "error"
+    alias: "agerr"
+    args {
+      kind: ENUM
+      ref: "ErrorLevel"
+    }
+    args {
+      kind: CHARPTR
+      const: true
+    }
+    return { kind: INT }
+  }
+  func {
+    name: "errorf"
+    alias: "agerrorf"
+    args {
+      kind: CHARPTR
+      const: true
+    }
+  }
+  func {
+    name: "warningf"
+    alias: "agwarningf"
+    args {
+      kind: CHARPTR
+      const: true
+    }
+  }
+  func {
+    name: "errorNum"
+    alias: "agerrors"
+    return { kind: INT }
+  }
+  func {
+    name: "resetErrors"
+    alias: "agreseterrors"
+    return { kind: INT }
+  }
+  func {
+    name: "setErrorf"
+    alias: "agseterrf"
+    args {
+      kind: FUNCPTR 
+      ref: "UserRef"
+    }
+  }
+};
+
+// cdt.h
+
+message DictLink {
+  option (nori.message).alias = "Dtlink_t";
+
+  DictLink right = 1 [(nori.field).type.pointer = 1];
+  oneof hl {
+    uint32 hash = 2 [(nori.field).alias = "_hash"];
+    DictLink left = 3 [(nori.field) = {
+      alias: "_left"
+      type { pointer: 1 }
+    }];
+  };
+}
+
+message DictHold {
+  option (nori.message).alias = "Dthold_t";
+
+  DictLink hdr = 1;
+  nori.Any obj = 2 [(nori.field).type.kind = VOIDPTR];
+}
+
+message DictMethod {
+  option (nori.message).alias = "Dtmethod_t";
+
+  DictSearch searchf = 1;
+  int64 type = 2;
+}
+
+message DictData {
+  option (nori.message).alias = "Dtdata_t";
+
+  int64 type = 1;
+  DictLink here = 2 [(nori.field).type.pointer = 1];
+  oneof hh {
+    DictLink htab = 3 [(nori.field) = {
+      alias: "_htab"
+      type {
+        array: true
+        pointer: 1
+      }
+    }];
+    DictLink head = 4 [(nori.field) = {
+      alias: "_head"
+      type { pointer: 1 }
+    }];
+  };
+  int64 ntab = 5;
+  int64 size = 6;
+  int64 loop = 7;
+}
+
+message DictDisc {
+  option (nori.message).alias = "Dtdisc_t";
+
+  int64 key = 1;
+  int64 size = 2;
+  int64 link = 3;
+  DictMake makef = 4;
+  DictFree freef = 5;
+  DictCompare comparf = 6;
+}
+
+message Dict {
+  option (nori.message).alias = "Dict_t";
+
+  DictSearch searchf = 1;
+  DictDisc disc = 2 [(nori.field).type.pointer = 1];
+  DictData data = 3 [(nori.field).type.pointer = 1];
+  DictMethod meth = 4 [(nori.field).type.pointer = 1];
+  int64 nview = 5;
+  Dict view = 6 [(nori.field).type.pointer = 1];
+  Dict walk = 7 [(nori.field).type.pointer = 1];
+  nori.Any user = 8 [(nori.field).type.kind = VOIDPTR];
+}
+
+message DictStat {
+  option (nori.message).alias = "Dtstat_t";
+
+  int64 dt_meth = 1;
+  int64 dt_size = 2;
+  uint64 dt_n = 3;
+  uint64 dt_max = 4;
+  repeated uint64 dt_count = 5 [(nori.field).type = {
+    kind: UINT32
+    array: true
+  }];
+}
+
+message DictMemory {
+  option (nori.message).funcptr = {
+    args {
+      kind: STRUCT
+      ref: "Dict"
+      pointer: 1
+      funcbaseptr: true
+    }
+    args { kind: VOIDPTR }
+    args { kind: UINT32 }
+    args {
+      kind: STRUCT
+      ref: "DictDisc"
+      pointer: 1
+    }
+    return { kind: VOIDPTR }
+  };
+}
+
+message DictSearch {
+  option (nori.message).funcptr = {
+    args {
+      kind: STRUCT
+      ref: "Dict"
+      pointer: 1
+      funcbaseptr: true
+    }
+    args { kind: VOIDPTR }
+    args { kind: INT }
+    return { kind: VOIDPTR }
+  };
+}
+
+message DictMake {
+  option (nori.message).funcptr = {
+    args {
+      kind: VOIDPTR
+      funcbaseptr: true
+    }
+    args {
+      kind: STRUCT
+      ref: "DictDisc"
+      pointer: 1
+    }
+    return { kind: VOIDPTR }
+  };
+}
+
+message DictFree {
+  option (nori.message).funcptr = {
+    args {
+      kind: VOIDPTR
+      funcbaseptr: true
+    }
+  };
+}
+
+message DictCompare {
+  option (nori.message).funcptr = {
+    args {
+      kind: VOIDPTR
+      funcbaseptr: true
+    }
+    args { kind: VOIDPTR }
+    return { kind: INT }
+  };
+}
+
+message DictWalk {
+  option (nori.message).funcptr = {
+    args {
+      kind: VOIDPTR
+      funcbaseptr: true
+    }
+    args { kind: VOIDPTR }
+    return { kind: INT }
+  };
+}
+
+option (nori.file).export = {
+  header: [
+    "cgraph.h",
+    "gvc.h",
+    "gvcjob.h",
+    "cdt.h",
+    "gvplugin_device.h",
+    "gvplugin_render.h",
+    "gvplugin_layout.h",
+    "gvplugin_loadimage.h",
+    "gvplugin_textlayout.h"
+  ]
+  func {
+    name: "newDictWithDisc"
+    alias: "dtopen"
+    args {
+      kind: STRUCT
+      ref: "DictDisc"
+      pointer: 1
+    }
+    args {
+      kind: STRUCT
+      ref: "DictMethod"
+      pointer: 1
+    }
+    return {
+      kind: STRUCT
+      ref: "Dict"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Dict"
+    name: "close"
+    alias: "dtclose"
+    return { kind: INT }
+  }
+  method {
+    recv: "Dict"
+    name: "view"
+    alias: "dtview"
+    args {
+      kind: STRUCT
+      ref: "Dict"
+      pointer: 1
+    }
+    return {
+      kind: STRUCT
+      ref: "Dict"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Dict"
+    name: "disc"
+    alias: "dtdisc"
+    args {
+      kind: STRUCT
+      ref: "DictDisc"
+      pointer: 1
+    }
+    return {
+      kind: STRUCT
+      ref: "DictDisc"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Dict"
+    name: "method"
+    alias: "dtmethod"
+    args {
+      kind: STRUCT
+      ref: "DictMethod"
+      pointer: 1
+    }
+    return {
+      kind: STRUCT
+      ref: "DictMethod"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Dict"
+    name: "flatten"
+    alias: "dtflatten"
+    return {
+      kind: STRUCT
+      ref: "DictLink"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Dict"
+    name: "extract"
+    alias: "dtextract"
+    return {
+      kind: STRUCT
+      ref: "DictLink"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Dict"
+    name: "restore"
+    alias: "dtrestore"
+    args {
+      kind: STRUCT
+      ref: "DictLink"
+      pointer: 1
+    }
+    return { kind: INT }
+  }
+  method {
+    recv: "Dict"
+    name: "walk"
+    alias: "dtwalk"
+    args {
+      kind: FUNCPTR
+      ref: "DictWalk"
+    }
+    args { kind: VOIDPTR }
+    return { kind: INT }
+  }
+  method {
+    recv: "Dict"
+    name: "renew"
+    alias: "dtrenew"
+    args { kind: VOIDPTR }
+    return { kind: VOIDPTR }
+  }
+  method {
+    recv: "Dict"
+    name: "size"
+    alias: "dtsize"
+    return { kind: INT }
+  }
+  method {
+    recv: "Dict"
+    name: "stat"
+    alias: "dtstat"
+    args {
+      kind: STRUCT
+      ref: "DictStat"
+      pointer: 1
+    }
+    args { kind: INT }
+    return { kind: INT }
+  }
+  func {
+    name: "strHash"
+    alias: "dtstrhash"
+    args { kind: VOIDPTR }
+    args { kind: INT }
+    return { kind: UINT }
+  }
+};
+
+// gvc.h
+
+message File {
+  option (nori.message) = {
+    alias: "FILE"
+    constructor: false
+  };
+}
+
+message Context {
+  option (nori.message).alias = "GVC_t";
+
+  Common common = 1;
+  string config_path = 2;
+  bool config_found = 3;
+  repeated string input_filenames = 4 [(nori.field).type = {
+    kind: CHARPTR
+    array: true
+  }];
+  repeated PluginAvailable apis = 5 [(nori.field).type = {
+    pointer: 1
+    array: true
+    array_num: 4
+  }];
+  repeated PluginAvailable api = 6 [(nori.field).type = {
+    pointer: 1
+    array: true
+    array_num: 4
+  }];
+}
+
+message PluginAvailable {
+  option (nori.message).alias = "gvplugin_available_t";
+
+  PluginAvailable next = 1 [(nori.field).type.pointer = 1];
+  string typestr = 2 [(nori.field).type.kind = CHARPTR];
+  int64 quality = 3;
+  PluginPackage package = 4 [(nori.field).type.pointer = 1];
+  PluginInstalled typeptr = 5 [(nori.field).type.pointer = 1];
+}
+
+message PluginPackage {
+  option (nori.message).alias = "gvplugin_package_t";
+
+  PluginPackage next = 1 [(nori.field).type.pointer = 1];
+  string path = 2 [(nori.field).type.kind = CHARPTR];
+  string name = 3 [(nori.field).type.kind = CHARPTR];
+}
+
+message SymList {
+  option (nori.message).alias = "lt_symlist_t";
+
+  string name = 1;
+  PluginLibrary address = 2 [(nori.field).type.pointer = 1];
+}
+
+enum ImageType {
+  option (nori.enum).alias = "imagetype_t";
+
+  IMAGE_TYPE_NULL = 0 [(nori.enum_value).alias = "FT_NULL"];
+  IMAGE_TYPE_BMP = 1 [(nori.enum_value).alias = "FT_BMP"];
+  IMAGE_TYPE_GIF = 2 [(nori.enum_value).alias = "FT_GIF"];
+  IMAGE_TYPE_PNG = 3 [(nori.enum_value).alias = "FT_PNG"];
+  IMAGE_TYPE_JPEG = 4 [(nori.enum_value).alias = "FT_JPEG"];
+  IMAGE_TYPE_PDF = 5 [(nori.enum_value).alias = "FT_PDF"];
+  IMAGE_TYPE_PS = 6 [(nori.enum_value).alias = "FT_PS"];
+  IMAGE_TYPE_EPS = 7 [(nori.enum_value).alias = "FT_EPS"];
+  IMAGE_TYPE_SVG = 8 [(nori.enum_value).alias = "FT_SVG"];
+  IMAGE_TYPE_XML = 9 [(nori.enum_value).alias = "FT_XML"];
+  IMAGE_TYPE_RIFF = 10 [(nori.enum_value).alias = "FT_RIFF"];
+  IMAGE_TYPE_WEBP = 11 [(nori.enum_value).alias = "FT_WEBP"];
+  IMAGE_TYPE_ICO = 12 [(nori.enum_value).alias = "FT_ICO"];
+  IMAGE_TYPE_TIFF = 13 [(nori.enum_value).alias = "FT_TIFF"];
+}
+
+message UserShape {
+  option (nori.message).alias = "usershape_t";
+
+  message DataFree {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "UserShape"
+        pointer: 1
+        funcbaseptr: true
+      }
+    };
+  }
+
+  DictLink link = 1;
+  string name = 2 [(nori.field).type = {
+    kind: CHARPTR
+    const: true
+  }];
+  int64 macro_id = 3;
+  bool must_inline = 4;
+  bool nocache = 5;
+  File f = 6 [(nori.field).type.pointer = 1];
+  ImageType type = 7;
+  string stringtype = 8 [(nori.field).type.kind = CHARPTR];
+  int64 x = 9;
+  int64 y = 10;
+  int64 w = 11;
+  int64 h = 12;
+  int64 dpi = 13;
+  nori.Any data = 14 [(nori.field).type.kind = VOIDPTR];
+  uint64 datasize = 15;
+  DataFree datafree = 16;
+}
+
+message PluginActiveLoadImage {
+  option (nori.message).alias = "gvplugin_active_loadimage_t";
+
+  LoadImageEngine engine = 1 [(nori.field).type.pointer = 1];
+  int64 id = 2;
+  string type = 3 [(nori.field).type = {
+    kind: CHARPTR
+    const: true
+  }];
+}
+
+message Common {
+  option (nori.message).alias = "GVCOMMON_t";
+
+  repeated string info = 1 [(nori.field).type = {
+    kind: CHARPTR
+    array: true
+  }];
+  string cmdname = 2 [(nori.field).type.kind = CHARPTR];
+  int64 verbose = 3;
+  bool config = 4;
+  bool auto_outfile_names = 5;
+  repeated string show_boxes = 6 [(nori.field).type = {
+    kind: CHARPTR
+    const: true
+    array: true
+  }];
+  repeated string lib = 7 [(nori.field).type = {
+    kind: CHARPTR
+    const: true
+    array: true
+  }];
+  int64 view_num = 8 [(nori.field).alias = "viewNum"];
+  SymList builtins = 9 [(nori.field).type.pointer = 1];
+  int64 demand_loading = 10;
+}
+
+enum ObjectType {
+  option (nori.enum).alias = "obj_type";
+
+  ROOTGRAPH_OBJTYPE = 0;
+  CLUSTER_OBJTYPE = 1;
+  NODE_OBJTYPE = 2;
+  EDGE_OBJTYPE = 3;
+}
+
+enum MapShapeType {
+  option (nori.enum).alias = "map_shape_t";
+
+  MAP_RECTANGLE = 0;
+  MAP_CIRCLE = 1;
+  MAP_POLYGON = 2;
+}
+
+enum EmitState {
+  option (nori.enum).alias = "emit_state_t";
+
+  EMIT_GDRAW = 0;
+  EMIT_CDRAW = 1;
+  EMIT_TDRAW = 2;
+  EMIT_HDRAW = 3;
+	EMIT_GLABEL = 4;
+  EMIT_CLABEL = 5;
+  EMIT_TLABEL = 6;
+  EMIT_HLABEL = 7;
+	EMIT_NDRAW = 8;
+  EMIT_EDRAW = 9;
+  EMIT_NLABEL = 10;
+  EMIT_ELABEL = 11;
+}
+
+message ObjectState {
+  option (nori.message).alias = "obj_state_t";
+
+  ObjectState parent = 1 [(nori.field).type.pointer = 1];
+  ObjectType type = 2;
+  oneof u {
+    Graph g = 3 [(nori.field).type.pointer = 1];
+    Graph sg = 4 [(nori.field).type.pointer = 1];
+    Node n = 5 [(nori.field).type.pointer = 1];
+    Edge e = 6 [(nori.field).type.pointer = 1];
+  }
+  EmitState emit_state = 7;
+  Color pencolor = 8;
+  Color fillcolor = 9;
+  Color stopcolor = 10;
+  int64 gradient_angle = 11;
+  float gradient_frac = 12;
+  PenType pen = 13;
+  FillType fill = 14;
+  double penwidth = 15;
+  repeated string rawstyle = 16 [(nori.field).type = {
+    kind: CHARPTR
+    array: true
+  }];
+  double z = 17;
+  double tail_z = 18;
+  double head_z = 19;
+  string label = 20;
+  string xlabel = 21;
+  string taillabel = 22;
+  string headlabel = 23;
+  string url = 24;
+  string id = 25;
+  string labelurl = 26;
+  string tailurl = 27;
+  string headurl = 28;
+  string tooltip = 29;
+  string labeltooltip = 30;
+  string tailtooltip = 31;
+  string headtooltip = 32;
+  string target = 33;
+  string labeltarget = 34;
+  string tailtarget = 35;
+  string headtarget = 36;
+  uint64 explicit_tooltip = 37;
+  uint64 explicit_tailtooltip = 38;
+  uint64 explicit_headtooltip = 39;
+  uint64 explicit_labeltooltip = 40;
+  uint64 explicit_tailtarget = 41;
+  uint64 explicit_headtarget = 42;
+  uint64 explicit_edgetarget = 43;
+  uint64 explicit_tailurl = 44;
+  uint64 explicit_headurl = 45;
+  uint64 labeledgealigned = 46;
+  MapShapeType url_map_shape = 47;
+  uint64 url_map_n = 48;
+  PointFloat url_map_p = 49 [(nori.field).type.pointer = 1];
+  int64 url_bsplinemap_poly_n = 50;
+  int64 url_bsplinemap_n = 51 [(nori.field).type = {
+    kind: INT
+    array: true
+  }];
+  PointFloat url_bsplinemap_p = 52 [(nori.field).type.pointer = 1];
+  int64 tailendurl_map_n = 53;
+  PointFloat tailendurl_map_p = 54 [(nori.field).type.pointer = 1];
+  int64 headendurl_map_n = 55;
+  PointFloat headendurl_map_p = 56 [(nori.field).type.pointer = 1];
+}
+
+message DeviceCallbacks {
+  option (nori.message).alias = "gvdevice_callbacks_t";
+
+  message Refresh {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+    };
+  }
+
+  message ButtonPress {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+      args { kind: INT }
+      args {
+        kind: STRUCT
+        ref: "PointFloat"
+      }
+    };
+  }
+
+  message ButtonRelease {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+      args { kind: INT }
+      args {
+        kind: STRUCT
+        ref: "PointFloat"
+      }
+    };
+  }
+
+  message Motion {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+      args {
+        kind: STRUCT
+        ref: "PointFloat"
+      }
+    };
+  }
+
+  message Modify {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+      args {
+        kind: CHARPTR
+        const: true
+      }
+      args {
+        kind: CHARPTR
+        const: true
+      }
+    };
+  }
+
+  message Delete {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+    };
+  }
+
+  message Read {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+      args {
+        kind: CHARPTR
+        const: true
+      }
+      args {
+        kind: CHARPTR
+        const: true
+      }
+    };
+  }
+
+  message Layout {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+      args {
+        kind: CHARPTR
+        const: true
+      }
+    };
+  }
+
+  message Render {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+      args {
+        kind: CHARPTR
+        const: true
+      }
+      args {
+        kind: CHARPTR
+        const: true
+      }
+    };
+  }
+
+  Refresh refresh = 1;
+  ButtonPress button_press = 2;
+  ButtonRelease button_release = 3;
+  Motion motion = 4;
+  Modify modify = 5;
+  Delete del = 6;
+  Read read = 7;
+  Layout layout = 8;
+  Render render = 9;
+}
+
+enum EmitType {
+  EMIT_SORTED = 0 [(nori.enum_value).alias = "EMIT_SORTED"];
+  EMIT_COLORS = 1 [(nori.enum_value).alias = "EMIT_COLORS"];
+  EMIT_CLUSTERS_LAST = 2 [(nori.enum_value).alias = "EMIT_CLUSTERS_LAST"];
+  EMIT_PREORDER = 3 [(nori.enum_value).alias = "EMIT_PREORDER"];
+  EMIT_EDGE_SORTED = 4 [(nori.enum_value).alias = "EMIT_EDGE_SORTED"];
+}
+
+enum DeviceType {
+  DEVICE_DOES_PAGES = 0 [(nori.enum_value).alias = "GVDEVICE_DOES_PAGES"];
+  DEVICE_DOES_LAYERS = 1 [(nori.enum_value).alias = "GVDEVICE_DOES_LAYERS"];
+  DEVICE_EVENTS = 2 [(nori.enum_value).alias = "GVDEVICE_EVENTS"];
+  DEVICE_DOES_TRUECOLOR = 3 [(nori.enum_value).alias = "GVDEVICE_DOES_TRUECOLOR"];
+  DEVICE_BINARY_FORMAT = 4 [(nori.enum_value).alias = "GVDEVICE_BINARY_FORMAT"];
+  DEVICE_COMPRESSED_FORMAT = 5 [(nori.enum_value).alias = "GVDEVICE_COMPRESSED_FORMAT"];
+  DEVICE_NO_WRITER = 6 [(nori.enum_value).alias = "GVDEVICE_NO_WRITER"];
+}
+
+enum RenderType {
+  RENDER_Y_GOES_DOWN = 0 [(nori.enum_value).alias = "GVRENDER_Y_GOES_DOWN"];
+  RENDER_DOES_TRANSFORM = 1 [(nori.enum_value).alias = "GVRENDER_DOES_TRANSFORM"];
+  RENDER_DOES_LABELS = 2 [(nori.enum_value).alias = "GVRENDER_DOES_LABELS"];
+  RENDER_DOES_MAPS = 3 [(nori.enum_value).alias = "GVRENDER_DOES_MAPS"];
+  RENDER_DOES_MAP_RECTANGLE = 4 [(nori.enum_value).alias = "GVRENDER_DOES_MAP_RECTANGLE"];
+  RENDER_DOES_MAP_CIRCLE = 5 [(nori.enum_value).alias = "GVRENDER_DOES_MAP_CIRCLE"];
+  RENDER_DOES_MAP_POLYGON = 6 [(nori.enum_value).alias = "GVRENDER_DOES_MAP_POLYGON"];
+  RENDER_DOES_MAP_ELLIPSE = 7 [(nori.enum_value).alias = "GVRENDER_DOES_MAP_ELLIPSE"];
+  RENDER_DOES_MAP_BSPLINE = 8 [(nori.enum_value).alias = "GVRENDER_DOES_MAP_BSPLINE"];
+  RENDER_DOES_TOOLTIPS = 9 [(nori.enum_value).alias = "GVRENDER_DOES_TOOLTIPS"];
+  RENDER_DOES_TARGETS = 10 [(nori.enum_value).alias = "GVRENDER_DOES_TARGETS"];
+  RENDER_DOES_Z = 11 [(nori.enum_value).alias = "GVRENDER_DOES_Z"];
+  RENDER_NO_WHITE_BG = 12 [(nori.enum_value).alias = "GVRENDER_NO_WHITE_BG"];
+}
+
+enum RequiredType {
+  LAYOUT_NOT_REQUIRED = 0 [(nori.enum_value).alias = "LAYOUT_NOT_REQUIRED"];
+  OUTPUT_NOT_REQUIRED = 1 [(nori.enum_value).alias = "OUTPUT_NOT_REQUIRED"];
+}
+
+message Job {
+  option (nori.message).alias = "GVJ_t";
+
+  Context gvc = 1 [(nori.field).type.pointer = 1];
+  Job next = 2 [(nori.field).type.pointer = 1];
+  Job next_active = 3 [(nori.field).type.pointer = 1];
+  Common common = 4 [(nori.field).type.pointer = 1];
+  ObjectState obj = 5 [(nori.field).type.pointer = 1];
+  string input_filename = 6 [(nori.field).type.kind = CHARPTR];
+  int64 graph_index = 7;
+  string layout_type = 8 [(nori.field).type = {
+    kind: CHARPTR
+    const: true
+  }];
+  string output_filename = 9 [(nori.field).type = {
+    kind: CHARPTR
+    const: true
+  }];
+  File output_file = 10 [(nori.field).type.pointer = 1];
+  string output_data = 11 [(nori.field).type.kind = CHARPTR];
+  uint64 output_data_allocated = 12 [(nori.field).type.kind = UINT];
+  uint64 output_data_position = 13 [(nori.field).type.kind = UINT];
+  string output_langname = 14 [(nori.field).type = {
+    kind: CHARPTR
+    const: true
+  }];
+  int64 output_lang = 15;
+  PluginActiveRender render = 16;
+  PluginActiveDevice device = 17;
+  PluginActiveLoadImage loadimage = 18;
+  DeviceCallbacks callbacks = 19 [(nori.field).type.pointer = 1];
+  PointFloat device_dpi = 20;
+  bool device_sets_dpi = 21;
+  nori.Any display = 22 [(nori.field).type.kind = VOIDPTR];
+  int64 screen = 23;
+  nori.Any context = 24 [(nori.field).type.kind = VOIDPTR];
+  bool external_context = 25;
+  string imagedata = 26 [(nori.field).type.kind = CHARPTR];
+  int64 flags = 27;
+  int64 num_layers = 28 [(nori.field).alias = "numLayers"];
+  int64 layer_num = 29 [(nori.field).alias = "layerNum"];
+  Point pages_array_size = 30 [(nori.field).alias = "pagesArraySize"];
+  Point pages_array_first = 31 [(nori.field).alias = "pagesArrayFirst"];
+  Point pages_array_major = 32 [(nori.field).alias = "pagesArrayMajor"];
+  Point pages_array_minor = 33 [(nori.field).alias = "pagesArrayMinor"];
+  Point pages_array_elem = 34 [(nori.field).alias = "pagesArrayElem"];
+  int64 num_pages = 35 [(nori.field).alias = "numPages"];
+  BoxFloat bb = 36;
+  PointFloat pad = 37;
+  BoxFloat clip = 38;
+  BoxFloat page_box = 39 [(nori.field).alias = "pageBox"];
+  PointFloat page_size = 40 [(nori.field).alias = "pageSize"];
+  PointFloat focus = 41;
+  double zoom = 42;
+  int64 rotation = 43;
+  PointFloat view = 44;
+  BoxFloat canvas_box = 45 [(nori.field).alias = "canvasBox"];
+  PointFloat margin = 46;
+  PointFloat dpi = 47;
+  uint64 width = 48;
+  uint64 height = 49;
+  Box page_bounding_box = 50 [(nori.field).alias = "pageBoundingBox"];
+  Box bounding_box = 51 [(nori.field).alias = "boundingBox"];
+  PointFloat scale = 52;
+  PointFloat translation = 53;
+  PointFloat devscale = 54;
+  bool fit_mode = 55;
+  bool needs_refresh = 56;
+  bool click = 57;
+  bool has_grown = 58;
+  bool has_been_rendered = 59;
+  uint64 button = 60;
+  PointFloat pointer = 61;
+  PointFloat oldpointer = 62;
+  nori.Any current_obj = 63 [(nori.field).type.kind = VOIDPTR];
+  nori.Any selected_obj = 64 [(nori.field).type.kind = VOIDPTR];
+  string active_tooltip = 65 [(nori.field).type.kind = CHARPTR];
+  string selected_href = 66 [(nori.field).type.kind = CHARPTR];
+}
+
+message Point {
+  option (nori.message).alias = "point";
+
+  int64 x = 1;
+  int64 y = 2;
+}
+
+message BoxFloat {
+  option (nori.message).alias = "boxf";
+
+  PointFloat ll = 1 [(nori.field).alias = "LL"];
+  PointFloat ur = 2 [(nori.field).alias = "UR"];
+}
+
+message Box {
+  option (nori.message).alias = "box";
+
+  Point ll = 1 [(nori.field).alias = "LL"];
+  Point ur = 2 [(nori.field).alias = "UR"];
+}
+
+enum PenType {
+  option (nori.enum).alias = "pen_type";
+
+  PEN_NONE = 0 [(nori.enum_value).alias = "PEN_NONE"];
+  PEN_DASHED = 1 [(nori.enum_value).alias = "PEN_DASHED"];
+  PEN_DOTTED = 2 [(nori.enum_value).alias = "PEN_DOTTED"];
+  PEN_SOLID = 3 [(nori.enum_value).alias = "PEN_SOLID"];
+}
+
+enum FillType {
+  option (nori.enum).alias = "fill_type";
+
+  FILL_NONE = 0 [(nori.enum_value).alias = "FILL_NONE"];
+  FILL_SOLID = 1 [(nori.enum_value).alias = "FILL_SOLID"];
+  FILL_LINEAR = 2 [(nori.enum_value).alias = "FILL_LINEAR"];
+  FILL_RADIAL = 3 [(nori.enum_value).alias = "FILL_RADIAL"];
+}
+
+enum FontType {
+  option (nori.enum).alias = "font_type";
+
+  FONT_REGULAR = 0 [(nori.enum_value).alias = "FONT_REGULAR"];
+  FONT_BOLD = 1 [(nori.enum_value).alias = "FONT_BOLD"];
+  FONT_ITALIC = 2 [(nori.enum_value).alias = "FONT_ITALIC"];
+}
+
+enum LabelType {
+  option (nori.enum).alias = "label_type";
+
+  LABEL_PLAIN = 0 [(nori.enum_value).alias = "LABEL_PLAIN"];
+  LABEL_HTML = 1 [(nori.enum_value).alias = "LABEL_HTML"];
+}
+
+enum ColorType {
+  option (nori.enum).alias = "color_type_t";
+
+  HSVA_DOUBLE = 0;
+  RGBA_BYTE = 1;
+  RGBA_WORD = 2;
+  RGBA_DOUBLE = 3;
+  COLOR_STRING = 4;
+  COLOR_INDEX = 5;
+}
+
+message Color {
+  option (nori.message).alias = "gvcolor_t";
+  oneof u {
+    nori.List rgba_double = 1 [(nori.field) = {
+      alias: "RGBA"
+      type {
+        kind: DOUBLE
+        array: true
+        array_num: 4
+      }
+    }];
+    nori.List hsva = 2 [(nori.field) = {
+      alias: "HSVA"
+      type {
+        kind: DOUBLE
+        array: true
+        array_num: 4
+      }
+    }];
+    nori.List rgba_uint = 3 [(nori.field) = {
+      alias: "rgba"
+      type {
+        kind: UINT
+        array: true
+        array_num: 4
+      }
+    }];
+    nori.List rgba_int = 4 [(nori.field) = {
+      alias: "rrggbbaa"
+      type {
+        kind: INT
+        array: true
+        array_num: 4
+      }
+    }];
+    string string = 5 [(nori.field).type = {
+      kind: CHARPTR
+    }];
+    int64 index = 6;
+  }
+  ColorType type = 7;
+}
+
+message PointFloat {
+  option (nori.message).alias = "pointf";
+
+  double x = 1;
+  double y = 2;
+}
+
+message PluginActiveDevice {
+  option (nori.message).alias = "gvplugin_active_device_t";
+
+  DeviceEngine engine = 1 [(nori.field).type.pointer = 1];
+  int64 id = 2;
+  DeviceFeatures features = 3 [(nori.field).type.pointer = 1];
+  string type = 4 [(nori.field).type = {
+    kind: CHARPTR
+    const: true
+  }];
+}
+
+message PluginActiveRender {
+  option (nori.message).alias = "gvplugin_active_render_t";
+
+  RenderEngine engine = 1 [(nori.field).type.pointer = 1];
+  int64 id = 2;
+  RenderFeatures features = 3 [(nori.field).type.pointer = 1];
+  string type = 4 [(nori.field).type = {
+    kind: CHARPTR
+    const: true
+  }];
+}
+
+message DeviceEngine {
+  option (nori.message) = {
+    parent: "Engine"
+    alias: "gvdevice_engine_t"
+  };
+
+  message Initialize {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+    };
+  }
+  message Format {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+    };
+  }
+  message Finalize {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+    };
+  }
+  Initialize initialize = 1;
+  Format format = 2;
+  Finalize finalize = 3;
+}
+
+message PostscriptAlias {
+  option (nori.message).alias = "PostscriptAlias";
+
+  string name = 1 [(nori.field).type.kind = CHARPTR];
+  string family = 2 [(nori.field).type.kind = CHARPTR];
+  string weight = 3 [(nori.field).type.kind = CHARPTR];
+  string stretch = 4 [(nori.field).type.kind = CHARPTR];
+  string style = 5 [(nori.field).type.kind = CHARPTR];
+  int64 xfig_code = 6;
+  string svg_font_family = 7 [(nori.field).type.kind = CHARPTR];
+  string svg_font_weight = 8 [(nori.field).type.kind = CHARPTR];
+  string svg_font_style = 9 [(nori.field).type.kind = CHARPTR];
+}
+
+message TextFont {
+  option (nori.message).alias = "textfont_t";
+
+  string name = 1 [(nori.field).type.kind = CHARPTR];
+  string color = 2 [(nori.field).type.kind = CHARPTR];
+  PostscriptAlias postscript_alias = 3 [(nori.field).type.pointer = 1];
+  double size = 4;
+  uint64 flags = 5;
+  uint64 count = 6 [(nori.field).alias = "cnt"];
+}
+
+message Textspan {
+  option (nori.message).alias = "textspan_t";
+
+  string str = 1 [(nori.field).type.kind = CHARPTR];
+  TextFont font = 2 [(nori.field).type.pointer = 1];
+  double y_offset_layout = 3 [(nori.field).alias = "yoffset_layout"];
+  double y_offset_center_line = 4 [(nori.field).alias = "yoffset_centerline"];
+  PointFloat size = 5;
+  int64 just = 6;
+}
+
+message RenderEngine {
+  option (nori.message) = {
+    parent: "Engine"
+    alias: "gvrender_engine_t"
+  };
+
+  message BeginJob {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+    };
+  }
+
+  message EndJob {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+    };
+  }
+
+  message BeginGraph {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+    };
+  }
+
+  message EndGraph {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+    };
+  }
+
+  message BeginLayer {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+      args { kind: CHARPTR }
+      args { kind: INT }
+      args { kind: INT }
+    };
+  }
+
+  message EndLayer {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+    };
+  }
+
+  message BeginPage {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+    };
+  }
+
+  message EndPage {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+    };
+  }
+
+  message BeginCluster {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+    };
+  }
+
+  message EndCluster {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+    };
+  }
+
+  message BeginNodes {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+    };
+  }
+
+  message EndNodes {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+    };
+  }
+
+  message BeginEdges {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+    };
+  }
+
+  message EndEdges {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+    };
+  }
+
+  message BeginNode {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+    };
+  }
+
+  message EndNode {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+    };
+  }
+
+  message BeginEdge {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+    };
+  }
+
+  message EndEdge {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+    };
+  }
+
+  message BeginAnchor {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+      args { kind: CHARPTR }
+      args { kind: CHARPTR }
+      args { kind: CHARPTR }
+      args { kind: CHARPTR }
+    };
+  }
+
+  message EndAnchor {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+    };
+  }
+
+  message BeginLabel {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+      args {
+        kind: ENUM
+        ref: "LabelType"
+      }
+    };
+  }
+  
+  message EndLabel {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+    };
+  }
+
+  message Textspan {
+    option (nori.message) = {
+      funcptr {
+        args {
+          kind: STRUCT
+          ref: "Job"
+          pointer: 1
+          funcbaseptr: true
+        }
+        args {
+          kind: STRUCT
+          ref: "PointFloat"
+        }
+        args {
+          kind: STRUCT
+          ref: "Textspan"
+          pointer: 1
+        }
+      }
+    };
+  }
+
+  message ResolveColor {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+      args {
+        kind: STRUCT
+        ref: "Color"
+        pointer: 1
+      }
+    };
+  }
+
+  message Ellipse {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+      args {
+        kind: STRUCT
+        ref: "PointFloat"
+        array: true
+        array_num: 2
+      }
+      args { kind: INT }
+    };
+  }
+
+  message Polygon {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+      args {
+        kind: STRUCT
+        ref: "PointFloat"
+        array: true
+        array_num_arg: 3
+      }
+      args { kind: UINT32 }
+      args { kind: INT }
+    };
+  }
+
+  message Beziercurve {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+      args {
+        kind: STRUCT
+        ref: "PointFloat"
+        array: true
+        array_num_arg: 3
+      }
+      args { kind: UINT32 }
+      args { kind: INT }
+    };
+  }
+
+  message Polyline {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+      args {
+        kind: STRUCT
+        ref: "PointFloat"
+        array: true
+        array_num_arg: 3
+      }
+      args { kind: UINT32 }
+    };
+  }
+
+  message Comment {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+      args { kind: CHARPTR }
+    };
+  }
+
+  message LibraryShape {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+      args { kind: CHARPTR }
+      args {
+        kind: STRUCT
+        ref: "PointFloat"
+        array: true
+        array_num_arg: 4
+      }
+      args { kind: UINT32 }
+      args { kind: INT }
+    };
+  }
+
+  BeginJob begin_job = 1;
+  EndJob end_job = 2;
+  BeginGraph begin_graph = 3;
+  EndGraph end_graph = 4;
+  BeginLayer begin_layer = 5;
+  EndLayer end_layer = 6;
+  BeginPage begin_page = 7;
+  EndPage end_page = 8;
+  BeginCluster begin_cluster = 9;
+  EndCluster end_cluster = 10;
+  BeginNodes begin_nodes = 11;
+  EndNodes end_nodes = 12;
+  BeginEdges begin_edges = 13;
+  EndEdges end_edges = 14;
+  BeginNode begin_node = 15;
+  EndNode end_node = 16;
+  BeginEdge begin_edge = 17;
+  EndEdge end_edge = 18;
+  BeginAnchor begin_anchor = 19;
+  EndAnchor end_anchor = 20;
+  BeginLabel begin_label = 21;
+  EndLabel end_label = 22;
+  Textspan textspan = 23;
+  ResolveColor resolve_color = 24;
+  Ellipse ellipse = 25;
+  Polygon polygon = 26;
+  Beziercurve beziercurve = 27;
+  Polyline polyline = 28;
+  Comment comment = 29;
+  LibraryShape library_shape = 30;
+}
+
+message FormatterEngine {
+  option (nori.message) = {
+    parent: "Engine"
+    alias: "gvformatter_engine_t"
+    constructor: false
+  };
+}
+
+message LayoutEngine {
+  option (nori.message) = {
+    parent: "Engine"
+    alias: "gvlayout_engine_t"
+  };
+
+  message Layout {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Graph"
+        pointer: 1
+        funcbaseptr: true
+      }
+    };
+  }
+
+  message Cleanup {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Graph"
+        pointer: 1
+        funcbaseptr: true
+      }
+    };
+  }
+
+  Layout layout = 1;
+  Cleanup cleanup = 2;
+}
+
+message TextLayoutEngine {
+  option (nori.message) = {
+    parent: "Engine"
+    alias: "gvtextlayout_engine_t"
+  };
+
+  message TextLayout {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Textspan"
+        pointer: 1
+        funcbaseptr: true
+      }
+      args {
+        kind: CHARPTR
+        array: true
+      }
+      return {
+        kind: BOOL
+      }
+    };
+  }
+
+  TextLayout textlayout = 1;
+}
+
+message LoadImageEngine {
+  option (nori.message) = {
+    parent: "Engine"
+    alias: "gvloadimage_engine_t"
+  };
+
+  message LoadImage {
+    option (nori.message).funcptr = {
+      args {
+        kind: STRUCT
+        ref: "Job"
+        pointer: 1
+        funcbaseptr: true
+      }
+      args {
+        kind: STRUCT
+        ref: "UserShape"
+        pointer: 1
+      }
+      args {
+        kind: STRUCT
+        ref: "BoxFloat"
+      }
+      args { kind: BOOL }
+    };
+  }
+
+  LoadImage load_image = 1 [(nori.field).alias = "loadimage"];
+}
+
+message Engine {
+
+}
+
+message LayoutFeatures {
+  option (nori.message) = {
+    parent: "Layout"
+    alias: "gvlayout_features_t"
+  };
+
+  int64 flags = 1;
+}
+
+message DeviceFeatures {
+  option (nori.message).alias = "gvdevice_features_t";
+
+  int64 flags = 1;
+  PointFloat default_margin = 2;
+  PointFloat default_pagesize = 3;
+  PointFloat default_dpi = 4;
+}
+
+message RenderFeatures {
+  option (nori.message).alias = "gvrender_features_t";
+
+  int64 flags = 1;
+  double default_pad = 2;
+  repeated string known_colors = 3 [(nori.field) = {
+    alias: "knowncolors"
+    type {
+      kind: CHARPTR
+      array: true
+    }
+  }];
+  int64 size_known_colors = 4 [(nori.field).alias = "sz_knowncolors"];
+  ColorType color_type = 5;
+}
+
+message Features {
+}
+
+message PluginInstalled {
+  option (nori.message).alias = "gvplugin_installed_t";
+  int64 id = 1;
+  string type = 2;
+  int64 quality = 3;
+  Engine engine = 4 [(nori.field).type.kind = VOIDPTR];
+  Features features = 5 [(nori.field).type.kind = VOIDPTR];
+}
+
+enum API {
+  option (nori.enum).alias = "api_t";
+
+  API_RENDER = 0 [(nori.enum_value).alias = "API_render"];
+  API_LAYOUT = 1 [(nori.enum_value).alias = "API_layout"];
+  API_TEXTLAYOUT = 2 [(nori.enum_value).alias = "API_textlayout"];
+  API_DEVICE = 3 [(nori.enum_value).alias = "API_device"];
+  API_LOADIMAGE = 4 [(nori.enum_value).alias = "API_loadimage"];
+}
+
+message PluginAPI {
+  option (nori.message).alias = "gvplugin_api_t";
+  API api = 1;
+  PluginInstalled types = 2 [(nori.field).type = {
+    array: true
+  }];
+}
+
+message PluginLibrary {
+  option (nori.message).alias = "gvplugin_library_t";
+  string package_name = 1 [(nori.field).alias = "packagename"];
+  PluginAPI apis = 2 [(nori.field).type = {
+    array: true
+  }];
+}
+
+option (nori.file).export = {
+  header: [
+    "cgraph.h",
+    "gvc.h",
+    "gvcjob.h",
+    "cdt.h",
+    "gvcint.h",
+    "gvplugin_device.h",
+    "gvplugin_render.h",
+    "gvplugin_layout.h",
+    "gvplugin_loadimage.h",
+    "gvplugin_textlayout.h"
+  ]
+  func {
+    name: "toggle"
+    alias: "gvToggle"
+    args { kind: INT }
+  }
+  func {
+    name: "newContextWithSymList"
+    alias: "gvNEWcontext"
+    args {
+      kind: STRUCT
+      ref: "SymList"
+      array: true
+      const: true
+    }
+    args { kind: INT }
+    return {
+      kind: STRUCT
+      ref: "Context"
+      pointer: 1
+    }
+  }
+  func {
+    name: "getContext"
+    alias: "gvContext"
+    return {
+      kind: STRUCT
+      ref: "Context"
+      pointer: 1
+    }
+  }
+  func {
+    name: "getContextWithPlugins"
+    alias: "gvContextPlugins"
+    args {
+      kind: STRUCT
+      ref: "SymList"
+      const: true
+      array: true
+    }
+    args { kind: INT }
+    return {
+      kind: STRUCT
+      ref: "Context"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Context"
+    name: "info"
+    alias: "gvcInfo"
+    return {
+      kind: CHARPTR
+      array: true
+    }
+  }
+  method {
+    recv: "Context"
+    name: "version"
+    alias: "gvcVersion"
+    return { kind: CHARPTR }
+  }
+  method {
+    recv: "Context"
+    name: "buildDate"
+    alias: "gvcBuildDate"
+    return { kind: CHARPTR }
+  }
+  method {
+    recv: "Context"
+    name: "parseArgs"
+    alias: "gvParseArgs"
+    args { kind: INT }
+    args {
+      kind: CHARPTR
+      array: true
+    }
+    return { kind: INT }
+  }
+  method {
+    recv: "Context"
+    name: "nextInputGraph"
+    alias: "gvNextInputGraph"
+    return {
+      kind: STRUCT
+      ref: "Graph"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Context"
+    name: "pluginsGraph"
+    alias: "gvPluginsGraph"
+    return {
+      kind: STRUCT
+      ref: "Graph"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Context"
+    name: "layout"
+    alias: "gvLayout"
+    args {
+      kind: STRUCT
+      ref: "Graph"
+      pointer: 1
+    }
+    args {
+      kind: CHARPTR
+      const: true
+    }
+    return { kind: INT }
+  }
+  method {
+    recv: "Context"
+    name: "layoutJobs"
+    alias: "gvLayoutJobs"
+    args {
+      kind: STRUCT
+      ref: "Graph"
+      pointer: 1
+    }
+    return { kind: INT }
+  }
+  method {
+    recv: "Graph"
+    name: "attachAttrs"
+    alias: "attach_attrs"
+  }
+  method {
+    recv: "Context"
+    name: "render"
+    alias: "gvRender"
+    args {
+      kind: STRUCT
+      ref: "Graph"
+      pointer: 1
+    }
+    args {
+      kind: CHARPTR
+      const: true
+    }
+    args {
+      kind: STRUCT
+      ref: "File"
+      pointer: 1
+    }
+    return { kind: INT }
+  }
+  method {
+    recv: "Context"
+    name: "renderFilename"
+    alias: "gvRenderFilename"
+    args {
+      kind: STRUCT
+      ref: "Graph"
+      pointer: 1
+    }
+    args {
+      kind: CHARPTR
+      const: true
+    }
+    args {
+      kind: CHARPTR
+      const: true
+    }
+    return { kind: INT }
+  }
+  method {
+    recv: "Context"
+    name: "renderContext"
+    alias: "gvRenderContext"
+    args {
+      kind: STRUCT
+      ref: "Graph"
+      pointer: 1
+    }
+    args {
+      kind: CHARPTR
+      const: true
+    }
+    args { kind: VOIDPTR }
+    return { kind: INT }
+  }
+  method {
+    recv: "Context"
+    name: "renderData"
+    alias: "gvRenderData"
+    args {
+      kind: STRUCT
+      ref: "Graph"
+      pointer: 1
+    }
+    args {
+      kind: CHARPTR
+      const: true
+    }
+    args {
+      kind: CHARPTR
+      pointer: 2
+      string_length_arg: 4
+    }
+    args {
+      kind: UINT
+      pointer: 1
+    }
+    return { kind: INT }
+  }
+  func {
+    name: "freeRenderData"
+    alias: "gvFreeRenderData"
+    args { kind: CHARPTR }
+  }
+  method {
+    recv: "Context"
+    name: "renderJobs"
+    alias: "gvRenderJobs"
+    args {
+      kind: STRUCT
+      ref: "Graph"
+      pointer: 1
+    }
+    return { kind: INT }
+  }
+  method {
+    recv: "Context"
+    name: "finalize"
+    alias: "gvFinalize"
+  }
+  method {
+    recv: "Context"
+    name: "freeContext"
+    alias: "gvFreeContext"
+    return { kind: INT }
+  }
+  method {
+    recv: "Context"
+    name: "freeLayout"
+    alias: "gvFreeLayout"
+    args {
+      kind: STRUCT
+      ref: "Graph"
+      pointer: 1
+    }
+    return { kind: INT }
+  }
+  method {
+    recv: "Context"
+    name: "pluginList"
+    alias: "gvPluginList"
+    args {
+      kind: CHARPTR
+      const: true
+    }
+    args {
+      kind: INT
+      pointer: 1
+    }
+    return {
+      kind: CHARPTR
+      array: true
+    }
+  }
+  method {
+    recv: "Context"
+    name: "addLibrary"
+    alias: "gvAddLibrary"
+    args {
+      kind: STRUCT
+      ref: "PluginLibrary"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Graph"
+    name: "toolTred"
+    alias: "gvToolTred"
+    return { kind: INT }
+  }
+  method {
+    recv: "Context"
+    name: "clone"
+    alias: "gvCloneGVC"
+    return {
+      kind: STRUCT
+      ref: "Context"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Context"
+    name: "freeClonedContext"
+    alias: "gvFreeCloneGVC"
+  }
+};
