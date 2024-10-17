@@ -1,6 +1,6 @@
 module github.com/goccy/nori
 
-go 1.21.9
+go 1.22.0
 
 require (
 	github.com/bufbuild/protocompile v0.14.0

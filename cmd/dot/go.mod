@@ -1,6 +1,6 @@
 module dot
 
-go 1.21.9
+go 1.22.0
 
 replace github.com/goccy/go-graphviz => ../../
 
