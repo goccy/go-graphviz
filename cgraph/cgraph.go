@@ -1,1266 +1,1390 @@
 package cgraph
 
 import (
-	"io/ioutil"
-	"unsafe"
+	"context"
+	"errors"
+	"os"
 
 	"github.com/goccy/go-graphviz/cdt"
-	"github.com/goccy/go-graphviz/internal/ccall"
+	"github.com/goccy/go-graphviz/internal/wasm"
 )
 
 type Graph struct {
-	*ccall.Agraph
+	wasm *wasm.Graph
 }
 
-type Node struct {
-	*ccall.Agnode
+func toGraph(v *wasm.Graph) *Graph {
+	if v == nil {
+		return nil
+	}
+	return &Graph{wasm: v}
 }
 
-type SubNode struct {
-	*ccall.Agsubnode
+func toGraphWasm(v *Graph) *wasm.Graph {
+	if v == nil {
+		return nil
+	}
+	return v.wasm
 }
 
-type Edge struct {
-	*ccall.Agedge
-}
-
-type Desc struct {
-	*ccall.Agdesc
-}
-
-type Disc struct {
-	*ccall.Agdisc
-}
-
-// Symbol symbol in one of the above dictionaries
-type Symbol struct {
-	*ccall.Agsym
-}
-
-// Record generic runtime record
-type Record struct {
-	*ccall.Agrec
-}
-
-type Tag struct {
-	*ccall.Agtag
-}
-
-type Object struct {
-	*ccall.Agobj
-}
-
-type Clos struct {
-	*ccall.Agclos
-}
-
-type State struct {
-	*ccall.Agdstate
-}
-
-type CallbackStack struct {
-	*ccall.Agcbstack
-}
-
-type Attr struct {
-	*ccall.Agattr
-}
-
-type DataDict struct {
-	*ccall.Agdatadict
-}
-
-type IDTYPE uint64
-
-var (
-	Directed         = &Desc{Agdesc: ccall.Agdirected}
-	StrictDirected   = &Desc{Agdesc: ccall.Agstrictdirected}
-	UnDirected       = &Desc{Agdesc: ccall.Agundirected}
-	StrictUnDirected = &Desc{Agdesc: ccall.Agstrictundirected}
-)
-
-func toGraph(g *ccall.Agraph) *Graph {
+func (g *Graph) getWasm() *wasm.Graph {
 	if g == nil {
 		return nil
 	}
-	return &Graph{Agraph: g}
+	return g.wasm
 }
 
-func toNode(n *ccall.Agnode) *Node {
+type Node struct {
+	wasm *wasm.Node
+}
+
+func toNode(v *wasm.Node) *Node {
+	if v == nil {
+		return nil
+	}
+	return &Node{wasm: v}
+}
+
+func (n *Node) getWasm() *wasm.Node {
 	if n == nil {
 		return nil
 	}
-	return &Node{Agnode: n}
+	return n.wasm
 }
 
-func toEdge(e *ccall.Agedge) *Edge {
+type SubNode struct {
+	wasm *wasm.SubNode
+}
+
+func toSubNode(v *wasm.SubNode) *SubNode {
+	if v == nil {
+		return nil
+	}
+	return &SubNode{wasm: v}
+}
+
+func (n *SubNode) getWasm() *wasm.SubNode {
+	if n == nil {
+		return nil
+	}
+	return n.wasm
+}
+
+type Edge struct {
+	wasm *wasm.Edge
+}
+
+func toEdge(v *wasm.Edge) *Edge {
+	if v == nil {
+		return nil
+	}
+	return &Edge{wasm: v}
+}
+
+func (e *Edge) getWasm() *wasm.Edge {
 	if e == nil {
 		return nil
 	}
-	return &Edge{Agedge: e}
+	return e.wasm
 }
 
+type Desc struct {
+	wasm *wasm.GraphDescriptor
+}
+
+func toDesc(v *wasm.GraphDescriptor) *Desc {
+	if v == nil {
+		return nil
+	}
+	return &Desc{wasm: v}
+}
+
+func (d *Desc) getWasm() *wasm.GraphDescriptor {
+	if d == nil {
+		return nil
+	}
+	return d.wasm
+}
+
+type Disc struct {
+	wasm *wasm.ClientDiscipline
+}
+
+func toDisc(v *wasm.ClientDiscipline) *Disc {
+	if v == nil {
+		return nil
+	}
+	return &Disc{wasm: v}
+}
+
+func (d *Disc) getWasm() *wasm.ClientDiscipline {
+	if d == nil {
+		return nil
+	}
+	return d.wasm
+}
+
+// Symbol symbol in one of the above dictionaries.
+type Symbol struct {
+	wasm *wasm.Sym
+}
+
+func toSymbol(v *wasm.Sym) *Symbol {
+	if v == nil {
+		return nil
+	}
+	return &Symbol{wasm: v}
+}
+
+func (s *Symbol) getWasm() *wasm.Sym {
+	if s == nil {
+		return nil
+	}
+	return s.wasm
+}
+
+// Record generic runtime record.
+type Record struct {
+	wasm *wasm.Record
+}
+
+func toRecord(v *wasm.Record) *Record {
+	if v == nil {
+		return nil
+	}
+	return &Record{wasm: v}
+}
+
+func (r *Record) getWasm() *wasm.Record {
+	if r == nil {
+		return nil
+	}
+	return r.wasm
+}
+
+type Tag struct {
+	wasm *wasm.Tag
+}
+
+func toTag(v *wasm.Tag) *Tag {
+	if v == nil {
+		return nil
+	}
+	return &Tag{wasm: v}
+}
+
+func (t *Tag) getWasm() *wasm.Tag {
+	if t == nil {
+		return nil
+	}
+	return t.wasm
+}
+
+type Object struct {
+	wasm *wasm.Object
+}
+
+func toObject(v *wasm.Object) *Object {
+	if v == nil {
+		return nil
+	}
+	return &Object{wasm: v}
+}
+
+func (o *Object) getWasm() *wasm.Object {
+	if o == nil {
+		return nil
+	}
+	return o.wasm
+}
+
+type CommonFields struct {
+	wasm *wasm.CommonFields
+}
+
+func toCommonFields(v *wasm.CommonFields) *CommonFields {
+	if v == nil {
+		return nil
+	}
+	return &CommonFields{wasm: v}
+}
+
+func (c *CommonFields) getWasm() *wasm.CommonFields {
+	if c == nil {
+		return nil
+	}
+	return c.wasm
+}
+
+type State struct {
+	wasm *wasm.State
+}
+
+func toState(v *wasm.State) *State {
+	if v == nil {
+		return nil
+	}
+	return &State{wasm: v}
+}
+
+func (s *State) getWasm() *wasm.State {
+	if s == nil {
+		return nil
+	}
+	return s.wasm
+}
+
+type CallbackStack struct {
+	wasm *wasm.CallbackStack
+}
+
+func toCallbackStack(v *wasm.CallbackStack) *CallbackStack {
+	if v == nil {
+		return nil
+	}
+	return &CallbackStack{wasm: v}
+}
+
+func (c *CallbackStack) getWasm() *wasm.CallbackStack {
+	if c == nil {
+		return nil
+	}
+	return c.wasm
+}
+
+type Attr struct {
+	wasm *wasm.Attr
+}
+
+func toAttr(v *wasm.Attr) *Attr {
+	if v == nil {
+		return nil
+	}
+	return &Attr{wasm: v}
+}
+
+func (a *Attr) getWasm() *wasm.Attr {
+	if a == nil {
+		return nil
+	}
+	return a.wasm
+}
+
+type DataDict struct {
+	wasm *wasm.DataDict
+}
+
+func toDataDict(v *wasm.DataDict) *DataDict {
+	if v == nil {
+		return nil
+	}
+	return &DataDict{wasm: v}
+}
+
+func (d *DataDict) getWasm() *wasm.DataDict {
+	if d == nil {
+		return nil
+	}
+	return d.wasm
+}
+
+type ID uint64
+
 func ParseBytes(bytes []byte) (*Graph, error) {
-	ccall.Agclearerrors()
-	graph, err := ccall.Agmemread(string(bytes))
+	graph, err := wasm.MemRead(context.Background(), string(bytes))
 	if err != nil {
 		return nil, err
+	}
+	if graph == nil {
+		return nil, lastError()
 	}
 	return toGraph(graph), nil
 }
 
 func ParseFile(path string) (*Graph, error) {
-	file, err := ioutil.ReadFile(path)
+	file, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
-	ccall.Agclearerrors()
-	graph, err := ccall.Agmemread(string(file))
-	if err != nil {
-		return nil, err
-	}
-	return toGraph(graph), nil
+	return ParseBytes(file)
 }
 
 func Open(name string, desc *Desc, disc *Disc) (*Graph, error) {
-	var (
-		agdesc *ccall.Agdesc
-		agdisc *ccall.Agdisc
-	)
-	if desc != nil {
-		agdesc = desc.Agdesc
-	}
-	if disc != nil {
-		agdisc = disc.Agdisc
-	}
-	graph, err := ccall.Agopen(name, agdesc, agdisc)
+	graph, err := wasm.Open(context.Background(), name, desc.getWasm(), disc.getWasm())
 	if err != nil {
 		return nil, err
+	}
+	if graph == nil {
+		return nil, lastError()
 	}
 	return toGraph(graph), nil
 }
 
-type OBJECTKIND int
+type ObjectTag int
 
-const (
-	GRAPH   OBJECTKIND = 0
-	NODE    OBJECTKIND = 1
-	OUTEDGE OBJECTKIND = 2
-	INEDGE  OBJECTKIND = 3
-	EDGE    OBJECTKIND = OUTEDGE
+var (
+	GRAPH   ObjectTag = ObjectTag(wasm.GRAPH)
+	NODE    ObjectTag = ObjectTag(wasm.NODE)
+	OUTEDGE ObjectTag = ObjectTag(wasm.OUT_EDGE)
+	INEDGE  ObjectTag = ObjectTag(wasm.IN_EDGE)
+	EDGE    ObjectTag = ObjectTag(wasm.EDGE)
 )
 
-func ObjectKind(obj *Object) OBJECTKIND {
-	return OBJECTKIND(ccall.Agobjkind(unsafe.Pointer(obj.Agobj.C())))
-}
-
-func HTMLStr(s string) int {
-	return ccall.Aghtmlstr(s)
-}
-
-func Canon(s string, i int) string {
-	return ccall.Agcanon(s, i)
-}
-
-func StrCanon(a0 string, a1 string) string {
-	return ccall.Agstrcanon(a0, a1)
-}
-
-func CanonStr(str string) string {
-	return ccall.AgcanonStr(str)
-}
-
-func AttrSym(obj *Object, name string) *Symbol {
-	sym := ccall.Agattrsym(unsafe.Pointer(obj.Agobj.C()), name)
-	if sym == nil {
-		return nil
-	}
-	return &Symbol{Agsym: sym}
-}
-
 func (r *Record) Name() string {
-	return r.Agrec.Name()
+	return r.wasm.GetName()
 }
 
 func (r *Record) SetName(v string) {
-	r.Agrec.SetName(v)
+	r.wasm.SetName(v)
 }
 
 func (r *Record) Next() *Record {
-	v := r.Agrec.Next()
-	if v == nil {
-		return nil
-	}
-	return &Record{Agrec: v}
+	return toRecord(r.wasm.GetNext())
 }
 
 func (r *Record) SetNext(v *Record) {
-	if v == nil || v.Agrec == nil {
-		return
-	}
-	r.Agrec.SetNext(v.Agrec)
+	r.wasm.SetNext(v.getWasm())
 }
 
-func (t *Tag) ID() IDTYPE {
-	return IDTYPE(t.Agtag.ID())
+func (t *Tag) ObjectTag() ObjectTag {
+	return ObjectTag(t.wasm.GetObjectType())
 }
 
-func (t *Tag) SetID(v IDTYPE) {
-	t.Agtag.SetID(uint64(v))
+func (t *Tag) ID() ID {
+	return ID(t.wasm.GetId())
+}
+
+func (t *Tag) SetID(v ID) {
+	t.wasm.SetId(uint64(v))
 }
 
 func (o *Object) Tag() *Tag {
-	v := o.Agobj.Tag()
-	if v == nil {
-		return nil
-	}
-	return &Tag{Agtag: v}
+	return toTag(o.wasm.GetTag())
 }
 
 func (o *Object) SetTag(v *Tag) {
-	if v == nil || v.Agtag == nil {
-		return
-	}
-	o.Agobj.SetTag(v.Agtag)
+	o.wasm.SetTag(v.getWasm())
 }
 
 func (o *Object) Data() *Record {
-	v := o.Agobj.Data()
-	if v == nil {
-		return nil
-	}
-	return &Record{Agrec: v}
+	return toRecord(o.wasm.GetData())
 }
 
 func (o *Object) SetData(v *Record) {
-	if v == nil || v.Agrec == nil {
-		return
-	}
-	o.Agobj.SetData(v.Agrec)
+	o.wasm.SetData(v.getWasm())
 }
 
-func (o *Object) SafeSet(name, value, def string) int {
-	return ccall.Agsafeset(unsafe.Pointer(o.Agobj.C()), name, value, def)
+func (o *Object) SafeSet(name, value, def string) error {
+	res, err := wasm.SafeSetStr(context.Background(), o.wasm, name, value, def)
+	if err != nil {
+		return err
+	}
+	return toError(res)
 }
 
 func (n *SubNode) SeqLink() *cdt.Link {
-	v := n.Agsubnode.SeqLink()
-	if v == nil {
-		return nil
-	}
-	return &cdt.Link{Dtlink: v}
+	return toDictLink(n.wasm.GetSeqLink())
 }
 
 func (n *SubNode) SetSeqLink(v *cdt.Link) {
-	if v == nil || v.Dtlink == nil {
-		return
-	}
-	n.Agsubnode.SetSeqLink(v.Dtlink)
+	n.wasm.SetSeqLink(toDictLinkWasm(v))
 }
 
 func (n *SubNode) IDLink() *cdt.Link {
-	v := n.Agsubnode.IDLink()
-	if v == nil {
-		return nil
-	}
-	return &cdt.Link{Dtlink: v}
+	return toDictLink(n.wasm.GetIdLink())
 }
 
 func (n *SubNode) SetIDLink(v *cdt.Link) {
-	if v == nil || v.Dtlink == nil {
-		return
-	}
-	n.Agsubnode.SetIDLink(v.Dtlink)
+	n.wasm.SetIdLink(toDictLinkWasm(v))
 }
 
 func (n *SubNode) Node() *Node {
-	v := n.Agsubnode.Node()
-	if v == nil {
-		return nil
-	}
-	return &Node{Agnode: v}
+	return toNode(n.wasm.GetNode())
 }
 
 func (n *SubNode) SetNode(v *Node) {
-	if v == nil || v.Agnode == nil {
-		return
-	}
-	n.Agsubnode.SetNode(v.Agnode)
+	n.wasm.SetNode(v.getWasm())
 }
 
 func (n *SubNode) InID() *cdt.Link {
-	v := n.Agsubnode.InID()
-	if v == nil {
-		return nil
-	}
-	return &cdt.Link{Dtlink: v}
+	return toDictLink(n.wasm.GetInId())
 }
 
 func (n *SubNode) SetInID(v *cdt.Link) {
-	if v == nil || v.Dtlink == nil {
-		return
-	}
-	n.Agsubnode.SetInID(v.Dtlink)
+	n.wasm.SetInId(toDictLinkWasm(v))
 }
 
 func (n *SubNode) OutID() *cdt.Link {
-	v := n.Agsubnode.OutID()
-	if v == nil {
-		return nil
-	}
-	return &cdt.Link{Dtlink: v}
+	return toDictLink(n.wasm.GetOutId())
 }
 
 func (n *SubNode) SetOutID(v *cdt.Link) {
-	if v == nil || v.Dtlink == nil {
-		return
-	}
-	n.Agsubnode.SetOutID(v.Dtlink)
+	n.wasm.SetOutId(toDictLinkWasm(v))
 }
 
 func (n *SubNode) InSeq() *cdt.Link {
-	v := n.Agsubnode.InSeq()
-	if v == nil {
-		return nil
-	}
-	return &cdt.Link{Dtlink: v}
+	return toDictLink(n.wasm.GetInSeq())
 }
 
 func (n *SubNode) SetInSeq(v *cdt.Link) {
-	if v == nil || v.Dtlink == nil {
-		return
-	}
-	n.Agsubnode.SetInSeq(v.Dtlink)
+	n.wasm.SetInSeq(toDictLinkWasm(v))
 }
 
 func (n *SubNode) OutSeq() *cdt.Link {
-	v := n.Agsubnode.OutSeq()
-	if v == nil {
-		return nil
-	}
-	return &cdt.Link{Dtlink: v}
+	return toDictLink(n.wasm.GetOutSeq())
 }
 
 func (n *SubNode) SetOutSeq(v *cdt.Link) {
-	if v == nil || v.Dtlink == nil {
-		return
-	}
-	n.Agsubnode.SetOutSeq(v.Dtlink)
+	n.wasm.SetOutSeq(toDictLinkWasm(v))
 }
 
 func (n *Node) Base() *Object {
-	v := n.Agnode.Base()
-	if v == nil {
-		return nil
-	}
-	return &Object{Agobj: v}
+	return toObject(n.wasm.GetBase())
 }
 
 func (n *Node) SetBase(v *Object) {
-	if v == nil || v.Agobj == nil {
-		return
-	}
-	n.Agnode.SetBase(v.Agobj)
+	n.wasm.SetBase(v.getWasm())
 }
 
 func (n *Node) Root() *Graph {
-	v := n.Agnode.Root()
-	if v == nil {
-		return nil
-	}
-	return &Graph{Agraph: v}
+	return toGraph(n.wasm.GetRoot())
 }
 
 func (n *Node) SetRootGraph(v *Graph) {
-	if v == nil || v.Agraph == nil {
-		return
-	}
-	n.Agnode.SetRoot(v.Agraph)
+	n.wasm.SetRoot(v.getWasm())
 }
 
 func (n *Node) MainSub() *SubNode {
-	v := n.Agnode.Mainsub()
-	if v == nil {
-		return nil
-	}
-	return &SubNode{Agsubnode: v}
+	return toSubNode(n.wasm.GetMainsub())
 }
 
 func (n *Node) SetMainSub(v *SubNode) {
-	if v == nil || v.Agsubnode == nil {
-		return
-	}
-	n.Agnode.SetMainsub(v.Agsubnode)
+	n.wasm.SetMainsub(v.getWasm())
 }
 
 func (e *Edge) Base() *Object {
-	v := e.Agedge.Base()
-	if v == nil {
-		return nil
-	}
-	return &Object{Agobj: v}
+	return toObject(e.wasm.GetBase())
 }
 
 func (e *Edge) SetBase(v *Object) {
-	if v == nil || v.Agobj == nil {
-		return
-	}
-	e.Agedge.SetBase(v.Agobj)
+	e.wasm.SetBase(v.getWasm())
 }
 
 func (e *Edge) SeqLink() *cdt.Link {
-	v := e.Agedge.SeqLink()
-	if v == nil {
-		return nil
-	}
-	return &cdt.Link{Dtlink: v}
+	return toDictLink(e.wasm.GetSeqLink())
 }
 
 func (e *Edge) SetSeqLink(v *cdt.Link) {
-	if v == nil || v.Dtlink == nil {
-		return
-	}
-	e.Agedge.SetSeqLink(v.Dtlink)
+	e.wasm.SetSeqLink(toDictLinkWasm(v))
 }
 
 func (e *Edge) IDLink() *cdt.Link {
-	v := e.Agedge.IDLink()
-	if v == nil {
-		return nil
-	}
-	return &cdt.Link{Dtlink: v}
+	return toDictLink(e.wasm.GetIdLink())
 }
 
 func (e *Edge) SetIDLink(v *cdt.Link) {
-	if v == nil || v.Dtlink == nil {
-		return
-	}
-	e.Agedge.SetIDLink(v.Dtlink)
+	e.wasm.SetIdLink(toDictLinkWasm(v))
 }
 
 func (e *Edge) Node() *Node {
-	v := e.Agedge.Node()
-	if v == nil {
-		return nil
-	}
-	return &Node{Agnode: v}
+	return toNode(e.wasm.GetNode())
 }
 
 func (e *Edge) SetNode(v *Node) {
-	if v == nil || v.Agnode == nil {
-		return
+	e.wasm.SetNode(v.getWasm())
+}
+
+func (c *CommonFields) Disc() *Disc {
+	return toDisc(c.wasm.GetDisc())
+}
+
+func (c *CommonFields) SetDisc(v *Disc) {
+	c.wasm.SetDisc(v.getWasm())
+}
+
+func (c *CommonFields) State() *State {
+	return toState(c.wasm.GetState())
+}
+
+func (c *CommonFields) SetState(v *State) {
+	c.wasm.SetState(v.getWasm())
+}
+
+func (c *CommonFields) StrDict() *cdt.Dict {
+	return toDict(c.wasm.GetStrdict())
+}
+
+func (c *CommonFields) SetStrDict(v *cdt.Dict) {
+	c.wasm.SetStrdict(toDictWasm(v))
+}
+
+func (c *CommonFields) Seq() [3]uint64 {
+	res := c.wasm.GetSeq()
+	return [3]uint64{res[0], res[1], res[2]}
+}
+
+func (c *CommonFields) SetSeq(v [3]uint64) {
+	c.wasm.SetSeq(v[:])
+}
+
+func (c *CommonFields) Callback() *CallbackStack {
+	return toCallbackStack(c.wasm.GetCb())
+}
+
+func (c *CommonFields) SetCallback(v *CallbackStack) {
+	c.wasm.SetCb(v.getWasm())
+}
+
+func (c *CommonFields) LookupByName() [3]*cdt.Dict {
+	res := c.wasm.GetLookupByName()
+	return [3]*cdt.Dict{toDict(res[0]), toDict(res[1]), toDict(res[2])}
+}
+
+func (c *CommonFields) SetLookupByName(v [3]*cdt.Dict) {
+	args := make([]*wasm.Dict, len(v))
+	for i := range args {
+		args[i] = toDictWasm(v[i])
 	}
-	e.Agedge.SetNode(v.Agnode)
+	c.wasm.SetLookupByName(args)
 }
 
-func (c *Clos) Disc() *Disc {
-	v := c.Agclos.Disc()
-	if v == nil {
-		return nil
+func (c *CommonFields) LookupByID() [3]*cdt.Dict {
+	res := c.wasm.GetLookupById()
+	return [3]*cdt.Dict{toDict(res[0]), toDict(res[1]), toDict(res[2])}
+}
+
+func (c *CommonFields) SetLookupByID(v [3]*cdt.Dict) {
+	args := make([]*wasm.Dict, len(v))
+	for i := range args {
+		args[i] = toDictWasm(v[i])
 	}
-	return &Disc{Agdisc: v}
+	c.wasm.SetLookupById(args)
 }
 
-func (c *Clos) SetDisc(v *Disc) {
-	if v == nil || v.Agdisc == nil {
-		return
-	}
-	c.Agclos.SetDisc(v.Agdisc)
+func (a *Attr) Header() *Record {
+	return toRecord(a.wasm.GetH())
 }
 
-func (c *Clos) State() *State {
-	v := c.Agclos.State()
-	if v == nil {
-		return nil
-	}
-	return &State{Agdstate: v}
-}
-
-func (c *Clos) SetState(v *State) {
-	if v == nil || v.Agdstate == nil {
-		return
-	}
-	c.Agclos.SetState(v.Agdstate)
-}
-
-func (c *Clos) StrDict() *cdt.Dict {
-	v := c.Agclos.Strdict()
-	if v == nil {
-		return nil
-	}
-	return &cdt.Dict{Dict: v}
-}
-
-func (c *Clos) SetStrDict(v *cdt.Dict) {
-	if v == nil || v.Dict == nil {
-		return
-	}
-	c.Agclos.SetStrdict(v.Dict)
-}
-
-func (c *Clos) Seq() [3]uint64 {
-	return c.Agclos.Seq()
-}
-
-func (c *Clos) SetSeq(v []uint64) {
-	c.Agclos.SetSeq(v)
-}
-
-func (c *Clos) Callback() *CallbackStack {
-	v := c.Agclos.Cb()
-	if v == nil {
-		return nil
-	}
-	return &CallbackStack{Agcbstack: v}
-}
-
-func (c *Clos) SetCallback(v *CallbackStack) {
-	if v == nil || v.Agcbstack == nil {
-		return
-	}
-	c.Agclos.SetCb(v.Agcbstack)
-}
-
-func (c *Clos) CallbacksEnabled() bool {
-	return c.Agclos.CallbacksEnabled()
-}
-
-func (c *Clos) SetCallbacskEnabled(v bool) {
-	c.Agclos.SetCallbacksEnabled(v)
-}
-
-func (c *Clos) LookupByName() [3]*cdt.Dict {
-	v := c.Agclos.LookupByName()
-	r := [3]*cdt.Dict{}
-	r[0] = &cdt.Dict{Dict: v[0]}
-	r[1] = &cdt.Dict{Dict: v[1]}
-	r[2] = &cdt.Dict{Dict: v[2]}
-	return r
-}
-
-func (c *Clos) LookupByID() [3]*cdt.Dict {
-	v := c.Agclos.LookupByID()
-	r := [3]*cdt.Dict{}
-	r[0] = &cdt.Dict{Dict: v[0]}
-	r[1] = &cdt.Dict{Dict: v[1]}
-	r[2] = &cdt.Dict{Dict: v[2]}
-	return r
-}
-
-func (a *Attr) H() *Record {
-	v := a.Agattr.H()
-	if v == nil {
-		return nil
-	}
-	return &Record{Agrec: v}
-}
-
-func (a *Attr) SetH(v *Record) {
-	if v == nil || v.Agrec == nil {
-		return
-	}
-	a.Agattr.SetH(v.Agrec)
+func (a *Attr) SetHeader(v *Record) {
+	a.wasm.SetH(v.getWasm())
 }
 
 func (a *Attr) Dict() *cdt.Dict {
-	v := a.Agattr.Dict()
-	if v == nil {
-		return nil
-	}
-	return &cdt.Dict{Dict: v}
+	return toDict(a.wasm.GetDict())
 }
 
 func (a *Attr) SetDict(v *cdt.Dict) {
-	if v == nil || v.Dict == nil {
-		return
-	}
-	a.Agattr.SetDict(v.Dict)
+	a.wasm.SetDict(toDictWasm(v))
+}
+
+func (a *Attr) Str() []string {
+	return a.wasm.GetStr()
+}
+
+func (a *Attr) SetStr(v []string) {
+	a.wasm.SetStr(v)
 }
 
 func (s *Symbol) Link() *cdt.Link {
-	v := s.Agsym.Link()
-	if v == nil {
-		return nil
-	}
-	return &cdt.Link{Dtlink: v}
+	return toDictLink(s.wasm.GetLink())
 }
 
 func (s *Symbol) SetLink(v *cdt.Link) {
-	if v == nil || v.Dtlink == nil {
-		return
-	}
-	s.Agsym.SetLink(v.Dtlink)
+	s.wasm.SetLink(toDictLinkWasm(v))
 }
 
 func (s *Symbol) Name() string {
-	return s.Agsym.Name()
+	return s.wasm.GetName()
 }
 
 func (s *Symbol) SetName(v string) {
-	s.Agsym.SetName(v)
+	s.wasm.SetName(v)
 }
 
-func (s *Symbol) Defval() string {
-	return s.Agsym.Defval()
+func (s *Symbol) DefaultValue() string {
+	return s.wasm.GetDefval()
 }
 
-func (s *Symbol) SetDefval(v string) {
-	s.Agsym.SetDefval(v)
+func (s *Symbol) SetDefaultValue(v string) {
+	s.wasm.SetDefval(v)
 }
 
 func (s *Symbol) ID() int {
-	return s.Agsym.ID()
+	return int(s.wasm.GetId())
 }
 
 func (s *Symbol) SetID(v int) {
-	s.Agsym.SetID(v)
+	s.wasm.SetId(int32(v))
 }
 
 func (s *Symbol) Kind() uint {
-	return s.Agsym.Kind()
+	return uint(s.wasm.GetKind())
 }
 
 func (s *Symbol) SetKind(v uint) {
-	s.Agsym.SetKind(v)
+	s.wasm.SetKind(uint32(v))
 }
 
 func (s *Symbol) Fixed() uint {
-	return s.Agsym.Fixed()
+	return uint(s.wasm.GetFixed())
 }
 
 func (s *Symbol) SetFixed(v uint) {
-	s.Agsym.SetFixed(v)
+	s.wasm.SetFixed(uint32(v))
 }
 
 func (s *Symbol) Print() uint {
-	return s.Agsym.Print()
+	return uint(s.wasm.GetPrint())
 }
 
 func (s *Symbol) SetPrint(v uint) {
-	s.Agsym.SetPrint(v)
+	s.wasm.SetPrint(uint32(v))
 }
 
-func (d *DataDict) H() *Record {
-	v := d.Agdatadict.H()
-	if v == nil {
-		return nil
-	}
-	return &Record{Agrec: v}
+func (d *DataDict) Header() *Record {
+	return toRecord(d.wasm.GetH())
 }
 
-func (d *DataDict) SetH(v *Record) {
-	if v == nil || v.Agrec == nil {
-		return
-	}
-	d.Agdatadict.SetH(v.Agrec)
-}
-
-func (d *DataDict) DictN() *cdt.Dict {
-	v := d.Agdatadict.DictN()
-	if v == nil {
-		return nil
-	}
-	return &cdt.Dict{Dict: v}
-}
-
-func (d *DataDict) SetDictN(v *cdt.Dict) {
-	if v == nil || v.Dict == nil {
-		return
-	}
-	d.Agdatadict.SetDictN(v.Dict)
-}
-
-func (d *DataDict) DictE() *cdt.Dict {
-	v := d.Agdatadict.DictE()
-	if v == nil {
-		return nil
-	}
-	return &cdt.Dict{Dict: v}
-}
-
-func (d *DataDict) SetDictE(v *cdt.Dict) {
-	if v == nil || v.Dict == nil {
-		return
-	}
-	d.Agdatadict.SetDictE(v.Dict)
-}
-
-func (d *DataDict) DictG() *cdt.Dict {
-	v := d.Agdatadict.DictG()
-	if v == nil {
-		return nil
-	}
-	return &cdt.Dict{Dict: v}
-}
-
-func (d *DataDict) SetDictG(v *cdt.Dict) {
-	if v == nil || v.Dict == nil {
-		return
-	}
-	d.Agdatadict.SetDictG(v.Dict)
+func (d *DataDict) SetHeader(v *Record) {
+	d.wasm.SetH(v.getWasm())
 }
 
 func (g *Graph) Base() *Object {
-	v := g.Agraph.Base()
-	if v == nil {
-		return nil
-	}
-	return &Object{Agobj: v}
+	return toObject(g.wasm.GetBase())
 }
 
 func (g *Graph) SetBase(v *Object) {
-	if v == nil || v.Agobj == nil {
-		return
-	}
-	g.Agraph.SetBase(v.Agobj)
+	g.wasm.SetBase(v.getWasm())
 }
 
 func (g *Graph) Desc() *Desc {
-	v := g.Agraph.Desc()
-	if v == nil {
-		return nil
-	}
-	return &Desc{Agdesc: v}
+	return toDesc(g.wasm.GetDesc())
 }
 
 func (g *Graph) SetDesc(v *Desc) {
-	if v == nil || v.Agdesc == nil {
-		return
-	}
-	g.Agraph.SetDesc(v.Agdesc)
+	g.wasm.SetDesc(v.getWasm())
 }
 
-func (g *Graph) Link() *cdt.Link {
-	v := g.Agraph.Link()
-	if v == nil {
-		return nil
-	}
-	return &cdt.Link{Dtlink: v}
+func (g *Graph) SeqLink() *cdt.Link {
+	return toDictLink(g.wasm.GetSeqLink())
 }
 
-func (g *Graph) SetLink(v *cdt.Link) {
-	if v == nil || v.Dtlink == nil {
-		return
-	}
-	g.Agraph.SetLink(v.Dtlink)
+func (g *Graph) SetSeqLink(v *cdt.Link) {
+	g.wasm.SetSeqLink(toDictLinkWasm(v))
+}
+
+func (g *Graph) IDLink() *cdt.Link {
+	return toDictLink(g.wasm.GetIdLink())
+}
+
+func (g *Graph) SetIDLink(v *cdt.Link) {
+	g.wasm.SetIdLink(toDictLinkWasm(v))
 }
 
 func (g *Graph) NSeq() *cdt.Dict {
-	v := g.Agraph.NSeq()
-	if v == nil {
-		return nil
-	}
-	return &cdt.Dict{Dict: v}
+	return toDict(g.wasm.GetNSeq())
 }
 
 func (g *Graph) SetNSeq(v *cdt.Dict) {
-	if v == nil || v.Dict == nil {
-		return
-	}
-	g.Agraph.SetNSeq(v.Dict)
-}
-
-func (g *Graph) NID() *cdt.Dict {
-	v := g.Agraph.NID()
-	if v == nil {
-		return nil
-	}
-	return &cdt.Dict{Dict: v}
-}
-
-func (g *Graph) SetNID(v *cdt.Dict) {
-	if v == nil || v.Dict == nil {
-		return
-	}
-	g.Agraph.SetNID(v.Dict)
+	g.wasm.SetNSeq(toDictWasm(v))
 }
 
 func (g *Graph) ESeq() *cdt.Dict {
-	v := g.Agraph.ESeq()
-	if v == nil {
-		return nil
-	}
-	return &cdt.Dict{Dict: v}
+	return toDict(g.wasm.GetESeq())
 }
 
 func (g *Graph) SetESeq(v *cdt.Dict) {
-	if v == nil || v.Dict == nil {
-		return
-	}
-	g.Agraph.SetESeq(v.Dict)
+	g.wasm.SetESeq(toDictWasm(v))
 }
 
 func (g *Graph) EID() *cdt.Dict {
-	v := g.Agraph.EID()
-	if v == nil {
-		return nil
-	}
-	return &cdt.Dict{Dict: v}
+	return toDict(g.wasm.GetEId())
 }
 
 func (g *Graph) SetEID(v *cdt.Dict) {
-	if v == nil || v.Dict == nil {
-		return
-	}
-	g.Agraph.SetEID(v.Dict)
+	g.wasm.SetEId(toDictWasm(v))
 }
 
-func (g *Graph) GDict() *cdt.Dict {
-	v := g.Agraph.GDict()
-	if v == nil {
-		return nil
-	}
-	return &cdt.Dict{Dict: v}
+func (g *Graph) GSeq() *cdt.Dict {
+	return toDict(g.wasm.GetGSeq())
 }
 
-func (g *Graph) SetGDict(v *cdt.Dict) {
-	if v == nil || v.Dict == nil {
-		return
-	}
-	g.Agraph.SetGDict(v.Dict)
+func (g *Graph) SetGSeq(v *cdt.Dict) {
+	g.wasm.SetGSeq(toDictWasm(v))
 }
 
-func (g *Graph) SetParent(v *Graph) {
-	if v == nil || v.Agraph == nil {
-		return
-	}
-	g.Agraph.SetParent(v.Agraph)
+func (g *Graph) GID() *cdt.Dict {
+	return toDict(g.wasm.GetGId())
 }
 
-func (g *Graph) Root() *Graph {
-	v := g.Agraph.Root()
-	if v == nil {
-		return nil
-	}
-	return &Graph{Agraph: v}
-}
-
-func (g *Graph) SetRootGraph(v *Graph) {
-	if v == nil || v.Agraph == nil {
-		return
-	}
-	g.Agraph.SetRoot(v.Agraph)
-}
-
-func (g *Graph) Clos() *Clos {
-	v := g.Agraph.Clos()
-	if v == nil {
-		return nil
-	}
-	return &Clos{Agclos: v}
-}
-
-func (g *Graph) SetClos(v *Clos) {
-	if v == nil || v.Agclos == nil {
-		return
-	}
-	g.Agraph.SetClos(v.Agclos)
-}
-
-func (g *Graph) CopyAttr(t *Graph) int {
-	return ccall.Agcopyattr(unsafe.Pointer(g.Agraph.C()), unsafe.Pointer(t.Agraph.C()))
-}
-
-func (g *Graph) BindRecord(name string, size uint, moveToFront int) {
-	ccall.Agbindrec(unsafe.Pointer(g.Agraph.C()), name, size, moveToFront)
-}
-
-func (g *Graph) Record(name string, moveToFront int) *Record {
-	rec := ccall.Aggetrec(unsafe.Pointer(g.Agraph.C()), name, moveToFront)
-	if rec == nil {
-		return nil
-	}
-	return &Record{Agrec: rec}
-}
-
-func (g *Graph) DeleteRecord(name string) int {
-	return ccall.Agdelrec(unsafe.Pointer(g.Agraph.C()), name)
-}
-
-func (g *Graph) Get(name string) string {
-	return ccall.Agget(unsafe.Pointer(g.Agraph.C()), name)
-}
-
-func (g *Graph) XGet(sym *Symbol) string {
-	return ccall.Agxget(unsafe.Pointer(g.Agraph.C()), sym.Agsym)
-}
-
-func (g *Graph) Set(name, value string) int {
-	return ccall.Agset(unsafe.Pointer(g.Agraph.C()), name, value)
-}
-
-func (g *Graph) XSet(sym *Symbol, value string) int {
-	return ccall.Agxset(unsafe.Pointer(g.Agraph.C()), sym.Agsym, value)
-}
-
-func (g *Graph) SafeSet(name, value, def string) int {
-	return ccall.Agsafeset(unsafe.Pointer(g.Agraph.C()), name, value, def)
-}
-
-func (g *Graph) Close() error {
-	return ccall.Agclose(g.Agraph)
-}
-
-func (g *Graph) IsSimple() bool {
-	return ccall.Agissimple(g.Agraph)
-}
-
-func (g *Graph) CreateNode(name string) (*Node, error) {
-	node, err := ccall.Agnodef(g.Agraph, name, 1)
-	if err != nil {
-		return nil, err
-	}
-	return toNode(node), nil
-}
-
-func (g *Graph) Node(name string) (*Node, error) {
-	node, err := ccall.Agnodef(g.Agraph, name, 0)
-	if err != nil {
-		return nil, err
-	}
-	return toNode(node), nil
-}
-
-func (g *Graph) IDNode(id IDTYPE, createFlag int) (*Node, error) {
-	node, err := ccall.Agidnode(g.Agraph, uint64(id), createFlag)
-	if err != nil {
-		return nil, err
-	}
-	return toNode(node), nil
-}
-
-func (g *Graph) SubNode(n *Node, createFlag int) (*Node, error) {
-	node, err := ccall.Agsubnodef(g.Agraph, n.Agnode, createFlag)
-	if err != nil {
-		return nil, err
-	}
-	return toNode(node), nil
-}
-
-func (g *Graph) FirstNode() *Node {
-	return toNode(ccall.Agfstnode(g.Agraph))
-}
-
-func (g *Graph) NextNode(n *Node) *Node {
-	return toNode(ccall.Agnxtnode(g.Agraph, n.Agnode))
-}
-
-func (g *Graph) LastNode() *Node {
-	return toNode(ccall.Aglstnode(g.Agraph))
-}
-
-func (g *Graph) PreviousNode(n *Node) *Node {
-	return toNode(ccall.Agprvnode(g.Agraph, n.Agnode))
-}
-
-func (g *Graph) SubRep(n *Node) *SubNode {
-	return &SubNode{
-		Agsubnode: ccall.Agsubrep(g.Agraph, n.Agnode),
-	}
-}
-
-func (g *Graph) CreateEdge(name string, start *Node, end *Node) (*Edge, error) {
-	edge, err := ccall.Agedgef(g.Agraph, start.Agnode, end.Agnode, name, 1)
-	if err != nil {
-		return nil, err
-	}
-	return toEdge(edge), nil
-}
-
-func (g *Graph) IDEdge(t *Node, h *Node, id IDTYPE, createFlag int) (*Edge, error) {
-	edge, err := ccall.Agidedge(g.Agraph, t.Agnode, h.Agnode, uint64(id), createFlag)
-	if err != nil {
-		return nil, err
-	}
-	return toEdge(edge), nil
-}
-
-func (g *Graph) SubEdge(e *Edge, createFlag int) (*Edge, error) {
-	edge, err := ccall.Agsubedge(g.Agraph, e.Agedge, createFlag)
-	if err != nil {
-		return nil, err
-	}
-	return toEdge(edge), nil
-}
-
-func (g *Graph) FirstIn(n *Node) *Edge {
-	return toEdge(ccall.Agfstin(g.Agraph, n.Agnode))
-}
-
-func (g *Graph) NextIn(n *Edge) *Edge {
-	return toEdge(ccall.Agnxtin(g.Agraph, n.Agedge))
-}
-
-func (g *Graph) FirstOut(n *Node) *Edge {
-	return toEdge(ccall.Agfstout(g.Agraph, n.Agnode))
-}
-
-func (g *Graph) NextOut(e *Edge) *Edge {
-	return toEdge(ccall.Agnxtout(g.Agraph, e.Agedge))
-}
-
-func (g *Graph) FirstEdge(n *Node) *Edge {
-	return toEdge(ccall.Agfstedge(g.Agraph, n.Agnode))
-}
-
-func (g *Graph) NextEdge(e *Edge, n *Node) *Edge {
-	return toEdge(ccall.Agnxtedge(g.Agraph, e.Agedge, n.Agnode))
-}
-
-func (g *Graph) Contains(o interface{}) bool {
-	switch t := o.(type) {
-	case *Graph:
-		return ccall.Agcontains(g.Agraph, unsafe.Pointer(t.Agraph.C()))
-	case *Node:
-		return ccall.Agcontains(g.Agraph, unsafe.Pointer(t.Agnode.C()))
-	case *Edge:
-		return ccall.Agcontains(g.Agraph, unsafe.Pointer(t.Agedge.C()))
-	}
-	return false
-}
-
-func (g *Graph) Name() string {
-	return ccall.Agnameof(unsafe.Pointer(g.Agraph.C()))
-}
-
-func (g *Graph) Delete(obj unsafe.Pointer) error {
-	return ccall.Agdelete(g.Agraph, obj)
-}
-
-func (g *Graph) DeleteSubGraph(sub *Graph) int32 {
-	return ccall.Agdelsubg(g.Agraph, sub.Agraph)
-}
-
-func (g *Graph) DeleteNode(n *Node) bool {
-	return ccall.Agdelnode(g.Agraph, n.Agnode) == 1
-}
-
-func (g *Graph) DeleteEdge(e *Edge) bool {
-	return ccall.Agdeledge(g.Agraph, e.Agedge) == 1
-}
-
-func (g *Graph) Strdup(s string) string {
-	return ccall.Agstrdup(g.Agraph, s)
-}
-
-func (g *Graph) StrdupHTML(s string) string {
-	return ccall.AgstrdupHTML(g.Agraph, s)
-}
-
-func (g *Graph) StrBind(s string) string {
-	return ccall.Agstrbind(g.Agraph, s)
-}
-
-func (g *Graph) StrFree(s string) int {
-	return ccall.Agstrfree(g.Agraph, s)
-}
-
-func (g *Graph) Attr(kind int, name, value string) *Symbol {
-	return &Symbol{
-		Agsym: ccall.Agattrf(g.Agraph, kind, name, value),
-	}
-}
-
-func (g *Graph) NextAttr(kind int, attr *Symbol) *Symbol {
-	return &Symbol{
-		Agsym: ccall.Agnxtattr(g.Agraph, kind, attr.Agsym),
-	}
-}
-
-func (g *Graph) Init(kind int, recName string, recSize int, moveToFront int) {
-	ccall.Aginit(g.Agraph, kind, recName, recSize, moveToFront)
-}
-
-func (g *Graph) Clean(kind int, recName string) {
-	ccall.Agclean(g.Agraph, kind, recName)
-}
-
-func (g *Graph) SubGraph(name string, cflag int) *Graph {
-	return &Graph{
-		Agraph: ccall.Agsubg(g.Agraph, name, cflag),
-	}
-}
-
-func (g *Graph) IDSubGraph(id IDTYPE, cflag int) *Graph {
-	return &Graph{
-		Agraph: ccall.Agidsubg(g.Agraph, uint64(id), cflag),
-	}
-}
-
-func (g *Graph) FirstSubGraph() *Graph {
-	return &Graph{
-		Agraph: ccall.Agfstsubg(g.Agraph),
-	}
-}
-
-func (g *Graph) NextSubGraph() *Graph {
-	return &Graph{
-		Agraph: ccall.Agnxtsubg(g.Agraph),
-	}
+func (g *Graph) SetGID(v *cdt.Dict) {
+	g.wasm.SetGId(toDictWasm(v))
 }
 
 func (g *Graph) Parent() *Graph {
-	return &Graph{
-		Agraph: ccall.Agparent(g.Agraph),
+	return toGraph(g.wasm.GetParent())
+}
+
+func (g *Graph) SetParent(v *Graph) {
+	g.wasm.SetParent(v.getWasm())
+}
+
+func (g *Graph) GraphRoot() *Graph {
+	return toGraph(g.wasm.GetRoot())
+}
+
+func (g *Graph) SetGraphRoot(v *Graph) {
+	g.wasm.SetRoot(v.getWasm())
+}
+
+func (g *Graph) CommonFields() *CommonFields {
+	return toCommonFields(g.wasm.GetClos())
+}
+
+func (g *Graph) SetCommonFields(v *CommonFields) {
+	g.wasm.SetClos(v.getWasm())
+}
+
+func (g *Graph) CopyAttr(t *Graph) error {
+	res, err := wasm.CopyAttr(context.Background(), g.wasm, t.getWasm())
+	if err != nil {
+		return err
 	}
+	return toError(res)
 }
 
-func (g *Graph) NumberNodes() int {
-	return ccall.Agnnodes(g.Agraph)
+// BindRecord attach a new record of the given size to the object.
+func (g *Graph) BindRecord(name string, size uint, moveToFront int) error {
+	if _, err := wasm.BindRecord(context.Background(), g.wasm, name, size, moveToFront); err != nil {
+		return err
+	}
+	return nil
 }
 
-func (g *Graph) NumberEdges() int {
-	return ccall.Agnedges(g.Agraph)
+func (g *Graph) Record(name string, moveToFront int) (*Record, error) {
+	res, err := wasm.GetRecord(context.Background(), g.wasm, name, moveToFront)
+	if err != nil {
+		return nil, err
+	}
+	return toRecord(res), nil
 }
 
-func (g *Graph) NumberSubGraph() int {
-	return ccall.Agnsubg(g.Agraph)
+func (g *Graph) DeleteRecord(name string) error {
+	res, err := wasm.DeleteRecord(context.Background(), g.wasm, name)
+	if err != nil {
+		return err
+	}
+	return toError(res)
 }
 
-// Returns the degree of the given node in the graph, where arguments "in" and
+func (g *Graph) GetStr(name string) (string, error) {
+	return wasm.GetStr(context.Background(), g.wasm, name)
+}
+
+func (g *Graph) SymbolName(sym *Symbol) (string, error) {
+	return wasm.GetSymName(context.Background(), g.wasm, sym.getWasm())
+}
+
+func (g *Graph) Set(name, value string) error {
+	res, err := wasm.SetStr(context.Background(), g.wasm, name, value)
+	if err != nil {
+		return err
+	}
+	return toError(res)
+}
+
+func (g *Graph) SetSymbolName(sym *Symbol, value string) error {
+	res, err := wasm.SetSymName(context.Background(), g.wasm, sym.getWasm(), value)
+	if err != nil {
+		return err
+	}
+	return toError(res)
+}
+
+func (g *Graph) SafeSet(name, value, def string) error {
+	res, err := wasm.SafeSetStr(context.Background(), g.wasm, name, value, def)
+	if err != nil {
+		return err
+	}
+	return toError(res)
+}
+
+func (g *Graph) Close() error {
+	res, err := g.wasm.Close(context.Background())
+	if err != nil {
+		return err
+	}
+	return toError(res)
+}
+
+func (g *Graph) IsSimple() (bool, error) {
+	res, err := g.wasm.IsSimple(context.Background())
+	if err != nil {
+		return false, err
+	}
+	return res == 1, nil
+}
+
+func (g *Graph) CreateNodeByName(name string) (*Node, error) {
+	res, err := g.wasm.Node(context.Background(), name, 1)
+	if err != nil {
+		return nil, err
+	}
+	return toNode(res), nil
+}
+
+func (g *Graph) NodeByName(name string) (*Node, error) {
+	res, err := g.wasm.Node(context.Background(), name, 0)
+	if err != nil {
+		return nil, err
+	}
+	return toNode(res), nil
+}
+
+func (g *Graph) CreateNodeByID(id ID) (*Node, error) {
+	res, err := g.wasm.IdNode(context.Background(), uint64(id), 1)
+	if err != nil {
+		return nil, err
+	}
+	return toNode(res), nil
+}
+
+func (g *Graph) NodeByID(id ID) (*Node, error) {
+	res, err := g.wasm.IdNode(context.Background(), uint64(id), 0)
+	if err != nil {
+		return nil, err
+	}
+	return toNode(res), nil
+}
+
+func (g *Graph) CreateSubNode(n *Node) (*Node, error) {
+	res, err := g.wasm.SubNode(context.Background(), n.getWasm(), 1)
+	if err != nil {
+		return nil, err
+	}
+	return toNode(res), nil
+}
+
+func (g *Graph) SubNode(n *Node) (*Node, error) {
+	res, err := g.wasm.SubNode(context.Background(), n.getWasm(), 0)
+	if err != nil {
+		return nil, err
+	}
+	return toNode(res), nil
+}
+
+func (g *Graph) FirstNode() (*Node, error) {
+	res, err := g.wasm.FirstNode(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return toNode(res), nil
+}
+
+func (g *Graph) NextNode(n *Node) (*Node, error) {
+	res, err := g.wasm.NextNode(context.Background(), n.getWasm())
+	if err != nil {
+		return nil, err
+	}
+	return toNode(res), nil
+}
+
+func (g *Graph) LastNode() (*Node, error) {
+	res, err := g.wasm.LastNode(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return toNode(res), nil
+}
+
+func (g *Graph) PreviousNode(n *Node) (*Node, error) {
+	res, err := g.wasm.PrevNode(context.Background(), n.getWasm())
+	if err != nil {
+		return nil, err
+	}
+	return toNode(res), nil
+}
+
+func (g *Graph) SubRep(n *Node) (*SubNode, error) {
+	res, err := g.wasm.SubRep(context.Background(), n.getWasm())
+	if err != nil {
+		return nil, err
+	}
+	return toSubNode(res), nil
+}
+
+func (g *Graph) CreateEdgeByName(name string, start *Node, end *Node) (*Edge, error) {
+	res, err := g.wasm.Edge(context.Background(), start.getWasm(), end.getWasm(), name, 1)
+	if err != nil {
+		return nil, err
+	}
+	return toEdge(res), nil
+}
+
+func (g *Graph) EdgeByName(name string, start *Node, end *Node) (*Edge, error) {
+	res, err := g.wasm.Edge(context.Background(), start.getWasm(), end.getWasm(), name, 0)
+	if err != nil {
+		return nil, err
+	}
+	return toEdge(res), nil
+}
+
+func (g *Graph) CreateEdgeByID(id ID, start *Node, end *Node) (*Edge, error) {
+	res, err := g.wasm.IdEdge(context.Background(), start.getWasm(), end.getWasm(), uint64(id), 1)
+	if err != nil {
+		return nil, err
+	}
+	return toEdge(res), nil
+}
+
+func (g *Graph) EdgeByID(id ID, start *Node, end *Node) (*Edge, error) {
+	res, err := g.wasm.IdEdge(context.Background(), start.getWasm(), end.getWasm(), uint64(id), 0)
+	if err != nil {
+		return nil, err
+	}
+	return toEdge(res), nil
+}
+
+func (g *Graph) CreateSubEdge(e *Edge) (*Edge, error) {
+	res, err := g.wasm.SubEdge(context.Background(), e.getWasm(), 1)
+	if err != nil {
+		return nil, err
+	}
+	return toEdge(res), nil
+}
+
+func (g *Graph) SubEdge(e *Edge) (*Edge, error) {
+	res, err := g.wasm.SubEdge(context.Background(), e.getWasm(), 0)
+	if err != nil {
+		return nil, err
+	}
+	return toEdge(res), nil
+}
+
+func (g *Graph) FirstIn(n *Node) (*Edge, error) {
+	res, err := g.wasm.FirstIn(context.Background(), n.getWasm())
+	if err != nil {
+		return nil, err
+	}
+	return toEdge(res), nil
+}
+
+func (g *Graph) FirstOut(n *Node) (*Edge, error) {
+	res, err := g.wasm.FirstOut(context.Background(), n.getWasm())
+	if err != nil {
+		return nil, err
+	}
+	return toEdge(res), nil
+}
+
+func (g *Graph) NextIn(e *Edge) (*Edge, error) {
+	res, err := g.wasm.NextIn(context.Background(), e.getWasm())
+	if err != nil {
+		return nil, err
+	}
+	return toEdge(res), nil
+}
+
+func (g *Graph) NextOut(e *Edge) (*Edge, error) {
+	res, err := g.wasm.NextOut(context.Background(), e.getWasm())
+	if err != nil {
+		return nil, err
+	}
+	return toEdge(res), nil
+}
+
+func (g *Graph) FirstEdge(n *Node) (*Edge, error) {
+	res, err := g.wasm.FirstEdge(context.Background(), n.getWasm())
+	if err != nil {
+		return nil, err
+	}
+	return toEdge(res), nil
+}
+
+func (g *Graph) NextEdge(e *Edge, n *Node) (*Edge, error) {
+	res, err := g.wasm.NextEdge(context.Background(), e.getWasm(), n.getWasm())
+	if err != nil {
+		return nil, err
+	}
+	return toEdge(res), nil
+}
+
+func (g *Graph) Contains(o any) (bool, error) {
+	res, err := g.wasm.Contains(context.Background(), o)
+	if err != nil {
+		return false, err
+	}
+	return res == 1, nil
+}
+
+func (g *Graph) Name() (string, error) {
+	return wasm.GraphNameOf(context.Background(), g.wasm)
+}
+
+func (g *Graph) Delete(obj any) error {
+	res, err := g.wasm.Delete(context.Background(), obj)
+	if err != nil {
+		return err
+	}
+	return toError(res)
+}
+
+func (g *Graph) DeleteSubGraph(sub *Graph) error {
+	res, err := g.wasm.DeleteSubGraph(context.Background(), sub.getWasm())
+	if err != nil {
+		return err
+	}
+	return toError(res)
+}
+
+func (g *Graph) DeleteNode(n *Node) (bool, error) {
+	res, err := g.wasm.DeleteNode(context.Background(), n.getWasm())
+	if err != nil {
+		return false, err
+	}
+	return res == 1, nil
+}
+
+func (g *Graph) DeleteEdge(e *Edge) (bool, error) {
+	res, err := g.wasm.DeleteEdge(context.Background(), e.getWasm())
+	if err != nil {
+		return false, err
+	}
+	return res == 1, nil
+}
+
+func (g *Graph) Strdup(s string) (string, error) {
+	return g.wasm.Strdup(context.Background(), s)
+}
+
+func (g *Graph) StrdupHTML(s string) (string, error) {
+	return g.wasm.StrdupHTML(context.Background(), s)
+}
+
+func (g *Graph) StrBind(s string) (string, error) {
+	return g.wasm.StrBind(context.Background(), s)
+}
+
+func (g *Graph) StrFree(s string) error {
+	res, err := g.wasm.StrFree(context.Background(), s)
+	if err != nil {
+		return err
+	}
+	return toError(res)
+}
+
+func (g *Graph) Attr(kind int, name, value string) (*Symbol, error) {
+	res, err := g.wasm.Attr(context.Background(), kind, name, value)
+	if err != nil {
+		return nil, err
+	}
+	return toSymbol(res), nil
+}
+
+func (g *Graph) NextAttr(kind int, attr *Symbol) (*Symbol, error) {
+	res, err := g.wasm.NextAttr(context.Background(), kind, attr.getWasm())
+	if err != nil {
+		return nil, err
+	}
+	return toSymbol(res), nil
+}
+
+func (g *Graph) Init(kind int, recName string, recSize int, moveToFront int) error {
+	return g.wasm.Init(context.Background(), kind, recName, recSize, moveToFront)
+}
+
+func (g *Graph) Clean(kind int, recName string) error {
+	return g.wasm.Clean(context.Background(), kind, recName)
+}
+
+func (g *Graph) CreateSubGraphByName(name string) (*Graph, error) {
+	res, err := g.wasm.SubGraph(context.Background(), name, 1)
+	if err != nil {
+		return nil, err
+	}
+	return toGraph(res), nil
+}
+
+func (g *Graph) SubGraphByName(name string) (*Graph, error) {
+	res, err := g.wasm.SubGraph(context.Background(), name, 0)
+	if err != nil {
+		return nil, err
+	}
+	return toGraph(res), nil
+}
+
+func (g *Graph) CreateSubGraphByID(id ID) (*Graph, error) {
+	res, err := g.wasm.IdSubGraph(context.Background(), uint64(id), 1)
+	if err != nil {
+		return nil, err
+	}
+	return toGraph(res), nil
+}
+
+func (g *Graph) SubGraphByID(id ID) (*Graph, error) {
+	res, err := g.wasm.IdSubGraph(context.Background(), uint64(id), 0)
+	if err != nil {
+		return nil, err
+	}
+	return toGraph(res), nil
+}
+
+func (g *Graph) FirstSubGraph() (*Graph, error) {
+	res, err := g.wasm.FirstSubGraph(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return toGraph(res), nil
+}
+
+func (g *Graph) NextSubGraph() (*Graph, error) {
+	res, err := g.wasm.NextSubGraph(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return toGraph(res), nil
+}
+
+func (g *Graph) NodeNum() (int, error) {
+	return g.wasm.NodeNum(context.Background())
+}
+
+func (g *Graph) EdgeNum() (int, error) {
+	return g.wasm.EdgeNum(context.Background())
+}
+
+func (g *Graph) SubGraphNum() (int, error) {
+	return g.wasm.SubGraphNum(context.Background())
+}
+
+// Degree returns the degree of the given node in the graph, where arguments "in" and
 // "out" are C-like booleans that select which edge sets to query.
 //
-//	g.Degree(node, 0, 0) // always returns 0
-//	g.Degree(node, 0, 1) // returns the node's outdegree
-//	g.Degree(node, 1, 0) // returns the node's indegree
-//	g.Degree(node, 1, 1) // returns the node's total degree (indegree + outdegree)
-func (g *Graph) Degree(n *Node, in, out int) int {
-	return ccall.Agdegree(g.Agraph, n.Agnode, in, out)
+// g.Degree(node, 0, 0) // always returns 0
+// g.Degree(node, 0, 1) // returns the node's outdegree
+// g.Degree(node, 1, 0) // returns the node's indegree
+// g.Degree(node, 1, 1) // returns the node's total degree (indegree + outdegree).
+func (g *Graph) Degree(n *Node, in, out int) (int, error) {
+	return g.wasm.Degree(context.Background(), n.getWasm(), in, out)
 }
 
-// Returns the indegree of the given node in the graph.
+// Indegree returns the indegree of the given node in the graph.
 //
 // Note: While undirected graphs don't normally have a
 // notion of indegrees, calling this method on an
 // undirected graph will treat it as if it's directed.
 // As a result, it's best to avoid calling this method
 // on an undirected graph.
-func (g *Graph) Indegree(n *Node) int {
-	return ccall.Agdegree(g.Agraph, n.Agnode, 1, 0)
+func (g *Graph) Indegree(n *Node) (int, error) {
+	return g.wasm.Degree(context.Background(), n.getWasm(), 1, 0)
 }
 
-// Returns the outdegree of the given node in the graph.
+// Outdegree returns the outdegree of the given node in the graph.
 //
 // Note: While undirected graphs don't normally have a
 // notion of outdegrees, calling this method on an
 // undirected graph will treat it as if it's directed.
 // As a result, it's best to avoid calling this method
 // on an undirected graph.
-func (g *Graph) Outdegree(n *Node) int {
-	return ccall.Agdegree(g.Agraph, n.Agnode, 0, 1)
+func (g *Graph) Outdegree(n *Node) (int, error) {
+	return g.wasm.Degree(context.Background(), n.getWasm(), 0, 1)
 }
 
-// Returns the total degree of the given node in the graph.
+// TotalDegree returns the total degree of the given node in the graph.
 // This can be thought of as the total number of edges coming
 // in and out of a node.
-func (g *Graph) TotalDegree(n *Node) int {
-	return ccall.Agdegree(g.Agraph, n.Agnode, 1, 1)
+func (g *Graph) TotalDegree(n *Node) (int, error) {
+	return g.wasm.Degree(context.Background(), n.getWasm(), 1, 1)
 }
 
-func (g *Graph) CountUniqueEdges(n *Node, in, out int) int {
-	return ccall.Agcountuniqedges(g.Agraph, n.Agnode, in, out)
+func (g *Graph) CountUniqueEdges(n *Node, in, out int) (int, error) {
+	return g.wasm.CountUniqueEdges(context.Background(), n.getWasm(), in, out)
 }
 
-func (g *Graph) InternalMapClearLocalNames() {
-	ccall.Aginternalmapclearlocalnames(g.Agraph)
+func (n *Node) Name() (string, error) {
+	return wasm.GraphNameOf(context.Background(), n.wasm)
 }
 
-func (g *Graph) Flatten(flag int) {
-	ccall.Agflatten(g.Agraph, flag)
-}
-
-func (n *Node) Name() string {
-	return ccall.Agnameof(unsafe.Pointer(n.Agnode.C()))
-}
-
-func (n *Node) CopyAttr(t *Node) int {
-	return ccall.Agcopyattr(unsafe.Pointer(n.Agnode.C()), unsafe.Pointer(t.Agnode.C()))
-}
-
-func (n *Node) BindRecord(name string, size uint, moveToFront int) {
-	ccall.Agbindrec(unsafe.Pointer(n.Agnode.C()), name, size, moveToFront)
-}
-
-func (n *Node) Record(name string, moveToFront int) *Record {
-	rec := ccall.Aggetrec(unsafe.Pointer(n.Agnode.C()), name, moveToFront)
-	if rec == nil {
-		return nil
+func (n *Node) CopyAttr(t *Node) error {
+	res, err := wasm.CopyAttr(context.Background(), n.wasm, t.getWasm())
+	if err != nil {
+		return err
 	}
-	return &Record{Agrec: rec}
+	return toError(res)
 }
 
-func (n *Node) DeleteRecord(name string) int {
-	return ccall.Agdelrec(unsafe.Pointer(n.Agnode.C()), name)
+func (n *Node) BindRecord(name string, size uint, moveToFront int) error {
+	if _, err := wasm.BindRecord(context.Background(), n.wasm, name, size, moveToFront); err != nil {
+		return err
+	}
+	return nil
 }
 
-func (n *Node) Get(name string) string {
-	return ccall.Agget(unsafe.Pointer(n.Agnode.C()), name)
+func (n *Node) Record(name string, moveToFront int) (*Record, error) {
+	res, err := wasm.GetRecord(context.Background(), n.wasm, name, moveToFront)
+	if err != nil {
+		return nil, err
+	}
+	return toRecord(res), nil
 }
 
-func (n *Node) XGet(sym *Symbol) string {
-	return ccall.Agxget(unsafe.Pointer(n.Agnode.C()), sym.Agsym)
+func (n *Node) DeleteRecord(name string) error {
+	res, err := wasm.DeleteRecord(context.Background(), n.wasm, name)
+	if err != nil {
+		return err
+	}
+	return toError(res)
 }
 
-func (n *Node) Set(name, value string) int {
-	return ccall.Agset(unsafe.Pointer(n.Agnode.C()), name, value)
+func (n *Node) GetStr(name string) (string, error) {
+	return wasm.GetStr(context.Background(), n.wasm, name)
 }
 
-func (n *Node) XSet(sym *Symbol, value string) int {
-	return ccall.Agxset(unsafe.Pointer(n.Agnode.C()), sym.Agsym, value)
+func (n *Node) SymbolName(sym *Symbol) (string, error) {
+	return wasm.GetSymName(context.Background(), n.wasm, sym.getWasm())
 }
 
-func (n *Node) SafeSet(name, value, def string) int {
-	return ccall.Agsafeset(unsafe.Pointer(n.Agnode.C()), name, value, def)
+func (n *Node) Set(name, value string) error {
+	res, err := wasm.SetStr(context.Background(), n.wasm, name, value)
+	if err != nil {
+		return err
+	}
+	return toError(res)
+}
+
+func (n *Node) SetSymbolName(sym *Symbol, value string) error {
+	res, err := wasm.SetSymName(context.Background(), n.wasm, sym.getWasm(), value)
+	if err != nil {
+		return err
+	}
+	return toError(res)
+}
+
+func (n *Node) SafeSet(name, value, def string) error {
+	res, err := wasm.SafeSetStr(context.Background(), n.wasm, name, value, def)
+	if err != nil {
+		return err
+	}
+	return toError(res)
 }
 
 func (n *Node) ReLabel(newname string) error {
-	return ccall.AgrelabelNode(n.Agnode, newname)
+	res, err := n.wasm.ReLabel(context.Background(), newname)
+	if err != nil {
+		return err
+	}
+	return toError(res)
 }
 
 func (n *Node) Before(v *Node) error {
-	return ccall.Agnodebefore(n.Agnode, v.Agnode)
+	res, err := n.wasm.Before(context.Background(), v.getWasm())
+	if err != nil {
+		return err
+	}
+	return toError(res)
 }
 
-func (e *Edge) Name() string {
-	return ccall.Agnameof(unsafe.Pointer(e.Agedge.C()))
+func (e *Edge) Name() (string, error) {
+	return wasm.GraphNameOf(context.Background(), e.wasm)
 }
 
-func (e *Edge) CopyAttr(t *Edge) int {
-	return ccall.Agcopyattr(unsafe.Pointer(e.Agedge.C()), unsafe.Pointer(t.Agedge.C()))
+func (e *Edge) CopyAttr(t *Edge) error {
+	res, err := wasm.CopyAttr(context.Background(), e.wasm, t.getWasm())
+	if err != nil {
+		return err
+	}
+	return toError(res)
 }
 
-func (e *Edge) BindRecord(name string, size uint, moveToFront int) {
-	ccall.Agbindrec(unsafe.Pointer(e.Agedge.C()), name, size, moveToFront)
+func (e *Edge) BindRecord(name string, size uint, moveToFront int) error {
+	if _, err := wasm.BindRecord(context.Background(), e.wasm, name, size, moveToFront); err != nil {
+		return err
+	}
+	return nil
 }
 
-func (e *Edge) Record(name string, moveToFront int) *Record {
-	rec := ccall.Aggetrec(unsafe.Pointer(e.Agedge.C()), name, moveToFront)
-	if rec == nil {
+func (e *Edge) Record(name string, moveToFront int) (*Record, error) {
+	res, err := wasm.GetRecord(context.Background(), e.wasm, name, moveToFront)
+	if err != nil {
+		return nil, err
+	}
+	return toRecord(res), nil
+}
+
+func (e *Edge) DeleteRecord(name string) error {
+	res, err := wasm.DeleteRecord(context.Background(), e.wasm, name)
+	if err != nil {
+		return err
+	}
+	return toError(res)
+}
+
+func (e *Edge) GetStr(name string) (string, error) {
+	return wasm.GetStr(context.Background(), e.wasm, name)
+}
+
+func (e *Edge) SymbolName(sym *Symbol) (string, error) {
+	return wasm.GetSymName(context.Background(), e.wasm, sym.getWasm())
+}
+
+func (e *Edge) Set(name, value string) error {
+	res, err := wasm.SetStr(context.Background(), e.wasm, name, value)
+	if err != nil {
+		return err
+	}
+	return toError(res)
+}
+
+func (e *Edge) SetSymbolName(sym *Symbol, value string) error {
+	res, err := wasm.SetSymName(context.Background(), e.wasm, sym.getWasm(), value)
+	if err != nil {
+		return err
+	}
+	return toError(res)
+}
+
+func (e *Edge) SafeSet(name, value, def string) error {
+	res, err := wasm.SafeSetStr(context.Background(), e.wasm, name, value, def)
+	if err != nil {
+		return err
+	}
+	return toError(res)
+}
+
+func HTMLStr(s string) (bool, error) {
+	return wasm.HtmlStr(context.Background(), s)
+}
+
+func Canon(s string, i int) (string, error) {
+	return wasm.Canon(context.Background(), s, i)
+}
+
+func StrCanon(a0 string, a1 string) (string, error) {
+	return wasm.StrCanon(context.Background(), a0, a1)
+}
+
+func CanonStr(str string) (string, error) {
+	return wasm.CanonStr(context.Background(), str)
+}
+
+func AttrSym(obj *Object, name string) (*Symbol, error) {
+	sym, err := wasm.AttrSym(context.Background(), obj.getWasm(), name)
+	if err != nil {
+		return nil, err
+	}
+	return toSymbol(sym), nil
+}
+
+func toError(result int) error {
+	if result == 0 {
 		return nil
 	}
-	return &Record{Agrec: rec}
+	return lastError()
 }
 
-func (e *Edge) DeleteRecord(name string) int {
-	return ccall.Agdelrec(unsafe.Pointer(e.Agedge.C()), name)
-}
-
-func (e *Edge) Get(name string) string {
-	return ccall.Agget(unsafe.Pointer(e.Agedge.C()), name)
-}
-
-func (e *Edge) XGet(sym *Symbol) string {
-	return ccall.Agxget(unsafe.Pointer(e.Agedge.C()), sym.Agsym)
-}
-
-func (e *Edge) Set(name, value string) int {
-	return ccall.Agset(unsafe.Pointer(e.Agedge.C()), name, value)
-}
-
-func (e *Edge) XSet(sym *Symbol, value string) int {
-	return ccall.Agxset(unsafe.Pointer(e.Agedge.C()), sym.Agsym, value)
-}
-
-func (e *Edge) SafeSet(name, value, def string) int {
-	return ccall.Agsafeset(unsafe.Pointer(e.Agedge.C()), name, value, def)
+func lastError() error {
+	if e, _ := wasm.LastError(context.Background()); e != "" {
+		return errors.New(e)
+	}
+	return nil
 }

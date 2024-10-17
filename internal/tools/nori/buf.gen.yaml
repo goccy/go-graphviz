@@ -1,0 +1,5 @@
+version: v1
+plugins:
+  - plugin: go
+    out: .
+    opt: module=github.com/goccy/nori

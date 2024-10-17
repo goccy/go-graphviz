@@ -1,13 +1,13 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 
 	"github.com/goccy/go-graphviz"
-	"github.com/goccy/go-graphviz/cgraph"
 	"github.com/jessevdk/go-flags"
 	"golang.org/x/crypto/ssh/terminal"
 )
@@ -18,12 +18,12 @@ type Option struct {
 	OutputFile string          `description:"specify output file name" short:"o" required:"true"`
 }
 
-func readGraph(args []string) (*cgraph.Graph, error) {
+func readGraph(args []string) (*graphviz.Graph, error) {
 	if len(args) == 0 {
 		if terminal.IsTerminal(0) {
 			return nil, errors.New("required dot file or stdin")
 		}
-		bytes, err := ioutil.ReadAll(os.Stdin)
+		bytes, err := io.ReadAll(os.Stdin)
 		if err != nil {
 			return nil, err
 		}
@@ -33,12 +33,15 @@ func readGraph(args []string) (*cgraph.Graph, error) {
 	return graphviz.ParseFile(dotFile)
 }
 
-func _main(args []string, opt *Option) (e error) {
+func _main(ctx context.Context, args []string, opt *Option) (e error) {
 	graph, err := readGraph(args)
 	if err != nil {
 		return err
 	}
-	g := graphviz.New()
+	g, err := graphviz.New(ctx)
+	if err != nil {
+		return err
+	}
 	defer func() {
 		if err := graph.Close(); err != nil {
 			e = err
@@ -50,7 +53,7 @@ func _main(args []string, opt *Option) (e error) {
 	if opt.Layout != "" {
 		g.SetLayout(opt.Layout)
 	}
-	return g.RenderFilename(graph, opt.Format, opt.OutputFile)
+	return g.RenderFilename(ctx, graph, opt.Format, opt.OutputFile)
 }
 
 func main() {
@@ -60,7 +63,7 @@ func main() {
 	if err != nil {
 		return
 	}
-	if err := _main(args, &opt); err != nil {
+	if err := _main(context.Background(), args, &opt); err != nil {
 		fmt.Println(err)
 	}
 }

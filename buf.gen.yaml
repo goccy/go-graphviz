@@ -1,0 +1,6 @@
+version: v1
+managed:
+  enabled: true
+plugins:
+  - plugin: nori
+    out: .
