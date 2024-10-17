@@ -2995,7 +2995,6 @@ func WasmPtr(v wasmStruct) uint64 {
 }
 
 func getCompilationCache() wazero.CompilationCache {
-	return nil
 	tmpDir := os.TempDir()
 	if tmpDir == "" {
 		return nil
