@@ -332,6 +332,7 @@ var (
 
 // functions from gvc package.
 var (
+	SetFontLoader   = gvc.SetFontLoader
 	DefaultPlugins  = gvc.DefaultPlugins
 	DeviceQuality   = gvc.WithDeviceQuality
 	DeviceFeatures  = gvc.WithDeviceFeatures

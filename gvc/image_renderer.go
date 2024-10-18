@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/flopp/go-findfont"
 	"github.com/fogleman/gg"
@@ -16,6 +17,11 @@ import (
 	"golang.org/x/image/font/gofont/goregular"
 	"golang.org/x/image/font/opentype"
 	"golang.org/x/image/font/sfnt"
+)
+
+var (
+	fontMu    sync.RWMutex
+	fontCache = make(map[string]font.Face)
 )
 
 type ImageRenderer struct {
@@ -138,26 +144,59 @@ func (r *ImageRenderer) TextSpan(ctx context.Context, job *Job, p *PointFloat, s
 }
 
 func (r *ImageRenderer) getFontFace(ctx context.Context, job *Job, font *TextFont) (font.Face, error) {
-	fontSize := r.toX(job, font.Size())
-	return r.lookupFont(font.Name(), fontSize)
+	return r.lookupFontWithCache(ctx, job, font)
 }
 
-func (r *ImageRenderer) lookupFont(fontName string, fontSize float64) (font.Face, error) {
+func (r *ImageRenderer) lookupFontWithCache(ctx context.Context, job *Job, font *TextFont) (font.Face, error) {
+	fontSize := r.toX(job, font.Size())
+	fontName := font.Name()
+	cacheKey := fmt.Sprintf("%s:%f", fontName, fontSize)
+	fontMu.RLock()
+	if font, exists := fontCache[cacheKey]; exists {
+		fontMu.RUnlock()
+		return font, nil
+	}
+	fontMu.RUnlock()
+
+	fontLoaderMu.RLock()
+	defer fontLoaderMu.RUnlock()
+
+	if fontLoader != nil {
+		face, err := fontLoader(ctx, job, font)
+		if err != nil {
+			return nil, err
+		}
+		if face != nil {
+			return face, nil
+		}
+	}
+
+	ft, err := r.lookupFont(fontName, fontSize, job.DPI())
+	if err != nil {
+		return nil, err
+	}
+	fontMu.Lock()
+	fontCache[cacheKey] = ft
+	fontMu.Unlock()
+	return ft, nil
+}
+
+func (r *ImageRenderer) lookupFont(fontName string, fontSize float64, dpi *PointFloat) (font.Face, error) {
 	fontPath, err := findfont.Find(fontName)
 	if err == nil {
-		return r.lookupFontFromTTFFile(fontName, fontSize, fontPath)
+		return r.lookupFontFromTTFFile(fontName, fontSize, dpi, fontPath)
 	}
 	parts := strings.Split(fontName, "-")
 	for i := len(parts) - 1; i > 0; i-- {
 		baseName := strings.Join(parts[:len(parts)-1], "-")
-		ttfFace, err := r.lookupFontFromTTFFile(fontName, fontSize, baseName+".ttf")
+		ttfFace, err := r.lookupFontFromTTFFile(fontName, fontSize, dpi, baseName+".ttf")
 		if err != nil {
 			return nil, err
 		}
 		if ttfFace != nil {
 			return ttfFace, nil
 		}
-		ttcFace, err := r.lookupFontFromTTCFile(fontName, fontSize, baseName+".ttc")
+		ttcFace, err := r.lookupFontFromTTCFile(fontName, fontSize, dpi, baseName+".ttc")
 		if err != nil {
 			return nil, err
 		}
@@ -168,7 +207,7 @@ func (r *ImageRenderer) lookupFont(fontName string, fontSize float64) (font.Face
 	return nil, fmt.Errorf("failed to find font by %s", fontName)
 }
 
-func (r *ImageRenderer) lookupFontFromTTFFile(fontName string, fontSize float64, fontPath string) (font.Face, error) {
+func (r *ImageRenderer) lookupFontFromTTFFile(fontName string, fontSize float64, dpi *PointFloat, fontPath string) (font.Face, error) {
 	fontData, err := os.ReadFile(fontPath)
 	if err != nil {
 		return nil, nil
@@ -182,7 +221,7 @@ func (r *ImageRenderer) lookupFontFromTTFFile(fontName string, fontSize float64,
 	}), nil
 }
 
-func (r *ImageRenderer) lookupFontFromTTCFile(fontName string, fontSize float64, fontPath string) (font.Face, error) {
+func (r *ImageRenderer) lookupFontFromTTCFile(fontName string, fontSize float64, dpi *PointFloat, fontPath string) (font.Face, error) {
 	parts := strings.Split(fontName, "-")
 	fontPath, err := findfont.Find(fontPath)
 	if err != nil {
@@ -209,7 +248,7 @@ func (r *ImageRenderer) lookupFontFromTTCFile(fontName string, fontSize float64,
 		if strings.Join(parts, " ") == name {
 			return opentype.NewFace(ft, &opentype.FaceOptions{
 				Size: fontSize,
-				DPI:  96,
+				DPI:  dpi.X(),
 			})
 		}
 	}
@@ -320,4 +359,17 @@ func (r *ImageRenderer) BezierCurve(ctx context.Context, job *Job, a []*PointFlo
 		r.ctx.Stroke()
 	}
 	return nil
+}
+
+type FontLoader func(ctx context.Context, job *Job, font *TextFont) (font.Face, error)
+
+var (
+	fontLoaderMu sync.RWMutex
+	fontLoader   FontLoader
+)
+
+func SetFontLoader(loader FontLoader) {
+	fontLoaderMu.Lock()
+	defer fontLoaderMu.Unlock()
+	fontLoader = loader
 }

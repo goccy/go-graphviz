@@ -859,6 +859,14 @@ func (j *Job) Object() *ObjectState {
 	return toObjectState(j.wasm.GetObj())
 }
 
+func (j *Job) DPI() *PointFloat {
+	return toPointFloat(j.wasm.GetDpi())
+}
+
+func (j *Job) SetDPI(v *PointFloat) {
+	j.wasm.SetDpi(v.getWasm())
+}
+
 type ObjectState struct {
 	wasm *wasm.ObjectState
 }
@@ -993,7 +1001,7 @@ func (c *Color) HSVA() [4]float64 {
 	return [4]float64{res[0], res[1], res[2], res[3]}
 }
 
-func (c *Color) SetHsva(v [4]float64) {
+func (c *Color) SetHSVA(v [4]float64) {
 	c.wasm.SetHsva(v[:])
 }
 
