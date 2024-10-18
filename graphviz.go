@@ -7,7 +7,6 @@ import (
 
 	"github.com/goccy/go-graphviz/cgraph"
 	"github.com/goccy/go-graphviz/gvc"
-	"golang.org/x/image/font"
 )
 
 type Graphviz struct {
@@ -73,10 +72,6 @@ func (g *Graphviz) Close() error {
 func (g *Graphviz) SetLayout(layout Layout) *Graphviz {
 	g.layout = layout
 	return g
-}
-
-func (g *Graphviz) SetFontFace(callback func(size float64) (font.Face, error)) {
-	gvc.SetFontFace(callback)
 }
 
 func (g *Graphviz) Render(ctx context.Context, graph *Graph, format Format, w io.Writer) (e error) {

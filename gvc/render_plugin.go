@@ -256,15 +256,11 @@ func defaultRenderPluginConfig(typ string, engine RenderEngine) *renderConfig {
 }
 
 func newPNGRenderEngine() *ImageRenderer {
-	renderer := &ImageRenderer{DefaultRenderEngine: new(DefaultRenderEngine)}
-	renderer.SetFontFace(fontFaceFn)
-	return renderer
+	return &ImageRenderer{DefaultRenderEngine: new(DefaultRenderEngine)}
 }
 
 func newJPGRenderEngine() *ImageRenderer {
-	renderer := &ImageRenderer{DefaultRenderEngine: new(DefaultRenderEngine)}
-	renderer.SetFontFace(fontFaceFn)
-	return renderer
+	return &ImageRenderer{DefaultRenderEngine: new(DefaultRenderEngine)}
 }
 
 type renderConfig struct {
