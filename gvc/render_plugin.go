@@ -41,7 +41,7 @@ type RenderEngine interface {
 	ResolveColor(ctx context.Context, job *Job, color *Color) error
 	Ellipse(ctx context.Context, job *Job, points []*PointFloat, filled bool) error
 	Polygon(ctx context.Context, job *Job, points []*PointFloat, filled bool) error
-	BezierCurve(ctx context.Context, job *Job, points []*PointFloat) error
+	BezierCurve(ctx context.Context, job *Job, points []*PointFloat, filled bool) error
 	Polyline(ctx context.Context, job *Job, points []*PointFloat) error
 	Comment(ctx context.Context, job *Job, comment string) error
 	LibraryShape(ctx context.Context, job *Job, s string, points []*PointFloat, filled bool) error
@@ -154,7 +154,7 @@ func (e *DefaultRenderEngine) Polygon(_ context.Context, _ *Job, _ []*PointFloat
 	return nil
 }
 
-func (e *DefaultRenderEngine) BezierCurve(_ context.Context, _ *Job, _ []*PointFloat) error {
+func (e *DefaultRenderEngine) BezierCurve(_ context.Context, _ *Job, _ []*PointFloat, _ bool) error {
 	return nil
 }
 
@@ -471,12 +471,12 @@ func newRenderEngine(ctx context.Context, engine RenderEngine) (*wasm.RenderEngi
 	}, ptr)); err != nil {
 		return nil, err
 	}
-	if err := e.SetBeziercurve(ctx, wasm.CreateCallbackFunc(func(ctx context.Context, job *wasm.Job, p []*wasm.PointFloat, _ uint32, _ int) error {
+	if err := e.SetBeziercurve(ctx, wasm.CreateCallbackFunc(func(ctx context.Context, job *wasm.Job, p []*wasm.PointFloat, _ uint32, filled int) error {
 		points := make([]*PointFloat, len(p))
 		for i := range p {
 			points[i] = toPointFloat(p[i])
 		}
-		return engine.BezierCurve(ctx, toJob(job), points)
+		return engine.BezierCurve(ctx, toJob(job), points, filled > 0)
 	}, ptr)); err != nil {
 		return nil, err
 	}
@@ -937,6 +937,14 @@ func (s *ObjectState) FillColor() *Color {
 
 func (s *ObjectState) SetFillColor(v *Color) {
 	s.wasm.SetFillcolor(v.getWasm())
+}
+
+func (s *ObjectState) StopColor() *Color {
+	return toColor(s.wasm.GetStopcolor())
+}
+
+func (s *ObjectState) RawStyle() []string {
+	return s.wasm.GetRawstyle()
 }
 
 type Color struct {
