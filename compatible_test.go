@@ -25,7 +25,7 @@ var (
 )
 
 const (
-	imageThreshold = 30
+	imageThreshold = 20
 )
 
 func generateTestData() error {
@@ -73,9 +73,9 @@ func generateTestData() error {
 
 func TestGraphviz_Compatible(t *testing.T) {
 	// generate testdata/imagehash.json
-	//	if err := generateTestData(); err != nil {
-	//		t.Fatal(err)
-	//	}
+	//if err := generateTestData(); err != nil {
+	//	t.Fatal(err)
+	//}
 	var pathToHashDump map[string]string
 	file, err := os.ReadFile(imageHashJSON)
 	if err != nil {
