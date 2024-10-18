@@ -25,7 +25,7 @@ var (
 )
 
 const (
-	imageThreshold = 25
+	imageThreshold = 40
 )
 
 func generateTestData() error {
