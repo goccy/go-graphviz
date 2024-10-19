@@ -256,15 +256,11 @@ func defaultRenderPluginConfig(typ string, engine RenderEngine) *renderConfig {
 }
 
 func newPNGRenderEngine() *ImageRenderer {
-	renderer := &ImageRenderer{DefaultRenderEngine: new(DefaultRenderEngine)}
-	renderer.SetFontFace(fontFaceFn)
-	return renderer
+	return &ImageRenderer{DefaultRenderEngine: new(DefaultRenderEngine)}
 }
 
 func newJPGRenderEngine() *ImageRenderer {
-	renderer := &ImageRenderer{DefaultRenderEngine: new(DefaultRenderEngine)}
-	renderer.SetFontFace(fontFaceFn)
-	return renderer
+	return &ImageRenderer{DefaultRenderEngine: new(DefaultRenderEngine)}
 }
 
 type renderConfig struct {
@@ -789,6 +785,14 @@ func (s *PostScriptAlias) SetSVGFontStyle(v string) {
 
 type Scale = PointFloat
 
+func (j *Job) Zoom() float64 {
+	return j.wasm.GetZoom()
+}
+
+func (j *Job) SetZoom(v float64) {
+	j.wasm.SetZoom(v)
+}
+
 func (j *Job) Scale() *Scale {
 	return toPointFloat(j.wasm.GetScale())
 }
@@ -861,6 +865,14 @@ func (j *Job) SetOutputFileName(v string) {
 
 func (j *Job) Object() *ObjectState {
 	return toObjectState(j.wasm.GetObj())
+}
+
+func (j *Job) DPI() *PointFloat {
+	return toPointFloat(j.wasm.GetDpi())
+}
+
+func (j *Job) SetDPI(v *PointFloat) {
+	j.wasm.SetDpi(v.getWasm())
 }
 
 type ObjectState struct {
@@ -997,7 +1009,7 @@ func (c *Color) HSVA() [4]float64 {
 	return [4]float64{res[0], res[1], res[2], res[3]}
 }
 
-func (c *Color) SetHsva(v [4]float64) {
+func (c *Color) SetHSVA(v [4]float64) {
 	c.wasm.SetHsva(v[:])
 }
 
