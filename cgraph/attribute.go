@@ -1071,6 +1071,11 @@ func (g *Graph) SetInputScale(v float64) *Graph {
 	return g
 }
 
+// Label returns label attribute.
+func (g *Graph) Label() (string, error) {
+	return g.GetStr(string(labelAttr))
+}
+
 // SetLabel
 // Text label attached to objects.
 // If a node's shape is record, then the label can have a special format which describes the record layout.
@@ -1080,8 +1085,13 @@ func (g *Graph) SetInputScale(v float64) *Graph {
 // To get an HTML-like label, the label attribute value itself must be an HTML string.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:label
 func (g *Graph) SetLabel(v string) *Graph {
-	g.SafeSet(string(labelAttr), v, "")
+	g.SafeSet(string(labelAttr), v, "\\G")
 	return g
+}
+
+// Label returns label attribute.
+func (n *Node) Label() (string, error) {
+	return n.GetStr(string(labelAttr))
 }
 
 // SetLabel
@@ -1097,6 +1107,11 @@ func (n *Node) SetLabel(v string) *Node {
 	return n
 }
 
+// Label returns label attribute.
+func (e *Edge) Label() (string, error) {
+	return e.GetStr(string(labelAttr))
+}
+
 // SetLabel
 // Text label attached to objects.
 // If a node's shape is record, then the label can have a special format which describes the record layout.
@@ -1106,7 +1121,7 @@ func (n *Node) SetLabel(v string) *Node {
 // To get an HTML-like label, the label attribute value itself must be an HTML string.
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:label
 func (e *Edge) SetLabel(v string) *Edge {
-	e.SafeSet(string(labelAttr), v, "")
+	e.SafeSet(string(labelAttr), v, "\\E")
 	return e
 }
 

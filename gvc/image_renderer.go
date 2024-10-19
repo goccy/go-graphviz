@@ -3,24 +3,30 @@ package gvc
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"image/jpeg"
 	"io"
 	"os"
+	"strings"
+	"sync"
 
+	"github.com/flopp/go-findfont"
 	"github.com/fogleman/gg"
 	"github.com/golang/freetype/truetype"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/gofont/goregular"
+	"golang.org/x/image/font/opentype"
+	"golang.org/x/image/font/sfnt"
+)
+
+var (
+	fontMu    sync.RWMutex
+	fontCache = make(map[string]font.Face)
 )
 
 type ImageRenderer struct {
 	*DefaultRenderEngine
-	ctx      *gg.Context
-	fontFace func(float64) (font.Face, error)
-}
-
-func (r *ImageRenderer) SetFontFace(fn func(size float64) (font.Face, error)) {
-	r.fontFace = fn
+	ctx *gg.Context
 }
 
 func (r *ImageRenderer) toX(job *Job, x float64) float64 {
@@ -112,9 +118,14 @@ func (r *ImageRenderer) TextSpan(ctx context.Context, job *Job, p *PointFloat, s
 	rgba := job.Object().PenColor().RGBAUint()
 	r.ctx.SetRGB(float64(rgba[0])/255.0, float64(rgba[1])/255.0, float64(rgba[2])/255.0)
 
-	face, err := r.fontFace(r.toX(job, span.Font().Size()))
-	if err != nil {
-		return err
+	font := span.Font()
+	face, err := r.getFontFace(ctx, job, font)
+	if face == nil || err != nil {
+		defaultFont, err := r.defaultFontFace(ctx, job, font)
+		if err != nil {
+			return err
+		}
+		face = defaultFont
 	}
 
 	p.SetX(r.toX(job, p.X()))
@@ -130,6 +141,128 @@ func (r *ImageRenderer) TextSpan(ctx context.Context, job *Job, p *PointFloat, s
 	y := r.toY(job, p.Y()+span.YOffsetCenterLine()+span.YOffsetLayout())
 	r.ctx.DrawStringAnchored(span.Text(), p.X(), -y, 0, 0)
 	return nil
+}
+
+func (r *ImageRenderer) getFontFace(ctx context.Context, job *Job, font *TextFont) (font.Face, error) {
+	return r.lookupFontWithCache(ctx, job, font)
+}
+
+func (r *ImageRenderer) lookupFontWithCache(ctx context.Context, job *Job, font *TextFont) (font.Face, error) {
+	fontSize := font.Size() * job.Zoom()
+	fontName := font.Name()
+	cacheKey := fmt.Sprintf("%s:%f", fontName, fontSize)
+	fontMu.RLock()
+	if font, exists := fontCache[cacheKey]; exists {
+		fontMu.RUnlock()
+		return font, nil
+	}
+	fontMu.RUnlock()
+
+	fontLoaderMu.RLock()
+	defer fontLoaderMu.RUnlock()
+
+	if fontLoader != nil {
+		face, err := fontLoader(ctx, job, font)
+		if err != nil {
+			return nil, err
+		}
+		if face != nil {
+			return face, nil
+		}
+	}
+
+	ft, err := r.lookupFont(fontName, fontSize, job.DPI())
+	if err != nil {
+		return nil, err
+	}
+	fontMu.Lock()
+	fontCache[cacheKey] = ft
+	fontMu.Unlock()
+	return ft, nil
+}
+
+func (r *ImageRenderer) lookupFont(fontName string, fontSize float64, dpi *PointFloat) (font.Face, error) {
+	fontPath, err := findfont.Find(fontName)
+	if err == nil {
+		return r.lookupFontFromTTFFile(fontName, fontSize, dpi, fontPath)
+	}
+	parts := strings.Split(fontName, "-")
+	for i := len(parts) - 1; i > 0; i-- {
+		baseName := strings.Join(parts[:len(parts)-1], "-")
+		ttfFace, err := r.lookupFontFromTTFFile(fontName, fontSize, dpi, baseName+".ttf")
+		if err != nil {
+			return nil, err
+		}
+		if ttfFace != nil {
+			return ttfFace, nil
+		}
+		ttcFace, err := r.lookupFontFromTTCFile(fontName, fontSize, dpi, baseName+".ttc")
+		if err != nil {
+			return nil, err
+		}
+		if ttcFace != nil {
+			return ttcFace, nil
+		}
+	}
+	return nil, fmt.Errorf("failed to find font by %s", fontName)
+}
+
+func (r *ImageRenderer) lookupFontFromTTFFile(fontName string, fontSize float64, dpi *PointFloat, fontPath string) (font.Face, error) {
+	fontData, err := os.ReadFile(fontPath)
+	if err != nil {
+		return nil, nil
+	}
+	ft, err := truetype.Parse(fontData)
+	if err != nil {
+		return nil, err
+	}
+	return truetype.NewFace(ft, &truetype.Options{
+		Size: fontSize,
+	}), nil
+}
+
+func (r *ImageRenderer) lookupFontFromTTCFile(fontName string, fontSize float64, dpi *PointFloat, fontPath string) (font.Face, error) {
+	parts := strings.Split(fontName, "-")
+	fontPath, err := findfont.Find(fontPath)
+	if err != nil {
+		return nil, nil
+	}
+	fontData, err := os.ReadFile(fontPath)
+	if err != nil {
+		return nil, err
+	}
+	c, err := opentype.ParseCollection(fontData)
+	if err != nil {
+		return nil, err
+	}
+	for j := 0; j < c.NumFonts(); j++ {
+		ft, err := c.Font(j)
+		if err != nil {
+			return nil, err
+		}
+		var buf sfnt.Buffer
+		name, err := ft.Name(&buf, sfnt.NameIDFull)
+		if err != nil {
+			return nil, err
+		}
+		if strings.Join(parts, " ") == name {
+			return opentype.NewFace(ft, &opentype.FaceOptions{
+				Size: fontSize,
+				DPI:  dpi.X(),
+			})
+		}
+	}
+	return nil, fmt.Errorf("failed to find %s font from %s file", fontName, fontPath)
+}
+
+func (r *ImageRenderer) defaultFontFace(ctx context.Context, job *Job, font *TextFont) (font.Face, error) {
+	ft, err := truetype.Parse(goregular.TTF)
+	if err != nil {
+		return nil, err
+	}
+	return truetype.NewFace(ft, &truetype.Options{
+		Size: font.Size() * job.Zoom(),
+	}), nil
 }
 
 func (r *ImageRenderer) Ellipse(ctx context.Context, job *Job, p []*PointFloat, filled bool) error {
@@ -227,24 +360,15 @@ func (r *ImageRenderer) BezierCurve(ctx context.Context, job *Job, a []*PointFlo
 	return nil
 }
 
+type FontLoader func(ctx context.Context, job *Job, font *TextFont) (font.Face, error)
+
 var (
-	fontFaceFn = func(size float64) (font.Face, error) {
-		ft, err := truetype.Parse(goregular.TTF)
-		if err != nil {
-			return nil, err
-		}
-		opt := &truetype.Options{
-			Size:              size,
-			DPI:               0,
-			Hinting:           0,
-			GlyphCacheEntries: 0,
-			SubPixelsX:        0,
-			SubPixelsY:        0,
-		}
-		return truetype.NewFace(ft, opt), nil
-	}
+	fontLoaderMu sync.RWMutex
+	fontLoader   FontLoader
 )
 
-func SetFontFace(fn func(size float64) (font.Face, error)) {
-	fontFaceFn = fn
+func SetFontLoader(loader FontLoader) {
+	fontLoaderMu.Lock()
+	defer fontLoaderMu.Unlock()
+	fontLoader = loader
 }
