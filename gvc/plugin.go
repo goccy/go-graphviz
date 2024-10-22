@@ -27,10 +27,15 @@ func DefaultPlugins(ctx context.Context) ([]Plugin, error) {
 	if err != nil {
 		return nil, err
 	}
+	pngLoadImagePlugin, err := PNGLoadImagePlugin(ctx, pngRenderPlugin.RenderEngine())
+	if err != nil {
+		return nil, err
+	}
 	return []Plugin{
 		pngRenderPlugin,
 		pngDevicePlugin,
 		jpgRenderPlugin,
 		jpgDevicePlugin,
+		pngLoadImagePlugin,
 	}, nil
 }

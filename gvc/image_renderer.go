@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"image"
 	"image/jpeg"
 	"io"
 	"os"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/flopp/go-findfont"
 	"github.com/fogleman/gg"
+	"github.com/goccy/go-graphviz/internal/wasm"
 	"github.com/golang/freetype/truetype"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/gofont/goregular"
@@ -357,6 +359,25 @@ func (r *ImageRenderer) BezierCurve(ctx context.Context, job *Job, a []*PointFlo
 	} else {
 		r.ctx.Stroke()
 	}
+	return nil
+}
+
+func (r *ImageRenderer) LoadImage(ctx context.Context, job *Job, shape *UserShape, bf *BoxFloat, filled bool) error {
+	r.ctx.Push()
+	defer r.ctx.Pop()
+
+	fs := wasm.FileSystem()
+	f, err := fs.Open(shape.Name())
+	if err != nil {
+		return err
+	}
+	var buf bytes.Buffer
+	io.Copy(&buf, f)
+	img, _, err := image.Decode(&buf)
+	if err != nil {
+		return err
+	}
+	r.ctx.DrawImageAnchored(img, int(job.Scale().X()*bf.LL().X()), -int(job.Scale().Y()*bf.LL().Y()), 0, 1)
 	return nil
 }
 

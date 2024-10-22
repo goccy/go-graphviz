@@ -4,9 +4,11 @@ import (
 	"context"
 	"image"
 	"io"
+	"io/fs"
 
 	"github.com/goccy/go-graphviz/cgraph"
 	"github.com/goccy/go-graphviz/gvc"
+	"github.com/goccy/go-graphviz/internal/wasm"
 )
 
 type Graphviz struct {
@@ -132,4 +134,8 @@ func (g *Graphviz) Graph(option ...GraphOption) (*Graph, error) {
 		return nil, err
 	}
 	return graph, nil
+}
+
+func SetFileSystem(fs fs.FS) {
+	wasm.SetWasmFileSystem(fs)
 }

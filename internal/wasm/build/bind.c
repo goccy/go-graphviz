@@ -2473,7 +2473,7 @@ void wasm_bridge_set_Context_input_filenames(GVC_t *recv, GoSlice * v) {
 }
 
 void wasm_bridge_get_Context_apis(GVC_t *recv, GoSlice ** ret) {GoSlice *v = (GoSlice *)malloc(sizeof(GoSlice));
-  int v_length = 4;
+  int v_length = 5;
   v->len = v_length;
   void **v_data = (void **)malloc(8 * v_length);
   v->data = v_data;
@@ -2493,7 +2493,7 @@ void wasm_bridge_set_Context_apis(GVC_t *recv, GoSlice * v) {
 }
 
 void wasm_bridge_get_Context_api(GVC_t *recv, GoSlice ** ret) {GoSlice *v = (GoSlice *)malloc(sizeof(GoSlice));
-  int v_length = 4;
+  int v_length = 5;
   v->len = v_length;
   void **v_data = (void **)malloc(8 * v_length);
   v->data = v_data;

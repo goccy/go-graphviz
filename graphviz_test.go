@@ -3,7 +3,10 @@ package graphviz_test
 import (
 	"bytes"
 	"context"
+	"embed"
+	"io/fs"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/goccy/go-graphviz"
@@ -157,6 +160,58 @@ func TestParseFile(t *testing.T) {
 				t.Fatalf("failed to parse: %v", err)
 			}
 		})
+	}
+}
+
+//go:embed testdata/logo.png
+var logoFS embed.FS
+
+type imageFS struct{}
+
+func (fs *imageFS) Open(name string) (fs.File, error) {
+	return logoFS.Open(filepath.Join("testdata", name))
+}
+
+func TestImageRender(t *testing.T) {
+	ctx := context.Background()
+	graphviz.SetFileSystem(new(imageFS))
+
+	g, err := graphviz.New(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	graph, err := g.Graph()
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	defer func() {
+		graph.Close()
+		g.Close()
+	}()
+	n, err := graph.CreateNodeByName("n")
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	n.SetLabel("")
+
+	// specify dummy image path.
+	// Normally, a path to `testdata` would be required before `logo.png`,
+	// but we confirm that the image can be loaded by appending the path to `testdata` within the `imageFS` specified by graphviz.SetFileSystem function.
+	// This test is to verify that images can be loaded relative to the specified FileSystem.
+	n.SetImage("logo.png")
+	m, err := graph.CreateNodeByName("m")
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	if _, err := graph.CreateEdgeByName("e", n, m); err != nil {
+		t.Fatalf("%+v", err)
+	}
+	var buf bytes.Buffer
+	if err := g.Render(ctx, graph, "png", &buf); err != nil {
+		t.Fatal(err)
+	}
+	if len(buf.Bytes()) == 0 {
+		t.Fatal("failed to render image")
 	}
 }
 

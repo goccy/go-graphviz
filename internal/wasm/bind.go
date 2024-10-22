@@ -6,6 +6,7 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -24,8 +25,20 @@ var wasmFile []byte
 
 type WasmModule struct {
 	mod             api.Module
+	fs              *WasmFileSystem
 	lookupFuncMap   *LookupFuncMap
 	callbackFuncMap *CallbackFuncMap
+}
+
+type WasmFileSystem struct {
+	subFS fs.FS
+}
+
+func (fs *WasmFileSystem) Open(name string) (fs.File, error) {
+	if fs.subFS != nil {
+		return fs.subFS.Open(name)
+	}
+	return os.Open(name)
 }
 
 type LookupFuncMap struct {
@@ -2784,15 +2797,12 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	dir, err := os.MkdirTemp("", "graphviz")
-	if err != nil {
-		panic(err)
-	}
+	fs := &WasmFileSystem{}
 	m, err := r.InstantiateModule(
 		ctx,
 		compiled,
 		wazero.NewModuleConfig().
-			WithFSConfig(wazero.NewFSConfig().WithDirMount(dir, "/")).
+			WithFSConfig(wazero.NewFSConfig().WithFSMount(fs, "/")).
 			WithStdout(os.Stdout).
 			WithName("wasi"),
 	)
@@ -2801,6 +2811,7 @@ func init() {
 	}
 	mod = &WasmModule{
 		mod:           m,
+		fs:            fs,
 		lookupFuncMap: &LookupFuncMap{},
 		callbackFuncMap: &CallbackFuncMap{
 			IDAllocator_Open:                     make(map[uint64]func(context.Context, *Graph, *ClientDiscipline) (any, error)),

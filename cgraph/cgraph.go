@@ -298,7 +298,11 @@ func ParseBytes(bytes []byte) (*Graph, error) {
 	if graph == nil {
 		return nil, lastError()
 	}
-	return toGraph(graph), nil
+	g := toGraph(graph)
+	if err := setupNodeLabelIfEmpty(g); err != nil {
+		return nil, err
+	}
+	return g, nil
 }
 
 func ParseFile(path string) (*Graph, error) {
@@ -317,7 +321,48 @@ func Open(name string, desc *Desc, disc *Disc) (*Graph, error) {
 	if graph == nil {
 		return nil, lastError()
 	}
-	return toGraph(graph), nil
+	g := toGraph(graph)
+	if err := setupNodeLabelIfEmpty(g); err != nil {
+		return nil, err
+	}
+	return g, nil
+}
+
+func setupNodeLabelIfEmpty(g *Graph) error {
+	n, err := g.FirstNode()
+	if err != nil {
+		return err
+	}
+	if n == nil {
+		return nil
+	}
+	if err := setLabelIfEmpty(n); err != nil {
+		return err
+	}
+	for {
+		n, err = g.NextNode(n)
+		if err != nil {
+			return err
+		}
+		if n == nil {
+			break
+		}
+		if err := setLabelIfEmpty(n); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func setLabelIfEmpty(n *Node) error {
+	label, err := n.Label()
+	if err != nil {
+		return err
+	}
+	if label == "" {
+		n.SetLabel("\\N")
+	}
+	return nil
 }
 
 type ObjectTag int

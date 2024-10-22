@@ -2,6 +2,8 @@ package wasm
 
 import (
 	"context"
+	"io/fs"
+	"sync"
 )
 
 func DefaultSymList(ctx context.Context) ([]*SymList, error) {
@@ -68,35 +70,18 @@ func SymListZero(ctx context.Context) (*SymList, error) {
 	return newSymList(ptr), nil
 }
 
-type RenderEngineInterface interface {
-	BeginJob(context.Context, *Job) error
-	EndJob(context.Context, *Job) error
-	BeginGraph(context.Context, *Job) error
-	EndGraph(context.Context, *Job) error
-	BeginLayer(context.Context, *Job, string, int, int) error
-	EndLayer(context.Context, *Job) error
-	BeginPage(context.Context, *Job) error
-	EndPage(context.Context, *Job) error
-	BeginCluster(context.Context, *Job) error
-	EndCluster(context.Context, *Job) error
-	BeginNodes(context.Context, *Job) error
-	EndNodes(context.Context, *Job) error
-	BeginEdges(context.Context, *Job) error
-	EndEdges(context.Context, *Job) error
-	BeginNode(context.Context, *Job) error
-	EndNode(context.Context, *Job) error
-	BeginEdge(context.Context, *Job) error
-	EndEdge(context.Context, *Job) error
-	BeginAnchor(context.Context, *Job, string, string, string, string) error
-	EndAnchor(context.Context, *Job) error
-	BeginLabel(context.Context, *Job, LabelType) error
-	EndLabel(context.Context, *Job) error
-	Textspan(context.Context, *Job, *PointFloat, *Textspan) error
-	ResolveColor(context.Context, *Job, *Color) error
-	Ellipse(context.Context, *Job, []*PointFloat, int) error
-	Polygon(context.Context, *Job, []*PointFloat, int) error
-	Beziercurve(context.Context, *Job, []*PointFloat, int, int) error
-	Polyline(context.Context, *Job, []*PointFloat) error
-	Comment(context.Context, *Job, string) error
-	LibraryShape(context.Context, *Job, string, *PointFloat, int, int) error
+var (
+	fsMu sync.Mutex
+)
+
+func SetWasmFileSystem(fs fs.FS) {
+	fsMu.Lock()
+	mod.fs.subFS = fs
+	fsMu.Unlock()
+}
+
+func FileSystem() fs.FS {
+	fsMu.Lock()
+	defer fsMu.Unlock()
+	return mod.fs
 }

@@ -50,9 +50,6 @@ func (c *Context) Close() error {
 }
 
 func (c *Context) Layout(ctx context.Context, g *cgraph.Graph, engine string) error {
-	if err := c.setupNodeLabelIfEmpty(g); err != nil {
-		return err
-	}
 	res, err := c.gvc.Layout(ctx, toGraphWasm(g), engine)
 	if err != nil {
 		return err
@@ -114,40 +111,6 @@ func (c *Context) FreeClonedContext(ctx context.Context) error {
 	return c.gvc.FreeClonedContext(ctx)
 }
 
-func (c *Context) setupNodeLabelIfEmpty(g *cgraph.Graph) error {
-	n, err := g.FirstNode()
-	if err != nil {
-		return err
-	}
-	if err := c.setLabelIfEmpty(n); err != nil {
-		return err
-	}
-	for {
-		n, err = g.NextNode(n)
-		if err != nil {
-			return err
-		}
-		if n == nil {
-			break
-		}
-		if err := c.setLabelIfEmpty(n); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (c *Context) setLabelIfEmpty(n *cgraph.Node) error {
-	label, err := n.Label()
-	if err != nil {
-		return err
-	}
-	if label == "" {
-		n.SetLabel("\\N")
-	}
-	return nil
-}
-
 func newPlugins(ctx context.Context, plugins ...Plugin) ([]*wasm.SymList, error) {
 	defaults, err := wasm.DefaultSymList(ctx)
 	if err != nil {
@@ -190,7 +153,7 @@ func newPlugins(ctx context.Context, plugins ...Plugin) ([]*wasm.SymList, error)
 	if err != nil {
 		return nil, err
 	}
-	return append(defaults, sym, symTerm), nil
+	return append(append([]*wasm.SymList{sym}, defaults...), symTerm), nil
 }
 
 func toError(result int) error {
