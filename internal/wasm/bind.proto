@@ -1639,12 +1639,12 @@ message Context {
   repeated PluginAvailable apis = 5 [(nori.field).type = {
     pointer: 1
     array: true
-    array_num: 4
+    array_num: 5
   }];
   repeated PluginAvailable api = 6 [(nori.field).type = {
     pointer: 1
     array: true
-    array_num: 4
+    array_num: 5
   }];
 }
 

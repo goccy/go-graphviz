@@ -298,7 +298,11 @@ func ParseBytes(bytes []byte) (*Graph, error) {
 	if graph == nil {
 		return nil, lastError()
 	}
-	return toGraph(graph), nil
+	g := toGraph(graph)
+	if err := setupNodeLabelIfEmpty(g); err != nil {
+		return nil, err
+	}
+	return g, nil
 }
 
 func ParseFile(path string) (*Graph, error) {
@@ -317,7 +321,44 @@ func Open(name string, desc *Desc, disc *Disc) (*Graph, error) {
 	if graph == nil {
 		return nil, lastError()
 	}
-	return toGraph(graph), nil
+	g := toGraph(graph)
+	if err := setupNodeLabelIfEmpty(g); err != nil {
+		return nil, err
+	}
+	return g, nil
+}
+
+func setupNodeLabelIfEmpty(g *Graph) error {
+	n, err := g.FirstNode()
+	if err != nil {
+		return err
+	}
+	if n == nil {
+		return nil
+	}
+	if err := setLabelIfEmpty(n); err != nil {
+		return err
+	}
+	for {
+		n, err = g.NextNode(n)
+		if err != nil {
+			return err
+		}
+		if n == nil {
+			break
+		}
+		if err := setLabelIfEmpty(n); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func setLabelIfEmpty(n *Node) error {
+	if n.Label() == "" {
+		n.SetLabel("\\N")
+	}
+	return nil
 }
 
 type ObjectTag int
@@ -777,8 +818,9 @@ func (g *Graph) DeleteRecord(name string) error {
 	return toError(res)
 }
 
-func (g *Graph) GetStr(name string) (string, error) {
-	return wasm.GetStr(context.Background(), g.wasm, name)
+func (g *Graph) GetStr(name string) string {
+	v, _ := wasm.GetStr(context.Background(), g.wasm, name)
+	return v
 }
 
 func (g *Graph) SymbolName(sym *Symbol) (string, error) {
@@ -1236,8 +1278,9 @@ func (n *Node) DeleteRecord(name string) error {
 	return toError(res)
 }
 
-func (n *Node) GetStr(name string) (string, error) {
-	return wasm.GetStr(context.Background(), n.wasm, name)
+func (n *Node) GetStr(name string) string {
+	v, _ := wasm.GetStr(context.Background(), n.wasm, name)
+	return v
 }
 
 func (n *Node) SymbolName(sym *Symbol) (string, error) {
@@ -1319,8 +1362,9 @@ func (e *Edge) DeleteRecord(name string) error {
 	return toError(res)
 }
 
-func (e *Edge) GetStr(name string) (string, error) {
-	return wasm.GetStr(context.Background(), e.wasm, name)
+func (e *Edge) GetStr(name string) string {
+	v, _ := wasm.GetStr(context.Background(), e.wasm, name)
+	return v
 }
 
 func (e *Edge) SymbolName(sym *Symbol) (string, error) {

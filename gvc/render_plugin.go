@@ -3,15 +3,22 @@ package gvc
 import (
 	"context"
 
+	"github.com/goccy/go-graphviz/cdt"
+	"github.com/goccy/go-graphviz/cgraph"
 	"github.com/goccy/go-graphviz/internal/wasm"
 )
 
 type RenderPlugin struct {
 	plugin *wasm.PluginAPI
+	engine RenderEngine
 }
 
 func (p *RenderPlugin) raw() *wasm.PluginAPI {
 	return p.plugin
+}
+
+func (p *RenderPlugin) RenderEngine() RenderEngine {
+	return p.engine
 }
 
 type RenderEngine interface {
@@ -45,6 +52,7 @@ type RenderEngine interface {
 	Polyline(ctx context.Context, job *Job, points []*PointFloat) error
 	Comment(ctx context.Context, job *Job, comment string) error
 	LibraryShape(ctx context.Context, job *Job, s string, points []*PointFloat, filled bool) error
+	LoadImage(ctx context.Context, job *Job, shape *UserShape, box *BoxFloat, filled bool) error
 }
 
 type DefaultRenderEngine struct {
@@ -167,6 +175,10 @@ func (e *DefaultRenderEngine) Comment(_ context.Context, _ *Job, _ string) error
 }
 
 func (e *DefaultRenderEngine) LibraryShape(_ context.Context, _ *Job, _ string, _ []*PointFloat, _ bool) error {
+	return nil
+}
+
+func (e *DefaultRenderEngine) LoadImage(_ context.Context, _ *Job, _ *UserShape, _ *BoxFloat, _ bool) error {
 	return nil
 }
 
@@ -320,6 +332,7 @@ func newRenderPlugin(ctx context.Context, cfg *renderConfig) (*RenderPlugin, err
 	}
 	return &RenderPlugin{
 		plugin: plg,
+		engine: cfg.RenderEngine,
 	}, nil
 }
 
@@ -525,6 +538,40 @@ func (j *Job) getWasm() *wasm.Job {
 		return nil
 	}
 	return j.wasm
+}
+
+type Point struct {
+	wasm *wasm.Point
+}
+
+func toPoint(v *wasm.Point) *Point {
+	if v == nil {
+		return nil
+	}
+	return &Point{wasm: v}
+}
+
+func (p *Point) getWasm() *wasm.Point {
+	if p == nil {
+		return nil
+	}
+	return p.wasm
+}
+
+func (p *Point) X() int {
+	return int(p.wasm.GetX())
+}
+
+func (p *Point) SetX(x int) {
+	p.wasm.SetX(int64(x))
+}
+
+func (p *Point) Y() int {
+	return int(p.wasm.GetY())
+}
+
+func (p *Point) SetY(y int) {
+	p.wasm.SetY(int64(y))
 }
 
 type PointFloat struct {
@@ -959,6 +1006,35 @@ func (s *ObjectState) RawStyle() []string {
 	return s.wasm.GetRawstyle()
 }
 
+func (s *ObjectState) Type() ObjectType {
+	return ObjectType(s.wasm.GetType())
+}
+
+func (s *ObjectState) SetType(v ObjectType) {
+	s.wasm.SetType(wasm.ObjectType(v))
+}
+
+func (s *ObjectState) Graph() *cgraph.Graph {
+	return toGraph(s.wasm.GetG())
+}
+
+func (s *ObjectState) Node() *cgraph.Node {
+	return toNode(s.wasm.GetN())
+}
+
+func (s *ObjectState) Edge() *cgraph.Edge {
+	return toEdge(s.wasm.GetE())
+}
+
+type ObjectType int
+
+var (
+	RootGraphObjectType ObjectType = ObjectType(wasm.ROOTGRAPH_OBJTYPE)
+	ClusterObjectType   ObjectType = ObjectType(wasm.CLUSTER_OBJTYPE)
+	NodeObjectType      ObjectType = ObjectType(wasm.NODE_OBJTYPE)
+	EdgeObjectType      ObjectType = ObjectType(wasm.EDGE_OBJTYPE)
+)
+
 type Color struct {
 	wasm *wasm.Color
 }
@@ -1035,4 +1111,221 @@ func (c *Color) Type() ColorType {
 
 func (c *Color) SetType(v ColorType) {
 	c.wasm.SetType(wasm.ColorType(v))
+}
+
+type UserShape struct {
+	wasm *wasm.UserShape
+}
+
+func toUserShape(v *wasm.UserShape) *UserShape {
+	if v == nil {
+		return nil
+	}
+	return &UserShape{wasm: v}
+}
+
+func (s *UserShape) getWasm() *wasm.UserShape {
+	if s == nil {
+		return nil
+	}
+	return s.wasm
+}
+
+func (s *UserShape) Link() *cdt.Link {
+	return toDictLink(s.wasm.GetLink())
+}
+
+func (s *UserShape) SetLink(v *cdt.Link) {
+	s.wasm.SetLink(toDictLinkWasm(v))
+}
+
+func (s *UserShape) Name() string {
+	return s.wasm.GetName()
+}
+
+func (s *UserShape) SetName(v string) {
+	s.wasm.SetName(v)
+}
+
+func (s *UserShape) MacroID() int {
+	return int(s.wasm.GetMacroId())
+}
+
+func (s *UserShape) SetMacroID(v int) {
+	s.wasm.SetMacroId(int64(v))
+}
+
+func (s *UserShape) MustInline() bool {
+	return s.wasm.GetMustInline()
+}
+
+func (s *UserShape) SetMustInline(v bool) {
+	s.wasm.SetMustInline(v)
+}
+
+func (s *UserShape) NoCache() bool {
+	return s.wasm.GetNocache()
+}
+
+func (s *UserShape) SetNoCache(v bool) {
+	s.wasm.SetNocache(v)
+}
+
+func (s *UserShape) ImageType() ImageType {
+	return ImageType(s.wasm.GetType())
+}
+
+func (s *UserShape) SetImageType(v ImageType) {
+	s.wasm.SetType(wasm.ImageType(v))
+}
+
+func (s *UserShape) StringType() string {
+	return s.wasm.GetStringtype()
+}
+
+func (s *UserShape) SetStringType(v string) {
+	s.wasm.SetStringtype(v)
+}
+
+func (s *UserShape) X() int {
+	return int(s.wasm.GetX())
+}
+
+func (s *UserShape) SetX(v int) {
+	s.wasm.SetX(int64(v))
+}
+
+func (s *UserShape) Y() int {
+	return int(s.wasm.GetY())
+}
+
+func (s *UserShape) SetY(v int) {
+	s.wasm.SetY(int64(v))
+}
+
+func (s *UserShape) Width() int {
+	return int(s.wasm.GetW())
+}
+
+func (s *UserShape) SetWidth(v int) {
+	s.wasm.SetW(int64(v))
+}
+
+func (s *UserShape) Height() int {
+	return int(s.wasm.GetH())
+}
+
+func (s *UserShape) SetHeight(v int) {
+	s.wasm.SetH(int64(v))
+}
+
+func (s *UserShape) DPI() int {
+	return int(s.wasm.GetDpi())
+}
+
+func (s *UserShape) SetDPI(v int) {
+	s.wasm.SetDpi(int64(v))
+}
+
+func (s *UserShape) Data() []byte {
+	return s.wasm.GetData().([]byte)
+}
+
+func (s *UserShape) SetData(v []byte) {
+	s.wasm.SetData(v)
+}
+
+func (s *UserShape) DataSize() uint {
+	return uint(s.wasm.GetDatasize())
+}
+
+func (s *UserShape) SetDataSize(v uint) {
+	s.wasm.SetDatasize(uint64(v))
+}
+
+type ImageType int
+
+var (
+	ImageTypeNull ImageType = ImageType(wasm.IMAGE_TYPE_NULL)
+	ImageTypeBMP  ImageType = ImageType(wasm.IMAGE_TYPE_BMP)
+	ImageTypeGIF  ImageType = ImageType(wasm.IMAGE_TYPE_GIF)
+	ImageTypePNG  ImageType = ImageType(wasm.IMAGE_TYPE_PNG)
+	ImageTypeJPEG ImageType = ImageType(wasm.IMAGE_TYPE_JPEG)
+	ImageTypePDF  ImageType = ImageType(wasm.IMAGE_TYPE_PDF)
+	ImageTypePS   ImageType = ImageType(wasm.IMAGE_TYPE_PS)
+	ImageTypeEPS  ImageType = ImageType(wasm.IMAGE_TYPE_EPS)
+	ImageTypeSVG  ImageType = ImageType(wasm.IMAGE_TYPE_SVG)
+	ImageTypeXML  ImageType = ImageType(wasm.IMAGE_TYPE_XML)
+	ImageTypeRIFF ImageType = ImageType(wasm.IMAGE_TYPE_RIFF)
+	ImageTypeWEBP ImageType = ImageType(wasm.IMAGE_TYPE_WEBP)
+	ImageTypeICO  ImageType = ImageType(wasm.IMAGE_TYPE_ICO)
+	ImageTypeTIFF ImageType = ImageType(wasm.IMAGE_TYPE_TIFF)
+)
+
+type Box struct {
+	wasm *wasm.Box
+}
+
+func toBox(v *wasm.Box) *Box {
+	if v == nil {
+		return nil
+	}
+	return &Box{wasm: v}
+}
+
+func (b *Box) getWasm() *wasm.Box {
+	if b == nil {
+		return nil
+	}
+	return b.wasm
+}
+
+func (b *Box) LL() *Point {
+	return toPoint(b.wasm.GetLl())
+}
+
+func (b *Box) SetLL(v *Point) {
+	b.wasm.SetLl(v.getWasm())
+}
+
+func (b *Box) UR() *Point {
+	return toPoint(b.wasm.GetUr())
+}
+
+func (b *Box) SetUR(v *Point) {
+	b.wasm.SetUr(v.getWasm())
+}
+
+type BoxFloat struct {
+	wasm *wasm.BoxFloat
+}
+
+func toBoxFloat(v *wasm.BoxFloat) *BoxFloat {
+	if v == nil {
+		return nil
+	}
+	return &BoxFloat{wasm: v}
+}
+
+func (f *BoxFloat) getWasm() *wasm.BoxFloat {
+	if f == nil {
+		return nil
+	}
+	return f.wasm
+}
+
+func (f *BoxFloat) LL() *PointFloat {
+	return toPointFloat(f.wasm.GetLl())
+}
+
+func (f *BoxFloat) SetLL(v *PointFloat) {
+	f.wasm.SetLl(v.getWasm())
+}
+
+func (f *BoxFloat) UR() *PointFloat {
+	return toPointFloat(f.wasm.GetUr())
+}
+
+func (f *BoxFloat) SetUR(v *PointFloat) {
+	f.wasm.SetUr(v.getWasm())
 }

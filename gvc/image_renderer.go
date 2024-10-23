@@ -4,19 +4,24 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"image"
 	"image/jpeg"
 	"io"
 	"os"
 	"strings"
 	"sync"
 
+	"github.com/disintegration/imaging"
 	"github.com/flopp/go-findfont"
 	"github.com/fogleman/gg"
+	"github.com/goccy/go-graphviz/internal/wasm"
 	"github.com/golang/freetype/truetype"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/gofont/goregular"
 	"golang.org/x/image/font/opentype"
 	"golang.org/x/image/font/sfnt"
+
+	"github.com/goccy/go-graphviz/cgraph"
 )
 
 var (
@@ -357,6 +362,51 @@ func (r *ImageRenderer) BezierCurve(ctx context.Context, job *Job, a []*PointFlo
 	} else {
 		r.ctx.Stroke()
 	}
+	return nil
+}
+
+const (
+	defaultGAP  = 4
+	defaultXPAD = 4 * defaultGAP
+	defaultYPAD = 2 * defaultGAP
+)
+
+func (r *ImageRenderer) LoadImage(ctx context.Context, job *Job, shape *UserShape, bf *BoxFloat, filled bool) error {
+	r.ctx.Push()
+	defer r.ctx.Pop()
+
+	fs := wasm.FileSystem()
+	f, err := fs.Open(shape.Name())
+	if err != nil {
+		return err
+	}
+	var buf bytes.Buffer
+	io.Copy(&buf, f)
+	img, _, err := image.Decode(&buf)
+	if err != nil {
+		return err
+	}
+	topLeftX := bf.LL().X()
+	topLeftY := bf.LL().Y()
+	node := job.Object().Node()
+	if node != nil {
+		if node.FixedSize() || node.ImageScale() != cgraph.ImageScaleDefault {
+			bottomRightX := bf.UR().X()
+			bottomRightY := bf.UR().Y()
+			width := bottomRightX - topLeftX
+			height := bottomRightY - topLeftY
+			img = imaging.Resize(img, int(width), int(height), imaging.Lanczos)
+			xPAD := defaultXPAD / 2.0
+			yPAD := defaultYPAD / 2.0
+			posX := (topLeftX + xPAD) * job.Scale().X()
+			posY := (topLeftY + yPAD) * job.Scale().Y()
+			r.ctx.DrawImageAnchored(img, int(posX), -int(posY), 0, 1)
+			return nil
+		}
+	}
+	posX := topLeftX * job.Scale().X()
+	posY := topLeftY * job.Scale().Y()
+	r.ctx.DrawImageAnchored(img, int(posX), -int(posY), 0, 1)
 	return nil
 }
 
