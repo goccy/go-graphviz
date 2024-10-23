@@ -355,11 +355,7 @@ func setupNodeLabelIfEmpty(g *Graph) error {
 }
 
 func setLabelIfEmpty(n *Node) error {
-	label, err := n.Label()
-	if err != nil {
-		return err
-	}
-	if label == "" {
+	if n.Label() == "" {
 		n.SetLabel("\\N")
 	}
 	return nil
@@ -822,8 +818,9 @@ func (g *Graph) DeleteRecord(name string) error {
 	return toError(res)
 }
 
-func (g *Graph) GetStr(name string) (string, error) {
-	return wasm.GetStr(context.Background(), g.wasm, name)
+func (g *Graph) GetStr(name string) string {
+	v, _ := wasm.GetStr(context.Background(), g.wasm, name)
+	return v
 }
 
 func (g *Graph) SymbolName(sym *Symbol) (string, error) {
@@ -1281,8 +1278,9 @@ func (n *Node) DeleteRecord(name string) error {
 	return toError(res)
 }
 
-func (n *Node) GetStr(name string) (string, error) {
-	return wasm.GetStr(context.Background(), n.wasm, name)
+func (n *Node) GetStr(name string) string {
+	v, _ := wasm.GetStr(context.Background(), n.wasm, name)
+	return v
 }
 
 func (n *Node) SymbolName(sym *Symbol) (string, error) {
@@ -1364,8 +1362,9 @@ func (e *Edge) DeleteRecord(name string) error {
 	return toError(res)
 }
 
-func (e *Edge) GetStr(name string) (string, error) {
-	return wasm.GetStr(context.Background(), e.wasm, name)
+func (e *Edge) GetStr(name string) string {
+	v, _ := wasm.GetStr(context.Background(), e.wasm, name)
+	return v
 }
 
 func (e *Edge) SymbolName(sym *Symbol) (string, error) {

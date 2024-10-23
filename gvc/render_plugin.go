@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/goccy/go-graphviz/cdt"
+	"github.com/goccy/go-graphviz/cgraph"
 	"github.com/goccy/go-graphviz/internal/wasm"
 )
 
@@ -1004,6 +1005,35 @@ func (s *ObjectState) StopColor() *Color {
 func (s *ObjectState) RawStyle() []string {
 	return s.wasm.GetRawstyle()
 }
+
+func (s *ObjectState) Type() ObjectType {
+	return ObjectType(s.wasm.GetType())
+}
+
+func (s *ObjectState) SetType(v ObjectType) {
+	s.wasm.SetType(wasm.ObjectType(v))
+}
+
+func (s *ObjectState) Graph() *cgraph.Graph {
+	return toGraph(s.wasm.GetG())
+}
+
+func (s *ObjectState) Node() *cgraph.Node {
+	return toNode(s.wasm.GetN())
+}
+
+func (s *ObjectState) Edge() *cgraph.Edge {
+	return toEdge(s.wasm.GetE())
+}
+
+type ObjectType int
+
+var (
+	RootGraphObjectType ObjectType = ObjectType(wasm.ROOTGRAPH_OBJTYPE)
+	ClusterObjectType   ObjectType = ObjectType(wasm.CLUSTER_OBJTYPE)
+	NodeObjectType      ObjectType = ObjectType(wasm.NODE_OBJTYPE)
+	EdgeObjectType      ObjectType = ObjectType(wasm.EDGE_OBJTYPE)
+)
 
 type Color struct {
 	wasm *wasm.Color
