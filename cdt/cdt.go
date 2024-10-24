@@ -18,6 +18,10 @@ func toDict(v *wasm.Dict) *Dict {
 	return &Dict{wasm: v}
 }
 
+func toDictWasm(v *Dict) *wasm.Dict {
+	return v.wasm
+}
+
 func (d *Dict) getWasm() *wasm.Dict {
 	return d.wasm
 }
