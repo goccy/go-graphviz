@@ -20,13 +20,6 @@ func toGraph(v *wasm.Graph) *Graph {
 	return &Graph{wasm: v}
 }
 
-func toGraphWasm(v *Graph) *wasm.Graph {
-	if v == nil {
-		return nil
-	}
-	return v.wasm
-}
-
 func (g *Graph) getWasm() *wasm.Graph {
 	if g == nil {
 		return nil

@@ -52,10 +52,6 @@ func (l *Link) getWasm() *wasm.DictLink {
 	return l.wasm
 }
 
-func toDictLinkWasm(v *Link) *wasm.DictLink {
-	return v.wasm
-}
-
 type Method struct {
 	wasm *wasm.DictMethod
 }
