@@ -10,3 +10,10 @@ func toLinkWasm(v *Link) *wasm.DictLink {
 	}
 	return v.wasm
 }
+
+func toDictWasm(v *Dict) *wasm.Dict {
+	if v == nil {
+		return nil
+	}
+	return v.wasm
+}
