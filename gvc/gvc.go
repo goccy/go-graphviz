@@ -9,6 +9,7 @@ import (
 	_ "image/jpeg"
 	_ "image/png"
 	"io"
+	"os"
 
 	"github.com/goccy/go-graphviz/cgraph"
 	"github.com/goccy/go-graphviz/internal/wasm"
@@ -84,6 +85,13 @@ func (c *Context) RenderImage(ctx context.Context, g *cgraph.Graph, format strin
 }
 
 func (c *Context) RenderFilename(ctx context.Context, g *cgraph.Graph, format, filename string) error {
+	if _, err := os.Stat(filename); err != nil {
+		// file does not exist.
+		// Since gvc.RenderFilename fails if the file doesn't exist, we create it beforehand.
+		if _, err := os.Create(filename); err != nil {
+			return fmt.Errorf("failed to create file: %w", err)
+		}
+	}
 	res, err := c.gvc.RenderFilename(ctx, toGraphWasm(g), format, filename)
 	if err != nil {
 		return err
