@@ -2,10 +2,8 @@ module dot
 
 go 1.22.0
 
-replace github.com/goccy/go-graphviz => ../../
-
 require (
-	github.com/goccy/go-graphviz v0.0.0-00010101000000-000000000000
+	github.com/goccy/go-graphviz v0.2.4
 	github.com/jessevdk/go-flags v1.6.1
 	golang.org/x/term v0.25.0
 )
