@@ -15858,6 +15858,26 @@ func (v *Graph) Edge(ctx context.Context, _arg0 *Node, _arg1 *Node, _arg2 string
 	return ret, nil
 }
 
+func (v *Edge) Head(ctx context.Context) (*Node, error) {
+	var zero *Node
+	p, err := mod.callWithRet(ctx, "Edge_head", v.getPtr())
+	if err != nil {
+		return zero, err
+	}
+	ret := newNode(p)
+	return ret, nil
+}
+
+func (v *Edge) Tail(ctx context.Context) (*Node, error) {
+	var zero *Node
+	p, err := mod.callWithRet(ctx, "Edge_tail", v.getPtr())
+	if err != nil {
+		return zero, err
+	}
+	ret := newNode(p)
+	return ret, nil
+}
+
 func (v *Graph) IdEdge(ctx context.Context, _arg0 *Node, _arg1 *Node, _arg2 uint64, _arg3 int) (*Edge, error) {
 	var zero *Edge
 	arg0, err := mod.toObjectWasmValue(ctx, _arg0)

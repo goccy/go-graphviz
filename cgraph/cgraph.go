@@ -528,6 +528,22 @@ func (e *Edge) SetNode(v *Node) {
 	e.wasm.SetNode(v.getWasm())
 }
 
+func (e *Edge) Head() (*Node, error) {
+	n, err := e.wasm.Head(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return toNode(n), nil
+}
+
+func (e *Edge) Tail() (*Node, error) {
+	n, err := e.wasm.Tail(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return toNode(n), nil
+}
+
 func (c *CommonFields) Disc() *Disc {
 	return toDisc(c.wasm.GetDisc())
 }
