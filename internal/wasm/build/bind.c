@@ -5690,6 +5690,26 @@ void wasm_bridge_Graph_edge(void * _arg0, void * _arg1, void * _arg2, void * _ar
   *_arg5 = v;
 }
 
+void wasm_bridge_Edge_head(void * _arg0, void ** _arg1) {
+  Agedge_t * arg0;
+  arg0 = (Agedge_t *)_arg0;
+  Agnode_t * ret = aghead(
+    arg0
+  );
+  Agnode_t * v = (Agnode_t *)ret;
+  *_arg1 = v;
+}
+
+void wasm_bridge_Edge_tail(void * _arg0, void ** _arg1) {
+  Agedge_t * arg0;
+  arg0 = (Agedge_t *)_arg0;
+  Agnode_t * ret = agtail(
+    arg0
+  );
+  Agnode_t * v = (Agnode_t *)ret;
+  *_arg1 = v;
+}
+
 void wasm_bridge_Graph_idEdge(void * _arg0, void * _arg1, void * _arg2, unsigned long long int _arg3, int _arg4, void ** _arg5) {
   Agraph_t * arg0;
   arg0 = (Agraph_t *)_arg0;

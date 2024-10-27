@@ -691,6 +691,26 @@ option (nori.file).export = {
     }
   }
   method {
+    recv: "Edge"
+    name: "head"
+    alias: "aghead"
+    return {
+      kind: STRUCT
+      ref: "Node"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Edge"
+    name: "tail"
+    alias: "agtail"
+    return {
+      kind: STRUCT
+      ref: "Node"
+      pointer: 1
+    }
+  }
+  method {
     recv: "Graph"
     name: "idEdge"
     alias: "agidedge"

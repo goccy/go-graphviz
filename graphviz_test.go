@@ -288,3 +288,65 @@ func TestNodeDegree(t *testing.T) {
 		}
 	}
 }
+
+func TestEdgeSourceAndTarget(t *testing.T) {
+	ctx := context.Background()
+	graph, err := graphviz.New(ctx)
+	if err != nil {
+		t.Fatalf("Error: %+v", err)
+	}
+
+	g, err := graph.Graph()
+	if err != nil {
+		t.Fatalf("Error: %+v", err)
+	}
+
+	nodeA, err := g.CreateNodeByName("a")
+	if err != nil {
+		t.Fatalf("Error: %+v", err)
+	}
+
+	nodeB, err := g.CreateNodeByName("b")
+	if err != nil {
+		t.Fatalf("Error: %+v", err)
+	}
+
+	edge, err := g.CreateEdgeByName("edge", nodeA, nodeB)
+	if err != nil {
+		t.Fatalf("Error: %+v", err)
+	}
+
+	head, err := edge.Head()
+	if err != nil {
+		t.Fatalf("Error: %+v", err)
+	}
+	if head == nil {
+		t.Fatalf("Source is nil")
+	}
+
+	headName, err := head.Name()
+	if err != nil {
+		t.Fatalf("Error: %+v", err)
+	}
+
+	if headName != "b" {
+		t.Fatalf("Expected source name to be 'b', got '%s'", headName)
+	}
+
+	target, err := edge.Tail()
+	if err != nil {
+		t.Fatalf("Error: %+v", err)
+	}
+	if target == nil {
+		t.Fatalf("Target is nil")
+	}
+
+	tailName, err := target.Name()
+	if err != nil {
+		t.Fatalf("Error: %+v", err)
+	}
+
+	if tailName != "a" {
+		t.Fatalf("Expected target name to be 'a', got '%s'", tailName)
+	}
+}
