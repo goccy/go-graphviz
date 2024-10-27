@@ -143,3 +143,5 @@ Help Options:
 # License
 
 MIT
+
+This library embeds and uses `graphviz.wasm`, which is generated based on the original source code of Graphviz. Therefore, the `graphviz.wasm` follows [the license adopted by Graphviz](https://graphviz.org/license) ( Eclipse Public License ).
