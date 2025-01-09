@@ -16,3 +16,5 @@ require (
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	golang.org/x/text v0.19.0 // indirect
 )
+
+replace github.com/flopp/go-findfont => github.com/goccy/go-findfont v0.0.0-20250109093214-c2e12b298c75

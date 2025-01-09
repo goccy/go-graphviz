@@ -2803,7 +2803,6 @@ func init() {
 		compiled,
 		wazero.NewModuleConfig().
 			WithFSConfig(wazero.NewFSConfig().WithFSMount(fs, "/")).
-			WithStdout(os.Stdout).
 			WithName("wasi"),
 	)
 	if err != nil {
