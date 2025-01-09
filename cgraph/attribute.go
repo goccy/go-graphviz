@@ -2912,3 +2912,19 @@ func (n *Node) SetZ(v float64) *Node {
 	n.SafeSet(string(zAttr), fmt.Sprint(v), "0.0")
 	return n
 }
+
+type Kind int
+
+const (
+	KindGraph Kind = iota
+	KindNode
+	KindEdge
+)
+
+// SetDefaultAttr
+//
+// Set default attribute for the graph, node, or edge.
+func (g *Graph) SetDefaultAttr(kind Kind, attr string, value string) error {
+	_, err := g.Attr(int(kind), attr, value)
+	return err
+}
