@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/goccy/go-graphviz"
+	"github.com/goccy/go-graphviz/cgraph"
 )
 
 func TestGraphviz_Image(t *testing.T) {
@@ -348,5 +349,56 @@ func TestEdgeSourceAndTarget(t *testing.T) {
 
 	if tailName != "a" {
 		t.Fatalf("Expected target name to be 'a', got '%s'", tailName)
+	}
+}
+
+func TestDefaultNodeAttr(t *testing.T) {
+	ctx := context.Background()
+	graph, err := graphviz.New(ctx)
+	if err != nil {
+		t.Fatalf("Error: %+v", err)
+	}
+
+	g, err := graph.Graph()
+	if err != nil {
+		t.Fatalf("Error: %+v", err)
+	}
+
+	err = g.SetDefaultAttr(cgraph.KindGraph, "bgcolor", "red")
+	if err != nil {
+		t.Fatalf("Error: %+v", err)
+	}
+
+	err = g.SetDefaultAttr(cgraph.KindNode, "shape", "box")
+	if err != nil {
+		t.Fatalf("Error: %+v", err)
+	}
+
+	err = g.SetDefaultAttr(cgraph.KindEdge, "color", "blue")
+	if err != nil {
+		t.Fatalf("Error: %+v", err)
+	}
+
+	bgcolor := g.GetStr("bgcolor")
+	if bgcolor != "red" {
+		t.Fatalf("Expected bgcolor to be 'red', got '%s'", bgcolor)
+	}
+
+	n, err := g.CreateNodeByName("n")
+	if err != nil {
+		t.Fatalf("Error: %+v", err)
+	}
+	shape := n.GetStr("shape")
+	if shape != "box" {
+		t.Fatalf("Expected shape to be 'box', got '%s'", shape)
+	}
+
+	e, err := g.CreateEdgeByName("e", n, n)
+	if err != nil {
+		t.Fatalf("Error: %+v", err)
+	}
+	color := e.GetStr("color")
+	if color != "blue" {
+		t.Fatalf("Expected color to be 'blue', got '%s'", color)
 	}
 }
