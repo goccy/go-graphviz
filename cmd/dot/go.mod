@@ -1,11 +1,11 @@
 module github.com/goccy/go-graphviz/cmd/dot
 
-go 1.23.0
+go 1.26.0
 
 require (
 	github.com/goccy/go-graphviz v0.2.5
 	github.com/jessevdk/go-flags v1.6.1
-	golang.org/x/term v0.25.0
+	golang.org/x/term v0.45.0
 )
 
 require (
@@ -13,8 +13,10 @@ require (
 	github.com/flopp/go-findfont v0.1.0 // indirect
 	github.com/fogleman/gg v1.3.0 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
-	github.com/tetratelabs/wazero v1.10.1 // indirect
-	golang.org/x/image v0.21.0 // indirect
-	golang.org/x/sys v0.26.0 // indirect
-	golang.org/x/text v0.19.0 // indirect
+	github.com/tetratelabs/wazero v1.12.0 // indirect
+	golang.org/x/image v0.44.0 // indirect
+	golang.org/x/sys v0.47.0 // indirect
+	golang.org/x/text v0.40.0 // indirect
 )
+
+replace github.com/goccy/go-graphviz => ../..

@@ -124,17 +124,6 @@ message IDAllocator {
       return { kind: INT32 }
     };
   }
-  message Alloc {
-    option (nori.message).funcptr = {
-      args {
-        kind: VOIDPTR
-        funcbaseptr: true
-      }
-      args { kind: INT }
-      args { kind: UINT64 }
-      return { kind: INT32 }
-    };
-  }
   message Free {
     option (nori.message).funcptr = {
       args {
@@ -176,7 +165,6 @@ message IDAllocator {
   }
   Open open = 1;
   Map map = 2;
-  Alloc alloc = 3;
   Free free = 4;
   Print print = 5;
   Close close = 6;
@@ -300,7 +288,7 @@ message CommonFields {
 
   ClientDiscipline disc = 1;
   State state = 2;
-  Dict strdict = 3 [(nori.field).type.pointer = 1];
+  nori.Any strdict = 3 [(nori.field).type.kind = VOIDPTR];
   repeated uint64 seq = 4 [(nori.field).type.array_num = 3];
   CallbackStack cb = 5 [(nori.field).type.pointer = 1];
   repeated Dict lookup_by_name = 6 [(nori.field).type = {
@@ -351,6 +339,7 @@ message Sym {
   uint32 kind = 5;
   uint32 fixed = 6;
   uint32 print = 7;
+  Graph owner = 8 [(nori.field).type.pointer = 1];
 }
 
 message DataDict {
@@ -474,16 +463,6 @@ option (nori.file).export = {
     }
   }
   func {
-    name: "readline"
-    alias: "agreadline"
-    args { kind: INT }
-  }
-  func {
-    name: "setFile"
-    alias: "agsetfile"
-    args { kind: CHARPTR }
-  }
-  func {
     name: "concat"
     alias: "agconcat"
     args {
@@ -491,6 +470,7 @@ option (nori.file).export = {
       ref: "Graph"
       pointer: 1
     }
+    args { kind: CHARPTR }
     args { kind: VOIDPTR }
     args {
       kind: STRUCT
@@ -943,6 +923,13 @@ option (nori.file).export = {
     args { kind: CHARPTR }
     return { kind: CHARPTR }
   }
+  method {
+    recv: "Graph"
+    name: "strdupText"
+    alias: "agstrdup_text"
+    args { kind: CHARPTR }
+    return { kind: CHARPTR }
+  }
   func {
     name: "htmlStr"
     alias: "aghtmlstr"
@@ -958,17 +945,25 @@ option (nori.file).export = {
   }
   method {
     recv: "Graph"
+    name: "strBindText"
+    alias: "agstrbind_text"
+    args { kind: CHARPTR }
+    return { kind: CHARPTR }
+  }
+  method {
+    recv: "Graph"
+    name: "strBindHTML"
+    alias: "agstrbind_html"
+    args { kind: CHARPTR }
+    return { kind: CHARPTR }
+  }
+  method {
+    recv: "Graph"
     name: "strFree"
     alias: "agstrfree"
     args { kind: CHARPTR }
+    args { kind: BOOL }
     return { kind: INT }
-  }
-  func {
-    name: "canon"
-    alias: "agcanon"
-    args { kind: CHARPTR }
-    args { kind: INT }
-    return { kind: CHARPTR }
   }
   func {
     name: "strCanon"
@@ -977,16 +972,36 @@ option (nori.file).export = {
     args { kind: CHARPTR }
     return { kind: CHARPTR }
   }
-  func {
-    name: "canonStr"
-    alias: "agcanonStr"
-    args { kind: CHARPTR }
-    return { kind: CHARPTR }
-  }
   method {
     recv: "Graph"
     name: "attr"
     alias: "agattr"
+    args { kind: INT }
+    args { kind: CHARPTR }
+    args { kind: CHARPTR }
+    return {
+      kind: STRUCT
+      ref: "Sym"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Graph"
+    name: "attrText"
+    alias: "agattr_text"
+    args { kind: INT }
+    args { kind: CHARPTR }
+    args { kind: CHARPTR }
+    return {
+      kind: STRUCT
+      ref: "Sym"
+      pointer: 1
+    }
+  }
+  method {
+    recv: "Graph"
+    name: "attrHTML"
+    alias: "agattr_html"
     args { kind: INT }
     args { kind: CHARPTR }
     args { kind: CHARPTR }
@@ -1105,6 +1120,22 @@ option (nori.file).export = {
     return { kind: INT }
   }
   func {
+    name: "setStrText"
+    alias: "agset_text"
+    args { kind: VOIDPTR }
+    args { kind: CHARPTR }
+    args { kind: CHARPTR }
+    return { kind: INT }
+  }
+  func {
+    name: "setStrHTML"
+    alias: "agset_html"
+    args { kind: VOIDPTR }
+    args { kind: CHARPTR }
+    args { kind: CHARPTR }
+    return { kind: INT }
+  }
+  func {
     name: "setSymName"
     alias: "agxset"
     args { kind: VOIDPTR }
@@ -1117,8 +1148,50 @@ option (nori.file).export = {
     return { kind: INT }
   }
   func {
+    name: "setSymNameText"
+    alias: "agxset_text"
+    args { kind: VOIDPTR }
+    args {
+      kind: STRUCT
+      ref: "Sym"
+      pointer: 1
+    }
+    args { kind: CHARPTR }
+    return { kind: INT }
+  }
+  func {
+    name: "setSymNameHTML"
+    alias: "agxset_html"
+    args { kind: VOIDPTR }
+    args {
+      kind: STRUCT
+      ref: "Sym"
+      pointer: 1
+    }
+    args { kind: CHARPTR }
+    return { kind: INT }
+  }
+  func {
     name: "safeSetStr"
     alias: "agsafeset"
+    args { kind: VOIDPTR }
+    args { kind: CHARPTR }
+    args { kind: CHARPTR }
+    args { kind: CHARPTR }
+    return { kind: INT }
+  }
+  func {
+    name: "safeSetStrHTML"
+    alias: "agsafeset_html"
+    args { kind: VOIDPTR }
+    args { kind: CHARPTR }
+    args { kind: CHARPTR }
+    args { kind: CHARPTR }
+    return { kind: INT }
+  }
+  func {
+    name: "safeSetStrText"
+    alias: "agsafeset_text"
     args { kind: VOIDPTR }
     args { kind: CHARPTR }
     args { kind: CHARPTR }
@@ -1142,7 +1215,6 @@ option (nori.file).export = {
     name: "idSubGraph"
     alias: "agidsubg"
     args { kind: UINT64 }
-    args { kind: INT }
     return {
       kind: STRUCT
       ref: "Graph"
@@ -1222,28 +1294,6 @@ option (nori.file).export = {
     args { kind: INT }
     args { kind: INT }
     return { kind: INT }
-  }
-  method {
-    recv: "Graph"
-    name: "alloc"
-    alias: "agalloc"
-    args { kind: UINT64 }
-    return { kind: VOIDPTR }
-  }
-  method {
-    recv: "Graph"
-    name: "realloc"
-    alias: "agrealloc"
-    args { kind: VOIDPTR }
-    args { kind: UINT64 }
-    args { kind: UINT64 }
-    return { kind: VOIDPTR }
-  }
-  method {
-    recv: "Graph"
-    name: "free"
-    alias: "agfree"
-    args { kind: VOIDPTR }
   }
   func {
     name: "setError"
@@ -1379,7 +1429,7 @@ message Dict {
 
   DictSearch searchf = 1;
   DictDisc disc = 2 [(nori.field).type.pointer = 1];
-  DictData data = 3 [(nori.field).type.pointer = 1];
+  DictData data = 3;
   DictMethod meth = 4 [(nori.field).type.pointer = 1];
   int64 nview = 5;
   Dict view = 6 [(nori.field).type.pointer = 1];

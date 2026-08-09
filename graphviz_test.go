@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/goccy/go-graphviz"
@@ -348,5 +349,151 @@ func TestEdgeSourceAndTarget(t *testing.T) {
 
 	if tailName != "a" {
 		t.Fatalf("Expected target name to be 'a', got '%s'", tailName)
+	}
+}
+
+func TestGraphviz_CreateSubGraphByID(t *testing.T) {
+	// Regression: graphviz 13.0.0 made agidsubg lookup-only, which silently
+	// broke CreateSubGraphByID; creation is emulated via agsubg.
+	ctx := context.Background()
+	g, err := graphviz.New(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer g.Close()
+	graph, err := g.Graph()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer graph.Close()
+
+	sub, err := graph.CreateSubGraphByID(4242)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if sub == nil {
+		t.Fatal("CreateSubGraphByID returned nil subgraph")
+	}
+	defer sub.Close()
+
+	// must be findable by name afterwards (agsubg registers the subgraph
+	// under its decimal-string name; with the default AgIdDisc the ID is
+	// the name pointer, so a numeric SubGraphByID lookup cannot match it)
+	found, err := graph.SubGraphByName("4242")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if found == nil {
+		t.Fatal("SubGraphByName did not find the created subgraph")
+	}
+
+	// and must appear in iteration
+	first, err := graph.FirstSubGraph()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if first == nil {
+		t.Fatal("created subgraph not reachable via FirstSubGraph")
+	}
+}
+
+func TestGraphviz_RenderFilename(t *testing.T) {
+	// Regression: RenderFilename used to write through the wasm's virtual
+	// filesystem, which never reached the host — output files came out empty.
+	// It now renders in-memory and writes the file from Go.
+	ctx := context.Background()
+	g, err := graphviz.New(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer g.Close()
+
+	data, err := os.ReadFile(filepath.Join("testdata", "directed", "KW91.gv"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	graph, err := graphviz.ParseBytes(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer graph.Close()
+
+	for _, format := range []graphviz.Format{graphviz.XDOT, graphviz.SVG, graphviz.PNG, graphviz.JPG} {
+		p := filepath.Join(t.TempDir(), "out."+string(format))
+		if err := g.RenderFilename(ctx, graph, format, p); err != nil {
+			t.Fatalf("%s: %v", format, err)
+		}
+		fi, err := os.Stat(p)
+		if err != nil {
+			t.Fatalf("%s: %v", format, err)
+		}
+		if fi.Size() == 0 {
+			t.Fatalf("%s: empty output", format)
+		}
+	}
+}
+
+func TestGraphviz_HTMLLabel(t *testing.T) {
+	// Regression (bug report 2026-08-10): HTML-like labels set through the API
+	// round-trip (StrdupHTML + SetLabel) lost their HTML-ness since graphviz 13
+	// and rendered as escaped plain text with dead links. Setting them via
+	// SetLabelHTML (agsafeset_html) must produce real anchors in SVG output.
+	ctx := context.Background()
+	gv, err := graphviz.New(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer gv.Close()
+
+	g, err := gv.Graph()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer g.Close()
+
+	n, err := g.CreateNodeByName("n1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	html := `<table border="0"><tr><td><b>Hello</b></td></tr></table>`
+	if _, err := g.StrdupHTML(html); err != nil {
+		t.Fatal(err)
+	}
+	n.SetLabelHTML(html)
+
+	e, err := g.CreateEdgeByName("e", n, n)
+	if err != nil {
+		t.Fatal(err)
+	}
+	e.SetLabelHTML(`<table border="0"><tr><td><b>Edge</b></td></tr></table>`)
+
+	sub, err := g.CreateSubGraphByName("cluster_c")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer sub.Close()
+	sub.SetLabelHTML(`<table border="0"><tr><td><b>Cluster</b></td></tr></table>`)
+	// an empty cluster is not drawn by graphviz; give it a node so the label renders
+	if _, err := sub.CreateNodeByName("inner"); err != nil {
+		t.Fatal(err)
+	}
+
+	var buf bytes.Buffer
+	if err := gv.Render(ctx, g, graphviz.SVG, &buf); err != nil {
+		t.Fatal(err)
+	}
+	svg := buf.String()
+	if strings.Contains(svg, "&lt;table") {
+		t.Fatal("HTML label rendered as escaped text")
+	}
+	// the HTML labels must be interpreted as markup, not escaped plain text:
+	// their text content renders as real SVG text and <b> becomes bold styling
+	for _, want := range []string{"Hello", "Edge", "Cluster"} {
+		if !strings.Contains(svg, want) {
+			t.Fatalf("HTML label text %q not rendered", want)
+		}
+	}
+	if !strings.Contains(svg, `font-weight="bold"`) {
+		t.Fatal("HTML label styling (<b>) not interpreted")
 	}
 }

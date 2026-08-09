@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"strconv"
 
 	"github.com/goccy/go-graphviz/cdt"
 	"github.com/goccy/go-graphviz/internal/wasm"
@@ -561,7 +562,7 @@ func (c *CommonFields) SetState(v *State) {
 }
 
 func (c *CommonFields) StrDict() *cdt.Dict {
-	return toDict(c.wasm.GetStrdict())
+	return toDict(newDict(c.wasm.GetStrdict().(uint64)))
 }
 
 func (c *CommonFields) SetStrDict(v *cdt.Dict) {
@@ -859,6 +860,17 @@ func (g *Graph) SafeSet(name, value, def string) error {
 	}
 	return toError(res)
 }
+// SafeSetHTML is SafeSet for HTML-like string values. graphviz 13+ requires
+// HTML strings to be set through agsafeset_html: the plain SafeSet round-trip
+// strips the HTML flag and the value renders as escaped text.
+func (g *Graph) SafeSetHTML(name, value, def string) error {
+	res, err := wasm.SafeSetStrHTML(context.Background(), g.wasm, name, value, def)
+	if err != nil {
+		return err
+	}
+	return toError(res)
+}
+
 
 func (g *Graph) Close() error {
 	res, err := g.wasm.Close(context.Background())
@@ -1112,12 +1124,31 @@ func (g *Graph) StrdupHTML(s string) (string, error) {
 	return g.wasm.StrdupHTML(context.Background(), s)
 }
 
+// StrdupText returns a reference-counted plain-text copy of s in the graph's
+// string pool (graphviz agstrdup_text). Use it together with StrBindText /
+// StrBindHTML when the plain/HTML distinction matters (graphviz 13+).
+func (g *Graph) StrdupText(s string) (string, error) {
+	return g.wasm.StrdupText(context.Background(), s)
+}
+
+// StrBindText returns a reference-counted plain-text string from the graph's
+// string pool if it exists, or nil (graphviz agstrbind_text).
+func (g *Graph) StrBindText(s string) (string, error) {
+	return g.wasm.StrBindText(context.Background(), s)
+}
+
+// StrBindHTML returns a reference-counted HTML-like string from the graph's
+// string pool if it exists, or nil (graphviz agstrbind_html).
+func (g *Graph) StrBindHTML(s string) (string, error) {
+	return g.wasm.StrBindHTML(context.Background(), s)
+}
+
 func (g *Graph) StrBind(s string) (string, error) {
 	return g.wasm.StrBind(context.Background(), s)
 }
 
 func (g *Graph) StrFree(s string) error {
-	res, err := g.wasm.StrFree(context.Background(), s)
+	res, err := g.wasm.StrFree(context.Background(), s, false)
 	if err != nil {
 		return err
 	}
@@ -1165,7 +1196,20 @@ func (g *Graph) SubGraphByName(name string) (*Graph, error) {
 }
 
 func (g *Graph) CreateSubGraphByID(id ID) (*Graph, error) {
-	res, err := g.wasm.IdSubGraph(context.Background(), uint64(id), 1)
+	// graphviz 13.0.0 removed the create path from agidsubg (now a pure
+	// lookup); emulate creation via agsubg, which registers the subgraph
+	// under its decimal-string name. Note that in graphviz >= 13 the
+	// subgraph's ID is the name pointer (AgIdDisc), not the numeric value,
+	// so it is not findable via SubGraphByID afterwards.
+	sub, err := g.wasm.IdSubGraph(context.Background(), uint64(id))
+	if err != nil {
+		return nil, err
+	}
+	if sub != nil {
+		return toGraph(sub), nil
+	}
+	name := strconv.FormatUint(uint64(id), 10)
+	res, err := g.wasm.SubGraph(context.Background(), name, 1)
 	if err != nil {
 		return nil, err
 	}
@@ -1173,7 +1217,7 @@ func (g *Graph) CreateSubGraphByID(id ID) (*Graph, error) {
 }
 
 func (g *Graph) SubGraphByID(id ID) (*Graph, error) {
-	res, err := g.wasm.IdSubGraph(context.Background(), uint64(id), 0)
+	res, err := g.wasm.IdSubGraph(context.Background(), uint64(id))
 	if err != nil {
 		return nil, err
 	}
@@ -1319,6 +1363,17 @@ func (n *Node) SafeSet(name, value, def string) error {
 	}
 	return toError(res)
 }
+// SafeSetHTML is SafeSet for HTML-like string values. graphviz 13+ requires
+// HTML strings to be set through agsafeset_html: the plain SafeSet round-trip
+// strips the HTML flag and the value renders as escaped text.
+func (n *Node) SafeSetHTML(name, value, def string) error {
+	res, err := wasm.SafeSetStrHTML(context.Background(), n.wasm, name, value, def)
+	if err != nil {
+		return err
+	}
+	return toError(res)
+}
+
 
 func (n *Node) ReLabel(newname string) error {
 	res, err := n.wasm.ReLabel(context.Background(), newname)
@@ -1403,13 +1458,31 @@ func (e *Edge) SafeSet(name, value, def string) error {
 	}
 	return toError(res)
 }
+// SafeSetHTML is SafeSet for HTML-like string values. graphviz 13+ requires
+// HTML strings to be set through agsafeset_html: the plain SafeSet round-trip
+// strips the HTML flag and the value renders as escaped text.
+func (e *Edge) SafeSetHTML(name, value, def string) error {
+	res, err := wasm.SafeSetStrHTML(context.Background(), e.wasm, name, value, def)
+	if err != nil {
+		return err
+	}
+	return toError(res)
+}
+
 
 func HTMLStr(s string) (bool, error) {
 	return wasm.HtmlStr(context.Background(), s)
 }
 
 func Canon(s string, i int) (string, error) {
-	return wasm.Canon(context.Background(), s, i)
+	if i != 0 {
+		return "<" + s + ">", nil
+	}
+	// agcanonStr was removed in graphviz 14.0.0. Its replacement is agstrcanon
+	// (StrCanon), which canonicalizes s into a caller-supplied buffer. The
+	// buffer must hold agstrcanon_bytes(s) = 2*len(s)+3 bytes (lib/cgraph/agstrcanon.h).
+	buf := make([]byte, 2*len(s)+3)
+	return wasm.StrCanon(context.Background(), s, string(buf))
 }
 
 func StrCanon(a0 string, a1 string) (string, error) {
@@ -1417,7 +1490,8 @@ func StrCanon(a0 string, a1 string) (string, error) {
 }
 
 func CanonStr(str string) (string, error) {
-	return wasm.CanonStr(context.Background(), str)
+	buf := make([]byte, 2*len(str)+3)
+	return wasm.StrCanon(context.Background(), str, string(buf))
 }
 
 func AttrSym(obj *Object, name string) (*Symbol, error) {

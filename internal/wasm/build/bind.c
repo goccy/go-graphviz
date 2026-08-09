@@ -80,19 +80,6 @@ long int IDAllocator_Map(void * _arg0, int _arg1, char * _arg2, unsigned long lo
   );
 }
 
-long int wasm_bridge_IDAllocator_Alloc(void * arg0, int arg1, unsigned long long int arg2);
-
-long int IDAllocator_Alloc(void * _arg0, int _arg1, unsigned long long int _arg2) {
-  void * arg0 = (void *)_arg0;
-  int arg1 = (int)_arg1;
-  unsigned long long int arg2 = (unsigned long long int)_arg2;
-  return wasm_bridge_IDAllocator_Alloc(
-    arg0,
-    arg1,
-    arg2
-  );
-}
-
 void wasm_bridge_IDAllocator_Free(void * arg0, int arg1, unsigned long long int arg2);
 
 void IDAllocator_Free(void * _arg0, int _arg1, unsigned long long int _arg2) {
@@ -1599,10 +1586,6 @@ void wasm_bridge_set_IDAllocator_map(Agiddisc_t *recv) {
   recv->map = IDAllocator_Map;
 }
 
-void wasm_bridge_set_IDAllocator_alloc(Agiddisc_t *recv) {
-  recv->alloc = IDAllocator_Alloc;
-}
-
 void wasm_bridge_set_IDAllocator_free(Agiddisc_t *recv) {
   recv->free = IDAllocator_Free;
 }
@@ -1741,13 +1724,13 @@ void wasm_bridge_set_CommonFields_state(Agclos_t *recv, void * v) {
   recv->state = *(Agdstate_t *)v;
 }
 
-void wasm_bridge_get_CommonFields_strdict(Agclos_t *recv, Dict_t ** ret) {
-  Dict_t * v = (Dict_t *)recv->strdict;
+void wasm_bridge_get_CommonFields_strdict(Agclos_t *recv, void ** ret) {
+  void * v = (void *)recv->strdict;
   *ret = v;
 }
 
 void wasm_bridge_set_CommonFields_strdict(Agclos_t *recv, void * v) {
-  recv->strdict = (Dict_t *)v;
+  recv->strdict = (void *)v;
 }
 
 void wasm_bridge_get_CommonFields_seq(Agclos_t *recv, GoSlice ** ret) {GoSlice *v = (GoSlice *)malloc(sizeof(GoSlice));
@@ -2056,6 +2039,15 @@ void wasm_bridge_set_Sym_print(Agsym_t *recv, unsigned long int v) {
   recv->print = (unsigned long int)v;
 }
 
+void wasm_bridge_get_Sym_owner(Agsym_t *recv, Agraph_t ** ret) {
+  Agraph_t * v = (Agraph_t *)recv->owner;
+  *ret = v;
+}
+
+void wasm_bridge_set_Sym_owner(Agsym_t *recv, void * v) {
+  recv->owner = (Agraph_t *)v;
+}
+
 void *wasm_bridge_new_DataDict() {
   void *ret = malloc(sizeof(Agdatadict_t));
   memset(ret, 0, sizeof(Agdatadict_t));
@@ -2298,12 +2290,13 @@ void wasm_bridge_set_Dict_disc(Dict_t *recv, void * v) {
 }
 
 void wasm_bridge_get_Dict_data(Dict_t *recv, Dtdata_t ** ret) {
-  Dtdata_t * v = (Dtdata_t *)recv->data;
+  void *v = malloc(sizeof(recv->data));
+  memcpy(v, &recv->data, sizeof(recv->data));
   *ret = v;
 }
 
 void wasm_bridge_set_Dict_data(Dict_t *recv, void * v) {
-  recv->data = (Dtdata_t *)v;
+  recv->data = *(Dtdata_t *)v;
 }
 
 void wasm_bridge_get_Dict_meth(Dict_t *recv, Dtmethod_t ** ret) {
@@ -5150,36 +5143,23 @@ void wasm_bridge_memRead(void * _arg0, void ** _arg1) {
   *_arg1 = v;
 }
 
-void wasm_bridge_readline(int _arg0) {
-  int arg0;
-  arg0 = (int)_arg0;
-  agreadline(
-    arg0
-  );
-}
-
-void wasm_bridge_setFile(void * _arg0) {
-  char * arg0;
-  arg0 = (char *)_arg0;
-  agsetfile(
-    arg0
-  );
-}
-
-void wasm_bridge_concat(void * _arg0, void * _arg1, void * _arg2, void ** _arg3) {
+void wasm_bridge_concat(void * _arg0, void * _arg1, void * _arg2, void * _arg3, void ** _arg4) {
   Agraph_t * arg0;
   arg0 = (Agraph_t *)_arg0;
-  void * arg1;
-  arg1 = (void *)_arg1;
-  Agdisc_t * arg2;
-  arg2 = (Agdisc_t *)_arg2;
+  char * arg1;
+  arg1 = (char *)_arg1;
+  void * arg2;
+  arg2 = (void *)_arg2;
+  Agdisc_t * arg3;
+  arg3 = (Agdisc_t *)_arg3;
   Agraph_t * ret = agconcat(
     arg0,
     arg1,
-    arg2
+    arg2,
+    arg3
   );
   Agraph_t * v = (Agraph_t *)ret;
-  *_arg3 = v;
+  *_arg4 = v;
 }
 
 void wasm_bridge_write(void * _arg0, void * _arg1, int* _arg2) {
@@ -5275,19 +5255,6 @@ void wasm_bridge_htmlStr(void * _arg0, bool* _arg1) {
   *_arg1 = v;
 }
 
-void wasm_bridge_canon(void * _arg0, int _arg1, void ** _arg2) {
-  char * arg0;
-  arg0 = (char *)_arg0;
-  int arg1;
-  arg1 = (int)_arg1;
-  char * ret = agcanon(
-    arg0,
-    arg1
-  );
-  GoString *v = newString(ret);
-  *_arg2 = v;
-}
-
 void wasm_bridge_strCanon(void * _arg0, void * _arg1, void ** _arg2) {
   char * arg0;
   arg0 = (char *)_arg0;
@@ -5299,16 +5266,6 @@ void wasm_bridge_strCanon(void * _arg0, void * _arg1, void ** _arg2) {
   );
   GoString *v = newString(ret);
   *_arg2 = v;
-}
-
-void wasm_bridge_canonStr(void * _arg0, void ** _arg1) {
-  char * arg0;
-  arg0 = (char *)_arg0;
-  char * ret = agcanonStr(
-    arg0
-  );
-  GoString *v = newString(ret);
-  *_arg1 = v;
 }
 
 void wasm_bridge_attrSym(void * _arg0, void * _arg1, void ** _arg2) {
@@ -5427,6 +5384,38 @@ void wasm_bridge_setStr(void * _arg0, void * _arg1, void * _arg2, int* _arg3) {
   *_arg3 = v;
 }
 
+void wasm_bridge_setStrText(void * _arg0, void * _arg1, void * _arg2, int* _arg3) {
+  void * arg0;
+  arg0 = (void *)_arg0;
+  char * arg1;
+  arg1 = (char *)_arg1;
+  char * arg2;
+  arg2 = (char *)_arg2;
+  int ret = agset_text(
+    arg0,
+    arg1,
+    arg2
+  );
+  int v = (int)ret;
+  *_arg3 = v;
+}
+
+void wasm_bridge_setStrHTML(void * _arg0, void * _arg1, void * _arg2, int* _arg3) {
+  void * arg0;
+  arg0 = (void *)_arg0;
+  char * arg1;
+  arg1 = (char *)_arg1;
+  char * arg2;
+  arg2 = (char *)_arg2;
+  int ret = agset_html(
+    arg0,
+    arg1,
+    arg2
+  );
+  int v = (int)ret;
+  *_arg3 = v;
+}
+
 void wasm_bridge_setSymName(void * _arg0, void * _arg1, void * _arg2, int* _arg3) {
   void * arg0;
   arg0 = (void *)_arg0;
@@ -5435,6 +5424,38 @@ void wasm_bridge_setSymName(void * _arg0, void * _arg1, void * _arg2, int* _arg3
   char * arg2;
   arg2 = (char *)_arg2;
   int ret = agxset(
+    arg0,
+    arg1,
+    arg2
+  );
+  int v = (int)ret;
+  *_arg3 = v;
+}
+
+void wasm_bridge_setSymNameText(void * _arg0, void * _arg1, void * _arg2, int* _arg3) {
+  void * arg0;
+  arg0 = (void *)_arg0;
+  Agsym_t * arg1;
+  arg1 = (Agsym_t *)_arg1;
+  char * arg2;
+  arg2 = (char *)_arg2;
+  int ret = agxset_text(
+    arg0,
+    arg1,
+    arg2
+  );
+  int v = (int)ret;
+  *_arg3 = v;
+}
+
+void wasm_bridge_setSymNameHTML(void * _arg0, void * _arg1, void * _arg2, int* _arg3) {
+  void * arg0;
+  arg0 = (void *)_arg0;
+  Agsym_t * arg1;
+  arg1 = (Agsym_t *)_arg1;
+  char * arg2;
+  arg2 = (char *)_arg2;
+  int ret = agxset_html(
     arg0,
     arg1,
     arg2
@@ -5453,6 +5474,44 @@ void wasm_bridge_safeSetStr(void * _arg0, void * _arg1, void * _arg2, void * _ar
   char * arg3;
   arg3 = (char *)_arg3;
   int ret = agsafeset(
+    arg0,
+    arg1,
+    arg2,
+    arg3
+  );
+  int v = (int)ret;
+  *_arg4 = v;
+}
+
+void wasm_bridge_safeSetStrHTML(void * _arg0, void * _arg1, void * _arg2, void * _arg3, int* _arg4) {
+  void * arg0;
+  arg0 = (void *)_arg0;
+  char * arg1;
+  arg1 = (char *)_arg1;
+  char * arg2;
+  arg2 = (char *)_arg2;
+  char * arg3;
+  arg3 = (char *)_arg3;
+  int ret = agsafeset_html(
+    arg0,
+    arg1,
+    arg2,
+    arg3
+  );
+  int v = (int)ret;
+  *_arg4 = v;
+}
+
+void wasm_bridge_safeSetStrText(void * _arg0, void * _arg1, void * _arg2, void * _arg3, int* _arg4) {
+  void * arg0;
+  arg0 = (void *)_arg0;
+  char * arg1;
+  arg1 = (char *)_arg1;
+  char * arg2;
+  arg2 = (char *)_arg2;
+  char * arg3;
+  arg3 = (char *)_arg3;
+  int ret = agsafeset_text(
     arg0,
     arg1,
     arg2,
@@ -5933,6 +5992,19 @@ void wasm_bridge_Graph_strdupHTML(void * _arg0, void * _arg1, void ** _arg2) {
   *_arg2 = v;
 }
 
+void wasm_bridge_Graph_strdupText(void * _arg0, void * _arg1, void ** _arg2) {
+  Agraph_t * arg0;
+  arg0 = (Agraph_t *)_arg0;
+  char * arg1;
+  arg1 = (char *)_arg1;
+  char * ret = agstrdup_text(
+    arg0,
+    arg1
+  );
+  GoString *v = newString(ret);
+  *_arg2 = v;
+}
+
 void wasm_bridge_Graph_strBind(void * _arg0, void * _arg1, void ** _arg2) {
   Agraph_t * arg0;
   arg0 = (Agraph_t *)_arg0;
@@ -5946,17 +6018,46 @@ void wasm_bridge_Graph_strBind(void * _arg0, void * _arg1, void ** _arg2) {
   *_arg2 = v;
 }
 
-void wasm_bridge_Graph_strFree(void * _arg0, void * _arg1, int* _arg2) {
+void wasm_bridge_Graph_strBindText(void * _arg0, void * _arg1, void ** _arg2) {
   Agraph_t * arg0;
   arg0 = (Agraph_t *)_arg0;
   char * arg1;
   arg1 = (char *)_arg1;
-  int ret = agstrfree(
+  char * ret = agstrbind_text(
     arg0,
     arg1
   );
-  int v = (int)ret;
+  GoString *v = newString(ret);
   *_arg2 = v;
+}
+
+void wasm_bridge_Graph_strBindHTML(void * _arg0, void * _arg1, void ** _arg2) {
+  Agraph_t * arg0;
+  arg0 = (Agraph_t *)_arg0;
+  char * arg1;
+  arg1 = (char *)_arg1;
+  char * ret = agstrbind_html(
+    arg0,
+    arg1
+  );
+  GoString *v = newString(ret);
+  *_arg2 = v;
+}
+
+void wasm_bridge_Graph_strFree(void * _arg0, void * _arg1, bool _arg2, int* _arg3) {
+  Agraph_t * arg0;
+  arg0 = (Agraph_t *)_arg0;
+  char * arg1;
+  arg1 = (char *)_arg1;
+  bool arg2;
+  arg2 = (bool)_arg2;
+  int ret = agstrfree(
+    arg0,
+    arg1,
+    arg2
+  );
+  int v = (int)ret;
+  *_arg3 = v;
 }
 
 void wasm_bridge_Graph_attr(void * _arg0, int _arg1, void * _arg2, void * _arg3, void ** _arg4) {
@@ -5969,6 +6070,44 @@ void wasm_bridge_Graph_attr(void * _arg0, int _arg1, void * _arg2, void * _arg3,
   char * arg3;
   arg3 = (char *)_arg3;
   Agsym_t * ret = agattr(
+    arg0,
+    arg1,
+    arg2,
+    arg3
+  );
+  Agsym_t * v = (Agsym_t *)ret;
+  *_arg4 = v;
+}
+
+void wasm_bridge_Graph_attrText(void * _arg0, int _arg1, void * _arg2, void * _arg3, void ** _arg4) {
+  Agraph_t * arg0;
+  arg0 = (Agraph_t *)_arg0;
+  int arg1;
+  arg1 = (int)_arg1;
+  char * arg2;
+  arg2 = (char *)_arg2;
+  char * arg3;
+  arg3 = (char *)_arg3;
+  Agsym_t * ret = agattr_text(
+    arg0,
+    arg1,
+    arg2,
+    arg3
+  );
+  Agsym_t * v = (Agsym_t *)ret;
+  *_arg4 = v;
+}
+
+void wasm_bridge_Graph_attrHTML(void * _arg0, int _arg1, void * _arg2, void * _arg3, void ** _arg4) {
+  Agraph_t * arg0;
+  arg0 = (Agraph_t *)_arg0;
+  int arg1;
+  arg1 = (int)_arg1;
+  char * arg2;
+  arg2 = (char *)_arg2;
+  char * arg3;
+  arg3 = (char *)_arg3;
+  Agsym_t * ret = agattr_html(
     arg0,
     arg1,
     arg2,
@@ -6044,20 +6183,17 @@ void wasm_bridge_Graph_subGraph(void * _arg0, void * _arg1, int _arg2, void ** _
   *_arg3 = v;
 }
 
-void wasm_bridge_Graph_idSubGraph(void * _arg0, unsigned long long int _arg1, int _arg2, void ** _arg3) {
+void wasm_bridge_Graph_idSubGraph(void * _arg0, unsigned long long int _arg1, void ** _arg2) {
   Agraph_t * arg0;
   arg0 = (Agraph_t *)_arg0;
   unsigned long long int arg1;
   arg1 = (unsigned long long int)_arg1;
-  int arg2;
-  arg2 = (int)_arg2;
   Agraph_t * ret = agidsubg(
     arg0,
-    arg1,
-    arg2
+    arg1
   );
   Agraph_t * v = (Agraph_t *)ret;
-  *_arg3 = v;
+  *_arg2 = v;
 }
 
 void wasm_bridge_Graph_firstSubGraph(void * _arg0, void ** _arg1) {
@@ -6156,49 +6292,6 @@ void wasm_bridge_Graph_countUniqueEdges(void * _arg0, void * _arg1, int _arg2, i
   );
   int v = (int)ret;
   *_arg4 = v;
-}
-
-void wasm_bridge_Graph_alloc(void * _arg0, unsigned long long int _arg1, void ** _arg2) {
-  Agraph_t * arg0;
-  arg0 = (Agraph_t *)_arg0;
-  unsigned long long int arg1;
-  arg1 = (unsigned long long int)_arg1;
-  void * ret = agalloc(
-    arg0,
-    arg1
-  );
-  void * v = (void *)ret;
-  *_arg2 = v;
-}
-
-void wasm_bridge_Graph_realloc(void * _arg0, void * _arg1, unsigned long long int _arg2, unsigned long long int _arg3, void ** _arg4) {
-  Agraph_t * arg0;
-  arg0 = (Agraph_t *)_arg0;
-  void * arg1;
-  arg1 = (void *)_arg1;
-  unsigned long long int arg2;
-  arg2 = (unsigned long long int)_arg2;
-  unsigned long long int arg3;
-  arg3 = (unsigned long long int)_arg3;
-  void * ret = agrealloc(
-    arg0,
-    arg1,
-    arg2,
-    arg3
-  );
-  void * v = (void *)ret;
-  *_arg4 = v;
-}
-
-void wasm_bridge_Graph_free(void * _arg0, void * _arg1) {
-  Agraph_t * arg0;
-  arg0 = (Agraph_t *)_arg0;
-  void * arg1;
-  arg1 = (void *)_arg1;
-  agfree(
-    arg0,
-    arg1
-  );
 }
 
 void wasm_bridge_newDictWithDisc(void * _arg0, void * _arg1, void ** _arg2) {

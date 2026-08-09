@@ -44,7 +44,6 @@ func (fs *WasmFileSystem) Open(name string) (fs.File, error) {
 type LookupFuncMap struct {
 	IDAllocator_Open                     func(*Graph, *ClientDiscipline) (uint64, error)
 	IDAllocator_Map                      func(any, int, string, *uint64, int) (uint64, error)
-	IDAllocator_Alloc                    func(any, int, uint64) (uint64, error)
 	IDAllocator_Free                     func(any, int, uint64) (uint64, error)
 	IDAllocator_Print                    func(any, int, uint64) (uint64, error)
 	IDAllocator_Close                    func(any) (uint64, error)
@@ -113,7 +112,6 @@ type LookupFuncMap struct {
 type CallbackFuncMap struct {
 	IDAllocator_Open                     map[uint64]func(context.Context, *Graph, *ClientDiscipline) (any, error)
 	IDAllocator_Map                      map[uint64]func(context.Context, any, int, string, *uint64, int) (int32, error)
-	IDAllocator_Alloc                    map[uint64]func(context.Context, any, int, uint64) (int32, error)
 	IDAllocator_Free                     map[uint64]func(context.Context, any, int, uint64) error
 	IDAllocator_Print                    map[uint64]func(context.Context, any, int, uint64) (string, error)
 	IDAllocator_Close                    map[uint64]func(context.Context, any) error
@@ -184,9 +182,6 @@ func Register_IDAllocator_Open(fn func(*Graph, *ClientDiscipline) (uint64, error
 }
 func Register_IDAllocator_Map(fn func(any, int, string, *uint64, int) (uint64, error)) {
 	mod.lookupFuncMap.IDAllocator_Map = fn
-}
-func Register_IDAllocator_Alloc(fn func(any, int, uint64) (uint64, error)) {
-	mod.lookupFuncMap.IDAllocator_Alloc = fn
 }
 func Register_IDAllocator_Free(fn func(any, int, uint64) (uint64, error)) {
 	mod.lookupFuncMap.IDAllocator_Free = fn
@@ -504,50 +499,6 @@ func init() {
 		[]api.ValueType{api.ValueTypeI32, api.ValueTypeI32, api.ValueTypeI32, api.ValueTypeI32, api.ValueTypeI32},
 		[]api.ValueType{api.ValueTypeI32},
 	).Export("wasm_bridge_IDAllocator_Map")
-	env = env.NewFunctionBuilder().WithGoModuleFunction(
-		api.GoModuleFunc(func(ctx context.Context, _ api.Module, stack []uint64) {
-			arg0, err := func() (any, error) {
-				var zero any
-				_ = zero
-				ret := mod.toAny(stack[0])
-				return ret, nil
-			}()
-			if err != nil {
-				panic(err)
-			}
-			arg1, err := func() (int, error) {
-				var zero int
-				_ = zero
-				ret := mod.toInt(stack[1])
-				return ret, nil
-			}()
-			if err != nil {
-				panic(err)
-			}
-			arg2, err := func() (uint64, error) {
-				var zero uint64
-				_ = zero
-				ret := mod.toUint64(stack[2])
-				return ret, nil
-			}()
-			if err != nil {
-				panic(err)
-			}
-
-			funcID, err := mod.lookupFuncMap.IDAllocator_Alloc(arg0, arg1, arg2)
-			if err != nil {
-				panic(err)
-			}
-			if fn, exists := mod.callbackFuncMap.IDAllocator_Alloc[funcID]; exists {
-				// TODO: must back returned value to wasm side.
-				if _, err := fn(ctx, arg0, arg1, arg2); err != nil {
-					panic(err)
-				}
-			}
-		}),
-		[]api.ValueType{api.ValueTypeI32, api.ValueTypeI32, api.ValueTypeI64},
-		[]api.ValueType{api.ValueTypeI32},
-	).Export("wasm_bridge_IDAllocator_Alloc")
 	env = env.NewFunctionBuilder().WithGoModuleFunction(
 		api.GoModuleFunc(func(ctx context.Context, _ api.Module, stack []uint64) {
 			arg0, err := func() (any, error) {
@@ -2815,7 +2766,6 @@ func init() {
 		callbackFuncMap: &CallbackFuncMap{
 			IDAllocator_Open:                     make(map[uint64]func(context.Context, *Graph, *ClientDiscipline) (any, error)),
 			IDAllocator_Map:                      make(map[uint64]func(context.Context, any, int, string, *uint64, int) (int32, error)),
-			IDAllocator_Alloc:                    make(map[uint64]func(context.Context, any, int, uint64) (int32, error)),
 			IDAllocator_Free:                     make(map[uint64]func(context.Context, any, int, uint64) error),
 			IDAllocator_Print:                    make(map[uint64]func(context.Context, any, int, uint64) (string, error)),
 			IDAllocator_Close:                    make(map[uint64]func(context.Context, any) error),
@@ -4827,14 +4777,6 @@ func (v *IDAllocator) SetMap(ctx context.Context, arg *CallbackFunc[func(context
 	return mod.setFieldFunction(ctx, "IDAllocator_map", v.getPtr())
 }
 
-func (v *IDAllocator) SetAlloc(ctx context.Context, arg *CallbackFunc[func(context.Context, any, int, uint64) (int32, error)]) error {
-	if mod.lookupFuncMap.IDAllocator_Alloc == nil {
-		return fmt.Errorf("cannot find lookup function. you must call Register_IDAllocator_Alloc before")
-	}
-	mod.callbackFuncMap.IDAllocator_Alloc[arg.funcID] = arg.cb
-	return mod.setFieldFunction(ctx, "IDAllocator_alloc", v.getPtr())
-}
-
 func (v *IDAllocator) SetFree(ctx context.Context, arg *CallbackFunc[func(context.Context, any, int, uint64) error]) error {
 	if mod.lookupFuncMap.IDAllocator_Free == nil {
 		return fmt.Errorf("cannot find lookup function. you must call Register_IDAllocator_Free before")
@@ -5306,16 +5248,16 @@ func (v *CommonFields) getState(ctx context.Context) (*State, error) {
 	return ret, nil
 }
 
-func (v *CommonFields) SetStrdict(_arg *Dict) error {
+func (v *CommonFields) SetStrdict(_arg any) error {
 	ctx := context.Background()
-	arg, err := mod.toObjectWasmValue(ctx, _arg)
+	arg, err := mod.toAnyWasmValue(ctx, _arg)
 	if err != nil {
 		return err
 	}
 	return mod.setField(ctx, "CommonFields_strdict", v.getPtr(), arg)
 }
 
-func (v *CommonFields) GetStrdict() *Dict {
+func (v *CommonFields) GetStrdict() any {
 	ret, err := v.getStrdict(context.Background())
 	if err != nil {
 		panic(err)
@@ -5323,13 +5265,13 @@ func (v *CommonFields) GetStrdict() *Dict {
 	return ret
 }
 
-func (v *CommonFields) getStrdict(ctx context.Context) (*Dict, error) {
-	var zero *Dict
+func (v *CommonFields) getStrdict(ctx context.Context) (any, error) {
+	var zero any
 	p, err := mod.getField(ctx, "CommonFields_strdict", v.getPtr())
 	if err != nil {
 		return zero, err
 	}
-	ret := newDict(p)
+	ret := mod.toAny(p)
 	return ret, nil
 }
 
@@ -6156,6 +6098,33 @@ func (v *Sym) getPrint(ctx context.Context) (uint32, error) {
 		return zero, err
 	}
 	ret := mod.toUint32(p)
+	return ret, nil
+}
+
+func (v *Sym) SetOwner(_arg *Graph) error {
+	ctx := context.Background()
+	arg, err := mod.toObjectWasmValue(ctx, _arg)
+	if err != nil {
+		return err
+	}
+	return mod.setField(ctx, "Sym_owner", v.getPtr(), arg)
+}
+
+func (v *Sym) GetOwner() *Graph {
+	ret, err := v.getOwner(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	return ret
+}
+
+func (v *Sym) getOwner(ctx context.Context) (*Graph, error) {
+	var zero *Graph
+	p, err := mod.getField(ctx, "Sym_owner", v.getPtr())
+	if err != nil {
+		return zero, err
+	}
+	ret := newGraph(p)
 	return ret, nil
 }
 
@@ -16127,6 +16096,23 @@ func (v *Graph) StrdupHTML(ctx context.Context, _arg0 string) (string, error) {
 	return ret, nil
 }
 
+func (v *Graph) StrdupText(ctx context.Context, _arg0 string) (string, error) {
+	var zero string
+	arg0, err := mod.toStringWasmValue(ctx, _arg0)
+	if err != nil {
+		return zero, err
+	}
+	p, err := mod.callWithRet(ctx, "Graph_strdupText", v.getPtr(), arg0)
+	if err != nil {
+		return zero, err
+	}
+	ret, err := mod.toString(ctx, p)
+	if err != nil {
+		return zero, err
+	}
+	return ret, nil
+}
+
 func (v *Graph) StrBind(ctx context.Context, _arg0 string) (string, error) {
 	var zero string
 	arg0, err := mod.toStringWasmValue(ctx, _arg0)
@@ -16144,13 +16130,51 @@ func (v *Graph) StrBind(ctx context.Context, _arg0 string) (string, error) {
 	return ret, nil
 }
 
-func (v *Graph) StrFree(ctx context.Context, _arg0 string) (int, error) {
+func (v *Graph) StrBindText(ctx context.Context, _arg0 string) (string, error) {
+	var zero string
+	arg0, err := mod.toStringWasmValue(ctx, _arg0)
+	if err != nil {
+		return zero, err
+	}
+	p, err := mod.callWithRet(ctx, "Graph_strBindText", v.getPtr(), arg0)
+	if err != nil {
+		return zero, err
+	}
+	ret, err := mod.toString(ctx, p)
+	if err != nil {
+		return zero, err
+	}
+	return ret, nil
+}
+
+func (v *Graph) StrBindHTML(ctx context.Context, _arg0 string) (string, error) {
+	var zero string
+	arg0, err := mod.toStringWasmValue(ctx, _arg0)
+	if err != nil {
+		return zero, err
+	}
+	p, err := mod.callWithRet(ctx, "Graph_strBindHTML", v.getPtr(), arg0)
+	if err != nil {
+		return zero, err
+	}
+	ret, err := mod.toString(ctx, p)
+	if err != nil {
+		return zero, err
+	}
+	return ret, nil
+}
+
+func (v *Graph) StrFree(ctx context.Context, _arg0 string, _arg1 bool) (int, error) {
 	var zero int
 	arg0, err := mod.toStringWasmValue(ctx, _arg0)
 	if err != nil {
 		return zero, err
 	}
-	p, err := mod.callWithRet(ctx, "Graph_strFree", v.getPtr(), arg0)
+	arg1, err := mod.toBoolWasmValue(ctx, _arg1)
+	if err != nil {
+		return zero, err
+	}
+	p, err := mod.callWithRet(ctx, "Graph_strFree", v.getPtr(), arg0, arg1)
 	if err != nil {
 		return zero, err
 	}
@@ -16173,6 +16197,50 @@ func (v *Graph) Attr(ctx context.Context, _arg0 int, _arg1 string, _arg2 string)
 		return zero, err
 	}
 	p, err := mod.callWithRet(ctx, "Graph_attr", v.getPtr(), arg0, arg1, arg2)
+	if err != nil {
+		return zero, err
+	}
+	ret := newSym(p)
+	return ret, nil
+}
+
+func (v *Graph) AttrText(ctx context.Context, _arg0 int, _arg1 string, _arg2 string) (*Sym, error) {
+	var zero *Sym
+	arg0, err := mod.toIntWasmValue(ctx, _arg0)
+	if err != nil {
+		return zero, err
+	}
+	arg1, err := mod.toStringWasmValue(ctx, _arg1)
+	if err != nil {
+		return zero, err
+	}
+	arg2, err := mod.toStringWasmValue(ctx, _arg2)
+	if err != nil {
+		return zero, err
+	}
+	p, err := mod.callWithRet(ctx, "Graph_attrText", v.getPtr(), arg0, arg1, arg2)
+	if err != nil {
+		return zero, err
+	}
+	ret := newSym(p)
+	return ret, nil
+}
+
+func (v *Graph) AttrHTML(ctx context.Context, _arg0 int, _arg1 string, _arg2 string) (*Sym, error) {
+	var zero *Sym
+	arg0, err := mod.toIntWasmValue(ctx, _arg0)
+	if err != nil {
+		return zero, err
+	}
+	arg1, err := mod.toStringWasmValue(ctx, _arg1)
+	if err != nil {
+		return zero, err
+	}
+	arg2, err := mod.toStringWasmValue(ctx, _arg2)
+	if err != nil {
+		return zero, err
+	}
+	p, err := mod.callWithRet(ctx, "Graph_attrHTML", v.getPtr(), arg0, arg1, arg2)
 	if err != nil {
 		return zero, err
 	}
@@ -16254,17 +16322,13 @@ func (v *Graph) SubGraph(ctx context.Context, _arg0 string, _arg1 int) (*Graph, 
 	return ret, nil
 }
 
-func (v *Graph) IdSubGraph(ctx context.Context, _arg0 uint64, _arg1 int) (*Graph, error) {
+func (v *Graph) IdSubGraph(ctx context.Context, _arg0 uint64) (*Graph, error) {
 	var zero *Graph
 	arg0, err := mod.toUint64WasmValue(ctx, _arg0)
 	if err != nil {
 		return zero, err
 	}
-	arg1, err := mod.toIntWasmValue(ctx, _arg1)
-	if err != nil {
-		return zero, err
-	}
-	p, err := mod.callWithRet(ctx, "Graph_idSubGraph", v.getPtr(), arg0, arg1)
+	p, err := mod.callWithRet(ctx, "Graph_idSubGraph", v.getPtr(), arg0)
 	if err != nil {
 		return zero, err
 	}
@@ -16374,53 +16438,6 @@ func (v *Graph) CountUniqueEdges(ctx context.Context, _arg0 *Node, _arg1 int, _a
 	}
 	ret := mod.toInt(p)
 	return ret, nil
-}
-
-func (v *Graph) Alloc(ctx context.Context, _arg0 uint64) (any, error) {
-	var zero any
-	arg0, err := mod.toUint64WasmValue(ctx, _arg0)
-	if err != nil {
-		return zero, err
-	}
-	p, err := mod.callWithRet(ctx, "Graph_alloc", v.getPtr(), arg0)
-	if err != nil {
-		return zero, err
-	}
-	ret := mod.toAny(p)
-	return ret, nil
-}
-
-func (v *Graph) Realloc(ctx context.Context, _arg0 any, _arg1 uint64, _arg2 uint64) (any, error) {
-	var zero any
-	arg0, err := mod.toAnyWasmValue(ctx, _arg0)
-	if err != nil {
-		return zero, err
-	}
-	arg1, err := mod.toUint64WasmValue(ctx, _arg1)
-	if err != nil {
-		return zero, err
-	}
-	arg2, err := mod.toUint64WasmValue(ctx, _arg2)
-	if err != nil {
-		return zero, err
-	}
-	p, err := mod.callWithRet(ctx, "Graph_realloc", v.getPtr(), arg0, arg1, arg2)
-	if err != nil {
-		return zero, err
-	}
-	ret := mod.toAny(p)
-	return ret, nil
-}
-
-func (v *Graph) Free(ctx context.Context, _arg0 any) error {
-	arg0, err := mod.toAnyWasmValue(ctx, _arg0)
-	if err != nil {
-		return err
-	}
-	if err := mod.call(ctx, "Graph_free", v.getPtr(), arg0); err != nil {
-		return err
-	}
-	return nil
 }
 
 func (v *Dict) Close(ctx context.Context) (int, error) {
@@ -17011,43 +17028,25 @@ func MemRead(ctx context.Context, _arg0 string) (*Graph, error) {
 	return ret, nil
 }
 
-func Readline(ctx context.Context, _arg0 int) error {
-	arg0, err := mod.toIntWasmValue(ctx, _arg0)
-	if err != nil {
-		return err
-	}
-	if err := mod.call(ctx, "readline", arg0); err != nil {
-		return err
-	}
-	return nil
-}
-
-func SetFile(ctx context.Context, _arg0 string) error {
-	arg0, err := mod.toStringWasmValue(ctx, _arg0)
-	if err != nil {
-		return err
-	}
-	if err := mod.call(ctx, "setFile", arg0); err != nil {
-		return err
-	}
-	return nil
-}
-
-func Concat(ctx context.Context, _arg0 *Graph, _arg1 any, _arg2 *ClientDiscipline) (*Graph, error) {
+func Concat(ctx context.Context, _arg0 *Graph, _arg1 string, _arg2 any, _arg3 *ClientDiscipline) (*Graph, error) {
 	var zero *Graph
 	arg0, err := mod.toObjectWasmValue(ctx, _arg0)
 	if err != nil {
 		return zero, err
 	}
-	arg1, err := mod.toAnyWasmValue(ctx, _arg1)
+	arg1, err := mod.toStringWasmValue(ctx, _arg1)
 	if err != nil {
 		return zero, err
 	}
-	arg2, err := mod.toObjectWasmValue(ctx, _arg2)
+	arg2, err := mod.toAnyWasmValue(ctx, _arg2)
 	if err != nil {
 		return zero, err
 	}
-	p, err := mod.callWithRet(ctx, "concat", arg0, arg1, arg2)
+	arg3, err := mod.toObjectWasmValue(ctx, _arg3)
+	if err != nil {
+		return zero, err
+	}
+	p, err := mod.callWithRet(ctx, "concat", arg0, arg1, arg2, arg3)
 	if err != nil {
 		return zero, err
 	}
@@ -17188,27 +17187,6 @@ func HtmlStr(ctx context.Context, _arg0 string) (bool, error) {
 	return ret, nil
 }
 
-func Canon(ctx context.Context, _arg0 string, _arg1 int) (string, error) {
-	var zero string
-	arg0, err := mod.toStringWasmValue(ctx, _arg0)
-	if err != nil {
-		return zero, err
-	}
-	arg1, err := mod.toIntWasmValue(ctx, _arg1)
-	if err != nil {
-		return zero, err
-	}
-	p, err := mod.callWithRet(ctx, "canon", arg0, arg1)
-	if err != nil {
-		return zero, err
-	}
-	ret, err := mod.toString(ctx, p)
-	if err != nil {
-		return zero, err
-	}
-	return ret, nil
-}
-
 func StrCanon(ctx context.Context, _arg0 string, _arg1 string) (string, error) {
 	var zero string
 	arg0, err := mod.toStringWasmValue(ctx, _arg0)
@@ -17220,23 +17198,6 @@ func StrCanon(ctx context.Context, _arg0 string, _arg1 string) (string, error) {
 		return zero, err
 	}
 	p, err := mod.callWithRet(ctx, "strCanon", arg0, arg1)
-	if err != nil {
-		return zero, err
-	}
-	ret, err := mod.toString(ctx, p)
-	if err != nil {
-		return zero, err
-	}
-	return ret, nil
-}
-
-func CanonStr(ctx context.Context, _arg0 string) (string, error) {
-	var zero string
-	arg0, err := mod.toStringWasmValue(ctx, _arg0)
-	if err != nil {
-		return zero, err
-	}
-	p, err := mod.callWithRet(ctx, "canonStr", arg0)
 	if err != nil {
 		return zero, err
 	}
@@ -17413,6 +17374,50 @@ func SetStr(ctx context.Context, _arg0 any, _arg1 string, _arg2 string) (int, er
 	return ret, nil
 }
 
+func SetStrText(ctx context.Context, _arg0 any, _arg1 string, _arg2 string) (int, error) {
+	var zero int
+	arg0, err := mod.toAnyWasmValue(ctx, _arg0)
+	if err != nil {
+		return zero, err
+	}
+	arg1, err := mod.toStringWasmValue(ctx, _arg1)
+	if err != nil {
+		return zero, err
+	}
+	arg2, err := mod.toStringWasmValue(ctx, _arg2)
+	if err != nil {
+		return zero, err
+	}
+	p, err := mod.callWithRet(ctx, "setStrText", arg0, arg1, arg2)
+	if err != nil {
+		return zero, err
+	}
+	ret := mod.toInt(p)
+	return ret, nil
+}
+
+func SetStrHTML(ctx context.Context, _arg0 any, _arg1 string, _arg2 string) (int, error) {
+	var zero int
+	arg0, err := mod.toAnyWasmValue(ctx, _arg0)
+	if err != nil {
+		return zero, err
+	}
+	arg1, err := mod.toStringWasmValue(ctx, _arg1)
+	if err != nil {
+		return zero, err
+	}
+	arg2, err := mod.toStringWasmValue(ctx, _arg2)
+	if err != nil {
+		return zero, err
+	}
+	p, err := mod.callWithRet(ctx, "setStrHTML", arg0, arg1, arg2)
+	if err != nil {
+		return zero, err
+	}
+	ret := mod.toInt(p)
+	return ret, nil
+}
+
 func SetSymName(ctx context.Context, _arg0 any, _arg1 *Sym, _arg2 string) (int, error) {
 	var zero int
 	arg0, err := mod.toAnyWasmValue(ctx, _arg0)
@@ -17428,6 +17433,50 @@ func SetSymName(ctx context.Context, _arg0 any, _arg1 *Sym, _arg2 string) (int, 
 		return zero, err
 	}
 	p, err := mod.callWithRet(ctx, "setSymName", arg0, arg1, arg2)
+	if err != nil {
+		return zero, err
+	}
+	ret := mod.toInt(p)
+	return ret, nil
+}
+
+func SetSymNameText(ctx context.Context, _arg0 any, _arg1 *Sym, _arg2 string) (int, error) {
+	var zero int
+	arg0, err := mod.toAnyWasmValue(ctx, _arg0)
+	if err != nil {
+		return zero, err
+	}
+	arg1, err := mod.toObjectWasmValue(ctx, _arg1)
+	if err != nil {
+		return zero, err
+	}
+	arg2, err := mod.toStringWasmValue(ctx, _arg2)
+	if err != nil {
+		return zero, err
+	}
+	p, err := mod.callWithRet(ctx, "setSymNameText", arg0, arg1, arg2)
+	if err != nil {
+		return zero, err
+	}
+	ret := mod.toInt(p)
+	return ret, nil
+}
+
+func SetSymNameHTML(ctx context.Context, _arg0 any, _arg1 *Sym, _arg2 string) (int, error) {
+	var zero int
+	arg0, err := mod.toAnyWasmValue(ctx, _arg0)
+	if err != nil {
+		return zero, err
+	}
+	arg1, err := mod.toObjectWasmValue(ctx, _arg1)
+	if err != nil {
+		return zero, err
+	}
+	arg2, err := mod.toStringWasmValue(ctx, _arg2)
+	if err != nil {
+		return zero, err
+	}
+	p, err := mod.callWithRet(ctx, "setSymNameHTML", arg0, arg1, arg2)
 	if err != nil {
 		return zero, err
 	}
@@ -17454,6 +17503,58 @@ func SafeSetStr(ctx context.Context, _arg0 any, _arg1 string, _arg2 string, _arg
 		return zero, err
 	}
 	p, err := mod.callWithRet(ctx, "safeSetStr", arg0, arg1, arg2, arg3)
+	if err != nil {
+		return zero, err
+	}
+	ret := mod.toInt(p)
+	return ret, nil
+}
+
+func SafeSetStrHTML(ctx context.Context, _arg0 any, _arg1 string, _arg2 string, _arg3 string) (int, error) {
+	var zero int
+	arg0, err := mod.toAnyWasmValue(ctx, _arg0)
+	if err != nil {
+		return zero, err
+	}
+	arg1, err := mod.toStringWasmValue(ctx, _arg1)
+	if err != nil {
+		return zero, err
+	}
+	arg2, err := mod.toStringWasmValue(ctx, _arg2)
+	if err != nil {
+		return zero, err
+	}
+	arg3, err := mod.toStringWasmValue(ctx, _arg3)
+	if err != nil {
+		return zero, err
+	}
+	p, err := mod.callWithRet(ctx, "safeSetStrHTML", arg0, arg1, arg2, arg3)
+	if err != nil {
+		return zero, err
+	}
+	ret := mod.toInt(p)
+	return ret, nil
+}
+
+func SafeSetStrText(ctx context.Context, _arg0 any, _arg1 string, _arg2 string, _arg3 string) (int, error) {
+	var zero int
+	arg0, err := mod.toAnyWasmValue(ctx, _arg0)
+	if err != nil {
+		return zero, err
+	}
+	arg1, err := mod.toStringWasmValue(ctx, _arg1)
+	if err != nil {
+		return zero, err
+	}
+	arg2, err := mod.toStringWasmValue(ctx, _arg2)
+	if err != nil {
+		return zero, err
+	}
+	arg3, err := mod.toStringWasmValue(ctx, _arg3)
+	if err != nil {
+		return zero, err
+	}
+	p, err := mod.callWithRet(ctx, "safeSetStrText", arg0, arg1, arg2, arg3)
 	if err != nil {
 		return zero, err
 	}

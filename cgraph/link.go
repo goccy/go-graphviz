@@ -19,6 +19,9 @@ func toDictLink(*wasm.DictLink) *cdt.Link
 //go:linkname toDictLinkWasm github.com/goccy/go-graphviz/cdt.toLinkWasm
 func toDictLinkWasm(*cdt.Link) *wasm.DictLink
 
+//go:linkname newDict github.com/goccy/go-graphviz/internal/wasm.newDict
+func newDict(uint64) *wasm.Dict
+
 func toGraphWasm(v *Graph) *wasm.Graph {
 	if v == nil {
 		return nil

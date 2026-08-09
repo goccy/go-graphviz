@@ -85,18 +85,14 @@ func (c *Context) RenderImage(ctx context.Context, g *cgraph.Graph, format strin
 }
 
 func (c *Context) RenderFilename(ctx context.Context, g *cgraph.Graph, format, filename string) error {
-	if _, err := os.Stat(filename); err != nil {
-		// file does not exist.
-		// Since gvc.RenderFilename fails if the file doesn't exist, we create it beforehand.
-		if _, err := os.Create(filename); err != nil {
-			return fmt.Errorf("failed to create file: %w", err)
-		}
-	}
-	res, err := c.gvc.RenderFilename(ctx, toGraphWasm(g), format, filename)
+	// gvRenderFilename writes through the wasm's virtual filesystem, which does
+	// not reach the host; render in-memory instead and stream to the file.
+	f, err := os.Create(filename)
 	if err != nil {
 		return err
 	}
-	return toError(res)
+	defer f.Close()
+	return c.RenderData(ctx, g, format, f)
 }
 
 func (c *Context) FreeLayout(ctx context.Context, g *cgraph.Graph) error {

@@ -1110,6 +1110,14 @@ func (g *Graph) SetLabel(v string) *Graph {
 	g.SafeSet(string(labelAttr), v, "\\G")
 	return g
 }
+// SetLabelHTML sets the label attribute as an HTML-like string (graphviz
+// agsafeset_html). Since graphviz 13, setting an HTML label through the plain
+// SetLabel round-trip loses the HTML-ness and the label renders as escaped
+// text; use this for HTML labels (e.g. <table> markup).
+func (g *Graph) SetLabelHTML(v string) *Graph {
+	g.SafeSetHTML(string(labelAttr), v, "\\G")
+	return g
+}
 
 // Label returns label attribute.
 func (n *Node) Label() string {
@@ -1128,6 +1136,14 @@ func (n *Node) SetLabel(v string) *Node {
 	n.SafeSet(string(labelAttr), v, "\\N")
 	return n
 }
+// SetLabelHTML sets the label attribute as an HTML-like string (graphviz
+// agsafeset_html). Since graphviz 13, setting an HTML label through the plain
+// SetLabel round-trip loses the HTML-ness and the label renders as escaped
+// text; use this for HTML labels (e.g. <table> markup).
+func (n *Node) SetLabelHTML(v string) *Node {
+	n.SafeSetHTML(string(labelAttr), v, "\\N")
+	return n
+}
 
 // Label returns label attribute.
 func (e *Edge) Label() string {
@@ -1144,6 +1160,14 @@ func (e *Edge) Label() string {
 // https://graphviz.gitlab.io/_pages/doc/info/attrs.html#a:label
 func (e *Edge) SetLabel(v string) *Edge {
 	e.SafeSet(string(labelAttr), v, "\\E")
+	return e
+}
+// SetLabelHTML sets the label attribute as an HTML-like string (graphviz
+// agsafeset_html). Since graphviz 13, setting an HTML label through the plain
+// SetLabel round-trip loses the HTML-ness and the label renders as escaped
+// text; use this for HTML labels (e.g. <table> markup).
+func (e *Edge) SetLabelHTML(v string) *Edge {
+	e.SafeSetHTML(string(labelAttr), v, "\\E")
 	return e
 }
 

@@ -1,4 +1,4 @@
-FROM ghcr.io/webassembly/wasi-sdk:wasi-sdk-24
+FROM ghcr.io/webassembly/wasi-sdk:wasi-sdk-33
 
 ARG GRAPHVIZ_VERSION
 
@@ -9,16 +9,20 @@ ENV CCACHE_DIR=/ccache
 RUN \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    apt-get update && apt install -y pkg-config libexpat1-dev wget ccache
+    apt-get update && apt install -y pkg-config libexpat1-dev wget ccache patch
 
-RUN wget https://github.com/WebAssembly/binaryen/releases/download/version_119/binaryen-version_119-x86_64-linux.tar.gz
-RUN tar -zxvf binaryen-version_119-x86_64-linux.tar.gz
+RUN wget https://github.com/WebAssembly/binaryen/releases/download/version_131/binaryen-version_131-x86_64-linux.tar.gz
+RUN tar -zxvf binaryen-version_131-x86_64-linux.tar.gz
 
 RUN wget https://github.com/libexpat/libexpat/releases/download/R_2_6_3/expat-2.6.3.tar.gz
 RUN tar -zxvf expat-2.6.3.tar.gz && mv expat-2.6.3 expat
 
 RUN wget https://gitlab.com/api/v4/projects/4207231/packages/generic/graphviz-releases/$GRAPHVIZ_VERSION/graphviz-$GRAPHVIZ_VERSION.tar.gz
 RUN tar -zxvf graphviz-$GRAPHVIZ_VERSION.tar.gz && mv graphviz-$GRAPHVIZ_VERSION graphviz
+
+# Apply upstream bug fixes to the graphviz sources (see graphviz.patch).
+COPY graphviz.patch /graphviz.patch
+RUN cd /graphviz && patch -p1 < /graphviz.patch
 
 RUN cd graphviz && ./configure --host=amd64 --enable-ltdl=no --with-ipsepcola=no
 RUN cd expat && ./configure --host amd64
@@ -27,7 +31,7 @@ RUN rm /graphviz/lib/rbtree/test_red_black_tree.c # remove the file includes mai
 
 WORKDIR /work
 
-ENV PATH=/binaryen-version_119/bin:$PATH
+ENV PATH=/binaryen-version_131/bin:$PATH
 
 RUN \
     --mount=type=cache,target=/ccache,sharing=locked \
