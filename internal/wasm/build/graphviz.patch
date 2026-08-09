@@ -1,0 +1,11 @@
+--- a/lib/sparse/SparseMatrix.c
++++ b/lib/sparse/SparseMatrix.c
+@@ -1301,7 +1301,7 @@
+     }
+     for (j = ia[i]; j < ia[i+1]; j++){
+       isuper = super[ja[j]];
+-      if (mask[i] == SIZE_MAX || mask[isuper] < i){
++      if (mask[isuper] == SIZE_MAX || mask[isuper] < i){
+ 	mask[isuper] = i;
+ 	if (nsuper[isuper] == 0){/* all nodes in the isuper group exist in this row */
+ #ifdef DEBUG_PRINT1

@@ -350,3 +350,48 @@ func TestEdgeSourceAndTarget(t *testing.T) {
 		t.Fatalf("Expected target name to be 'a', got '%s'", tailName)
 	}
 }
+
+func TestGraphviz_CreateSubGraphByID(t *testing.T) {
+	// Regression: graphviz 13.0.0 made agidsubg lookup-only, which silently
+	// broke CreateSubGraphByID; creation is emulated via agsubg.
+	ctx := context.Background()
+	g, err := graphviz.New(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer g.Close()
+	graph, err := g.Graph()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer graph.Close()
+
+	sub, err := graph.CreateSubGraphByID(4242)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if sub == nil {
+		t.Fatal("CreateSubGraphByID returned nil subgraph")
+	}
+	defer sub.Close()
+
+	// must be findable by name afterwards (agsubg registers the subgraph
+	// under its decimal-string name; with the default AgIdDisc the ID is
+	// the name pointer, so a numeric SubGraphByID lookup cannot match it)
+	found, err := graph.SubGraphByName("4242")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if found == nil {
+		t.Fatal("SubGraphByName did not find the created subgraph")
+	}
+
+	// and must appear in iteration
+	first, err := graph.FirstSubGraph()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if first == nil {
+		t.Fatal("created subgraph not reachable via FirstSubGraph")
+	}
+}

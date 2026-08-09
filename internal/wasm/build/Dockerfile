@@ -9,7 +9,7 @@ ENV CCACHE_DIR=/ccache
 RUN \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    apt-get update && apt install -y pkg-config libexpat1-dev wget ccache
+    apt-get update && apt install -y pkg-config libexpat1-dev wget ccache patch
 
 RUN wget https://github.com/WebAssembly/binaryen/releases/download/version_119/binaryen-version_119-x86_64-linux.tar.gz
 RUN tar -zxvf binaryen-version_119-x86_64-linux.tar.gz
@@ -19,6 +19,10 @@ RUN tar -zxvf expat-2.6.3.tar.gz && mv expat-2.6.3 expat
 
 RUN wget https://gitlab.com/api/v4/projects/4207231/packages/generic/graphviz-releases/$GRAPHVIZ_VERSION/graphviz-$GRAPHVIZ_VERSION.tar.gz
 RUN tar -zxvf graphviz-$GRAPHVIZ_VERSION.tar.gz && mv graphviz-$GRAPHVIZ_VERSION graphviz
+
+# Apply upstream bug fixes to the graphviz sources (see graphviz.patch).
+COPY graphviz.patch /graphviz.patch
+RUN cd /graphviz && patch -p1 < /graphviz.patch
 
 RUN cd graphviz && ./configure --host=amd64 --enable-ltdl=no --with-ipsepcola=no
 RUN cd expat && ./configure --host amd64

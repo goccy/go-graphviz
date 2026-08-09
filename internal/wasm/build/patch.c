@@ -10,6 +10,28 @@ FILE *tmpfile(void)
   return fopen(tmpfilename, "w+");
 }
 
+/* flockfile/funlockfile are referenced by the GV_INFO/GV_DEBUG macros in
+ * lib/util/debug.h (added in graphviz 13.0.0) and by lib/util/lockfile.h
+ * (used by common/emit.c emit_once since graphviz 14.0.0). They are not
+ * provided by wasi-libc's stdio.h for user code: the declarations there are
+ * guarded by __wasilibc_unmodified_upstream/_REENTRANT, so graphviz callers
+ * compile them as implicit-int (i32)->i32. The stubs must therefore return
+ * int, matching the call sites, or wasm-ld renames the int variant to
+ * "signature_mismatch:flockfile" with an unreachable (trap) body and the
+ * emit_once path traps at runtime. The wasm build is single-threaded and
+ * Verbose is never set, so no-op stubs returning 0 are correct. */
+int flockfile(FILE *file)
+{
+  (void)file;
+  return 0;
+}
+
+int funlockfile(FILE *file)
+{
+  (void)file;
+  return 0;
+}
+
 extern gvplugin_library_t gvplugin_dot_layout_LTX_library;
 extern gvplugin_library_t gvplugin_neato_layout_LTX_library;
 extern gvplugin_library_t gvplugin_core_LTX_library;

@@ -5,9 +5,18 @@ EXPAT_ROOT := /expat
 
 TARGET := graphviz.wasm
 
+# This wasm build must be compiled at -O0: at -O1 and above, graphviz 14.1.x-15.x
+# layout code misbehaves under this wasm32 build (14.x: all-zero node coordinates
+# from optimizer-exposed UB; 15.1.1: corrupt render output, e.g. fdp). -O0 output
+# is byte-identical to the native layout for 14.1.5. Revisit with a future
+# graphviz version.
+# NOTE: graphviz 15.x upstream bugs are patched in graphviz.patch (applied by the
+# Dockerfile) — e.g. the SparseMatrix supernode mask fix for the sfdp heap
+# corruption. Keep wasm-opt at -Os; it is not the problem.
+
 build:
 	ccache $(CC) \
-		-g0 -Os \
+		-g0 -O0 \
 		--sysroot=/opt/wasi-sdk/share/wasi-sysroot \
 		--target=wasm32-wasi \
 		-Wextra \
@@ -29,6 +38,7 @@ build:
 		-Wl,--error-limit=0 \
 		-Wl,--import-undefined \
 		-funsigned-char \
+		-fno-strict-aliasing \
 		-D_WASI_EMULATED_SIGNAL \
 		-D_WASI_EMULATED_MMAN \
 		-D_WASI_EMULATED_PROCESS_CLOCKS \
@@ -63,7 +73,6 @@ build:
 		-I$(GRAPHVIZ_ROOT)/lib/topfish \
 		-I$(GRAPHVIZ_ROOT)/libtwopigen \
 		-I$(GRAPHVIZ_ROOT)/lib/util \
-		-I$(GRAPHVIZ_ROOT)/lib/vmalloc \
 		-I$(GRAPHVIZ_ROOT)/lib/vpsc \
 		-I$(GRAPHVIZ_ROOT)/lib/xdot \
 		-I$(EXPAT_ROOT) \
@@ -90,7 +99,6 @@ build:
 		$(GRAPHVIZ_ROOT)/lib/sfio/Sfio_f/_sfslen.c \
 		$(GRAPHVIZ_ROOT)/lib/sparse/*.c \
 		$(GRAPHVIZ_ROOT)/lib/util/*.c \
-		$(GRAPHVIZ_ROOT)/lib/vmalloc/*.c \
 		$(GRAPHVIZ_ROOT)/lib/xdot/*.c \
 		$(GRAPHVIZ_ROOT)/lib/neatogen/adjust.c \
 		$(GRAPHVIZ_ROOT)/lib/neatogen/circuit.c \
@@ -103,7 +111,6 @@ build:
 		$(GRAPHVIZ_ROOT)/lib/neatogen/legal.c \
 		$(GRAPHVIZ_ROOT)/lib/neatogen/lu.c \
 		$(GRAPHVIZ_ROOT)/lib/neatogen/matinv.c \
-		$(GRAPHVIZ_ROOT)/lib/neatogen/memory.c \
 		$(GRAPHVIZ_ROOT)/lib/neatogen/poly.c \
 		$(GRAPHVIZ_ROOT)/lib/neatogen/site.c \
 		$(GRAPHVIZ_ROOT)/lib/neatogen/solve.c \

@@ -133,3 +133,39 @@ func TestGraphviz_Compatible(t *testing.T) {
 		})
 	}
 }
+
+func TestGraphviz_SFDPRepeatedRender(t *testing.T) {
+	// Regression test for the graphviz 15.1.1 wasm build: an upstream
+	// SparseMatrix supernode bug (wrong index in the first-visit guard in
+	// SparseMatrix_decompose_to_supervariables) broke repeated sfdp renders
+	// with heap corruption. Fixed via internal/wasm/build/graphviz.patch,
+	// applied by the Dockerfile build.
+	ctx := context.Background()
+	g, err := graphviz.New(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer g.Close()
+	g.SetLayout(graphviz.SFDP)
+
+	data, err := os.ReadFile(filepath.Join("testdata", "directed", "KW91.gv"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i := 0; i < 30; i++ {
+		graph, err := graphviz.ParseBytes(data)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var buf bytes.Buffer
+		if err := g.Render(ctx, graph, graphviz.SVG, &buf); err != nil {
+			graph.Close()
+			t.Fatalf("iter %d: %v", i, err)
+		}
+		if buf.Len() == 0 {
+			graph.Close()
+			t.Fatalf("iter %d: empty render", i)
+		}
+		graph.Close()
+	}
+}
