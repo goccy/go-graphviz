@@ -11,11 +11,11 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/disintegration/imaging"
 	"github.com/flopp/go-findfont"
 	"github.com/fogleman/gg"
 	"github.com/goccy/go-graphviz/internal/wasm"
 	"github.com/golang/freetype/truetype"
+	"golang.org/x/image/draw"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/gofont/goregular"
 	"golang.org/x/image/font/opentype"
@@ -395,7 +395,7 @@ func (r *ImageRenderer) LoadImage(ctx context.Context, job *Job, shape *UserShap
 			bottomRightY := bf.UR().Y()
 			width := bottomRightX - topLeftX
 			height := bottomRightY - topLeftY
-			img = imaging.Resize(img, int(width), int(height), imaging.Lanczos)
+			img = resizeImage(img, int(width), int(height))
 			xPAD := defaultXPAD / 2.0
 			yPAD := defaultYPAD / 2.0
 			posX := (topLeftX + xPAD) * job.Scale().X()
@@ -408,6 +408,26 @@ func (r *ImageRenderer) LoadImage(ctx context.Context, job *Job, shape *UserShap
 	posY := topLeftY * job.Scale().Y()
 	r.ctx.DrawImageAnchored(img, int(posX), -int(posY), 0, 1)
 	return nil
+}
+
+// resizeImage scales img to width x height with a Catmull-Rom kernel. A
+// zero width or height is derived from the other one so the aspect ratio
+// is preserved; when both are zero the image is returned as is.
+func resizeImage(img image.Image, width, height int) image.Image {
+	srcBounds := img.Bounds()
+	srcW, srcH := srcBounds.Dx(), srcBounds.Dy()
+	if srcW == 0 || srcH == 0 || (width <= 0 && height <= 0) {
+		return img
+	}
+	if width <= 0 {
+		width = max(1, int(float64(height)*float64(srcW)/float64(srcH)+0.5))
+	}
+	if height <= 0 {
+		height = max(1, int(float64(width)*float64(srcH)/float64(srcW)+0.5))
+	}
+	dst := image.NewNRGBA(image.Rect(0, 0, width, height))
+	draw.CatmullRom.Scale(dst, dst.Bounds(), img, srcBounds, draw.Src, nil)
+	return dst
 }
 
 type FontLoader func(ctx context.Context, job *Job, font *TextFont) (font.Face, error)
